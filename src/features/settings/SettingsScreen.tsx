@@ -147,13 +147,13 @@ export function SettingsScreen() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportJson}>
-            Export Backup
+            Export to Local Storage
           </ActionButton>
           <ActionButton
             tone="secondary"
             onClick={() => fileInputRef.current?.click()}
           >
-            Import Backup
+            Import From Local Storage
           </ActionButton>
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -161,13 +161,13 @@ export function SettingsScreen() {
             tone="neutral"
             onClick={() => void showGoogleDriveStatus("backup")}
           >
-            Drive Backup
+            Export to Drive
           </ActionButton>
           <ActionButton
             tone="neutral"
             onClick={() => void showGoogleDriveStatus("restore")}
           >
-            Drive Restore
+            Import From Drive
           </ActionButton>
         </div>
         <input
