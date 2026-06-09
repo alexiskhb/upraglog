@@ -10,6 +10,7 @@ import {
   Share2,
   UserCircle,
 } from "lucide-react"
+import { useState } from "react"
 import { useNavigate, useRouterState } from "@tanstack/react-router"
 import {
   DropdownMenu,
@@ -23,36 +24,100 @@ import { todayString } from "@/shared/model/dates"
 import { IconButton } from "./IconButton"
 
 export function BottomMainBar() {
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const navigate = useNavigate()
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
   const selectedDate = useAppStore((state) => state.selectedDate)
+  const workoutNavOpen = useAppStore((state) => state.workoutNavOpen)
   const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
+  const activeDialog = useAppStore((state) => state.activeDialog)
   const openDialog = useAppStore((state) => state.openDialog)
   const setReplaceWorkoutExerciseId = useAppStore(
     (state) => state.setReplaceWorkoutExerciseId,
   )
+  const selectedOrToday = selectedDate || todayString()
+  const calendarActive = pathname.startsWith("/calendar")
+  const pickerActive =
+    pathname.startsWith("/picker") || pathname.startsWith("/exercise/")
+  const moreActive =
+    moreMenuOpen || pathname.startsWith("/settings") || activeDialog !== undefined
 
   const goToDay = () => {
     setReplaceWorkoutExerciseId(undefined)
+    setWorkoutNavOpen(false)
     void navigate({
       to: "/day/$date",
-      params: { date: selectedDate || todayString() },
+      params: { date: selectedOrToday },
     })
   }
 
-  const openExercisePicker = () => {
+  const toggleCalendar = () => {
     setReplaceWorkoutExerciseId(undefined)
+    setWorkoutNavOpen(false)
+    setProfileMenuOpen(false)
+    setMoreMenuOpen(false)
+
+    if (calendarActive) {
+      goToDay()
+      return
+    }
+
+    void navigate({ to: "/calendar" })
+  }
+
+  const toggleWorkoutList = () => {
+    setReplaceWorkoutExerciseId(undefined)
+    setProfileMenuOpen(false)
+    setMoreMenuOpen(false)
+
+    if (workoutNavOpen) {
+      setWorkoutNavOpen(false)
+      goToDay()
+      return
+    }
+
+    if (!pathname.startsWith("/day/")) {
+      void navigate({
+        to: "/day/$date",
+        params: { date: selectedOrToday },
+      })
+    }
+
+    setWorkoutNavOpen(true)
+  }
+
+  const toggleExercisePicker = () => {
+    setReplaceWorkoutExerciseId(undefined)
+    setWorkoutNavOpen(false)
+    setProfileMenuOpen(false)
+    setMoreMenuOpen(false)
+
+    if (pickerActive) {
+      goToDay()
+      return
+    }
+
     void navigate({ to: "/picker" })
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
+    <nav className="fixed inset-x-0 bottom-0 z-[60] border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
       <div className="mx-auto grid h-16 max-w-2xl grid-cols-5 items-center px-4">
-        <DropdownMenu>
+        <DropdownMenu
+          open={profileMenuOpen}
+          onOpenChange={(open) => {
+            setProfileMenuOpen(open)
+            if (open) {
+              setMoreMenuOpen(false)
+              setWorkoutNavOpen(false)
+            }
+          }}
+        >
           <DropdownMenuTrigger asChild>
-            <IconButton title="Choose profile">
+            <IconButton active={profileMenuOpen} title="Choose profile">
               <UserCircle className="size-6" />
             </IconButton>
           </DropdownMenuTrigger>
@@ -67,36 +132,47 @@ export function BottomMainBar() {
         </DropdownMenu>
 
         <IconButton
-          active={pathname.startsWith("/calendar")}
+          active={calendarActive && !profileMenuOpen && !moreMenuOpen}
           title="Calendar"
-          onClick={() => {
-            setReplaceWorkoutExerciseId(undefined)
-            void navigate({ to: "/calendar" })
-          }}
+          onClick={toggleCalendar}
         >
           <CalendarDays className="size-6" />
         </IconButton>
 
         <IconButton
+          active={workoutNavOpen && !profileMenuOpen && !moreMenuOpen}
           title="Workout list"
-          onClick={() => {
-            setWorkoutNavOpen(true)
-          }}
+          onClick={toggleWorkoutList}
         >
           <ListChecks className="size-6" />
         </IconButton>
 
         <IconButton
-          active={pathname.startsWith("/picker")}
+          active={pickerActive && !profileMenuOpen && !moreMenuOpen}
           title="Add exercise"
-          onClick={openExercisePicker}
+          onClick={toggleExercisePicker}
         >
           <Plus className="size-7" />
         </IconButton>
 
-        <DropdownMenu>
+        <DropdownMenu
+          open={moreMenuOpen}
+          onOpenChange={(open) => {
+            if (open && pathname.startsWith("/settings")) {
+              goToDay()
+              setMoreMenuOpen(false)
+              return
+            }
+
+            setMoreMenuOpen(open)
+            if (open) {
+              setProfileMenuOpen(false)
+              setWorkoutNavOpen(false)
+            }
+          }}
+        >
           <DropdownMenuTrigger asChild>
-            <IconButton title="More actions">
+            <IconButton active={moreActive} title="More actions">
               <MoreVertical className="size-6" />
             </IconButton>
           </DropdownMenuTrigger>
@@ -108,6 +184,7 @@ export function BottomMainBar() {
               className="gap-2 rounded-md focus:bg-cyan-400/15"
               onSelect={() => {
                 setReplaceWorkoutExerciseId(undefined)
+                setWorkoutNavOpen(false)
                 void navigate({ to: "/settings" })
               }}
             >
@@ -117,21 +194,30 @@ export function BottomMainBar() {
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
               className="gap-2 rounded-md focus:bg-cyan-400/15"
-              onSelect={() => openDialog("timer")}
+              onSelect={() => {
+                setWorkoutNavOpen(false)
+                openDialog("timer")
+              }}
             >
               <Clock3 className="size-4 text-cyan-300" />
               Time Workout
             </DropdownMenuItem>
             <DropdownMenuItem
               className="gap-2 rounded-md focus:bg-cyan-400/15"
-              onSelect={() => openDialog("share")}
+              onSelect={() => {
+                setWorkoutNavOpen(false)
+                openDialog("share")
+              }}
             >
               <Share2 className="size-4 text-cyan-300" />
               Share Workout
             </DropdownMenuItem>
             <DropdownMenuItem
               className="gap-2 rounded-md focus:bg-cyan-400/15"
-              onSelect={() => openDialog("copyMove")}
+              onSelect={() => {
+                setWorkoutNavOpen(false)
+                openDialog("copyMove")
+              }}
             >
               <Copy className="size-4 text-cyan-300" />
               Copy/Move Workout

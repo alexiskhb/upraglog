@@ -178,7 +178,7 @@ export function WorkoutNavigationPanel() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        className="max-h-[86dvh] rounded-t-md border-white/10 bg-[#111418] text-zinc-100 shadow-[0_-24px_60px_rgba(0,0,0,0.5)] sm:mx-auto sm:max-w-2xl"
+        className="max-h-[calc(86dvh-4rem)] rounded-t-md border-white/10 bg-[#111418] text-zinc-100 shadow-[0_-24px_60px_rgba(0,0,0,0.5)] data-[side=bottom]:bottom-16 sm:mx-auto sm:max-w-2xl"
         side="bottom"
       >
         <SheetHeader className="border-b border-white/10">
