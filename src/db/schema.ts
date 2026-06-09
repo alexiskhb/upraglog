@@ -1,0 +1,113 @@
+export type ExerciseCategory =
+  | "chest"
+  | "back"
+  | "legs"
+  | "shoulders"
+  | "biceps"
+  | "triceps"
+  | "abs"
+  | "cardio"
+  | "custom"
+
+export type ExerciseType =
+  | "strength"
+  | "cardio"
+  | "weight_time"
+  | "reps_time"
+  | "reps_only"
+  | "time_only"
+  | "distance_time"
+
+export type UnitSystem = "metric" | "imperial"
+
+export type Exercise = {
+  id: string
+  name: string
+  category: ExerciseCategory
+  exerciseType: ExerciseType
+  isFavorite: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export type Workout = {
+  id: string
+  localDate: string
+  startedAt?: string
+  endedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type WorkoutExercise = {
+  id: string
+  workoutId: string
+  exerciseId: string
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type SetEntry = {
+  id: string
+  workoutExerciseId: string
+  order: number
+  weight?: number
+  reps?: number
+  distance?: number
+  durationSeconds?: number
+  comment?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type BodyMeasurementEntry = {
+  id: string
+  localDate: string
+  measurementType: string
+  value: number
+  unit: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type AppSettings = {
+  unitSystem: UnitSystem
+  keepScreenOnDuringTraining: boolean
+}
+
+export type StoredAppSettings = AppSettings & {
+  id: "app"
+  updatedAt: string
+}
+
+export type WorkoutExerciseDetail = {
+  workoutExercise: WorkoutExercise
+  exercise: Exercise
+  sets: SetEntry[]
+}
+
+export type WorkoutDayDetail = {
+  workout?: Workout
+  exercises: WorkoutExerciseDetail[]
+}
+
+export type ExerciseUsageStats = {
+  workoutCount: number
+  lastUsedDate?: string
+}
+
+export type SetEntryInput = {
+  weight?: number
+  reps?: number
+  distance?: number
+  durationSeconds?: number
+  comment?: string
+}
+
+export type ExerciseInput = {
+  name: string
+  category: ExerciseCategory
+  exerciseType: ExerciseType
+  isFavorite?: boolean
+}
