@@ -22,11 +22,16 @@ function toDateTimeInputValue(iso?: string) {
 
   const date = new Date(iso)
   const offsetMs = date.getTimezoneOffset() * 60_000
-  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16)
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 19)
 }
 
 function fromDateTimeInputValue(value: string) {
-  return value ? new Date(value).toISOString() : undefined
+  if (!value) {
+    return undefined
+  }
+
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
 }
 
 export function WorkoutTimerDialog() {
@@ -37,6 +42,8 @@ export function WorkoutTimerDialog() {
   const open = activeDialog === "timer"
   const [startedAt, setStartedAt] = useState("")
   const [endedAt, setEndedAt] = useState("")
+  const [startedAtIso, setStartedAtIso] = useState<string | undefined>()
+  const [endedAtIso, setEndedAtIso] = useState<string | undefined>()
   const [nowMs, setNowMs] = useState(() => Date.now())
   const [message, setMessage] = useState<string | undefined>()
 
@@ -51,6 +58,9 @@ export function WorkoutTimerDialog() {
       if (!cancelled) {
         setStartedAt(toDateTimeInputValue(workout?.startedAt))
         setEndedAt(toDateTimeInputValue(workout?.endedAt))
+        setStartedAtIso(workout?.startedAt)
+        setEndedAtIso(workout?.endedAt)
+        setNowMs(Date.now())
         setMessage(undefined)
       }
     })
@@ -61,7 +71,7 @@ export function WorkoutTimerDialog() {
   }, [open, selectedDate])
 
   useEffect(() => {
-    if (!open || !startedAt || endedAt) {
+    if (!open || !startedAtIso || endedAtIso) {
       return
     }
 
@@ -70,52 +80,63 @@ export function WorkoutTimerDialog() {
     }, 1000)
 
     return () => window.clearInterval(interval)
-  }, [endedAt, open, startedAt])
+  }, [endedAtIso, open, startedAtIso])
 
-  const startedIso = fromDateTimeInputValue(startedAt)
-  const endedIso = fromDateTimeInputValue(endedAt)
-  const active = Boolean(startedIso && !endedIso)
+  const active = Boolean(startedAtIso && !endedAtIso)
   const durationSeconds =
-    active && startedIso
-      ? Math.max(0, Math.round((nowMs - new Date(startedIso).getTime()) / 1000))
-      : getWorkoutDurationSeconds(startedIso, endedIso)
+    active && startedAtIso
+      ? Math.max(
+          0,
+          Math.floor((nowMs - new Date(startedAtIso).getTime()) / 1000),
+        )
+      : getWorkoutDurationSeconds(startedAtIso, endedAtIso)
+
+  const saveTimerIso = async (
+    nextStartedAt: string | undefined,
+    nextEndedAt: string | undefined,
+    nextMessage = "Timer saved.",
+  ) => {
+    await updateWorkoutTimer(selectedDate, {
+      startedAt: nextStartedAt,
+      endedAt: nextEndedAt,
+    })
+    setStartedAtIso(nextStartedAt)
+    setEndedAtIso(nextEndedAt)
+    bumpRefresh()
+    setMessage(nextMessage)
+  }
 
   const saveTimer = async (nextStartedAt = startedAt, nextEndedAt = endedAt) => {
-    await updateWorkoutTimer(selectedDate, {
-      startedAt: fromDateTimeInputValue(nextStartedAt),
-      endedAt: fromDateTimeInputValue(nextEndedAt),
-    })
-    bumpRefresh()
-    setMessage("Timer saved.")
+    await saveTimerIso(
+      fromDateTimeInputValue(nextStartedAt),
+      fromDateTimeInputValue(nextEndedAt),
+    )
   }
 
   const startTimer = async () => {
-    const now = toDateTimeInputValue(new Date().toISOString())
-    setNowMs(Date.now())
-    setStartedAt(now)
+    const now = new Date()
+    const nowIso = now.toISOString()
+    setNowMs(now.getTime())
+    setStartedAt(toDateTimeInputValue(nowIso))
     setEndedAt("")
-    await saveTimer(now, "")
+    await saveTimerIso(nowIso, undefined, "Workout started.")
   }
 
   const stopTimer = async () => {
-    const now = toDateTimeInputValue(new Date().toISOString())
-    const nextStartedAt = startedAt || now
-    setNowMs(Date.now())
-    setStartedAt(nextStartedAt)
-    setEndedAt(now)
-    await saveTimer(nextStartedAt, now)
+    const now = new Date()
+    const nowIso = now.toISOString()
+    const nextStartedAt = startedAtIso ?? nowIso
+    setNowMs(now.getTime())
+    setStartedAt(toDateTimeInputValue(nextStartedAt))
+    setEndedAt(toDateTimeInputValue(nowIso))
+    await saveTimerIso(nextStartedAt, nowIso, "Workout stopped.")
   }
 
   const clearTimer = async () => {
     setNowMs(Date.now())
     setStartedAt("")
     setEndedAt("")
-    await updateWorkoutTimer(selectedDate, {
-      startedAt: undefined,
-      endedAt: undefined,
-    })
-    bumpRefresh()
-    setMessage("Timer cleared.")
+    await saveTimerIso(undefined, undefined, "Timer cleared.")
   }
 
   return (
@@ -162,8 +183,13 @@ export function WorkoutTimerDialog() {
           <Input
             className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
             type="datetime-local"
+            step={1}
             value={startedAt}
-            onChange={(event) => setStartedAt(event.target.value)}
+            onChange={(event) => {
+              const nextValue = event.target.value
+              setStartedAt(nextValue)
+              setStartedAtIso(fromDateTimeInputValue(nextValue))
+            }}
           />
         </div>
 
@@ -174,8 +200,13 @@ export function WorkoutTimerDialog() {
           <Input
             className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
             type="datetime-local"
+            step={1}
             value={endedAt}
-            onChange={(event) => setEndedAt(event.target.value)}
+            onChange={(event) => {
+              const nextValue = event.target.value
+              setEndedAt(nextValue)
+              setEndedAtIso(fromDateTimeInputValue(nextValue))
+            }}
           />
         </div>
 

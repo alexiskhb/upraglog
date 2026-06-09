@@ -35,7 +35,7 @@ export function WorkoutActiveTimer({
 
   const startedMs = new Date(workout?.startedAt ?? "").getTime()
   const elapsedSeconds = Number.isFinite(startedMs)
-    ? Math.max(0, Math.round((nowMs - startedMs) / 1000))
+    ? Math.max(0, Math.floor((nowMs - startedMs) / 1000))
     : 0
 
   return (
