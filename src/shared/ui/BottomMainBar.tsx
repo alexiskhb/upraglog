@@ -146,7 +146,10 @@ export function BottomMainBar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="start"
-            className="w-52 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
+            side="top"
+            sideOffset={12}
+            collisionPadding={12}
+            className="z-[80] w-52 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
           >
             <DropdownMenuItem disabled className="focus:bg-transparent">
               Default profile
@@ -195,7 +198,10 @@ export function BottomMainBar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
+            side="top"
+            sideOffset={12}
+            collisionPadding={12}
+            className="z-[80] w-56 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
           >
             <DropdownMenuItem
               className="gap-2 rounded-md focus:bg-cyan-400/15"
