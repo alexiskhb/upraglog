@@ -46,7 +46,7 @@ export function AppShell() {
   if (!ready) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-[var(--app-bg)] text-sm uppercase tracking-normal text-cyan-200">
-        Loading logbook
+        Loading Upraglog
       </main>
     )
   }

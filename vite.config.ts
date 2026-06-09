@@ -44,8 +44,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons.svg"],
       manifest: {
-        name: "upraglog",
-        short_name: "upraglog",
+        name: "Upraglog",
+        short_name: "Upraglog",
         description: "Local-first gym workout logbook.",
         theme_color: "#090b0d",
         background_color: "#090b0d",
