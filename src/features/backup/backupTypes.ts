@@ -1,6 +1,5 @@
 import type {
   AppSettings,
-  BodyMeasurementEntry,
   Exercise,
   SetEntry,
   Workout,
@@ -16,7 +15,6 @@ export type BackupFile = {
     workouts: Workout[]
     workoutExercises: WorkoutExercise[]
     sets: SetEntry[]
-    bodyMeasurements: BodyMeasurementEntry[]
     settings: AppSettings
   }
 }

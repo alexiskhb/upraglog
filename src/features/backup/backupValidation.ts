@@ -63,16 +63,6 @@ const setEntrySchema = z.object({
   updatedAt: z.string(),
 })
 
-const bodyMeasurementSchema = z.object({
-  id: z.string(),
-  localDate: z.string(),
-  measurementType: z.string(),
-  value: z.number(),
-  unit: z.string(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-})
-
 const settingsSchema = z.object({
   unitSystem: z.enum(["metric", "imperial"]),
   keepScreenOnDuringTraining: z.boolean(),
@@ -87,7 +77,6 @@ export const backupFileSchema = z.object({
     workouts: z.array(workoutSchema),
     workoutExercises: z.array(workoutExerciseSchema),
     sets: z.array(setEntrySchema),
-    bodyMeasurements: z.array(bodyMeasurementSchema),
     settings: settingsSchema,
   }),
 })

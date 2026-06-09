@@ -61,7 +61,6 @@ The bottom main bar appears on:
 * Exercise Picker
 * Add/Edit Exercise
 * Calendar
-* Body Tracker
 * Settings
 
 Do not use a separate top app bar for now.
@@ -85,7 +84,6 @@ Behavior:
 * The Overflow menu contains secondary actions such as:
 
   * Settings
-  * Body Tracker
   * Time Workout
   * Share Workout
   * Copy/Move Workout
@@ -499,36 +497,6 @@ Tapping a date opens the Home screen for that workout date.
 
 Do not implement a separate Calendar List View for now.
 
-## Body Tracker
-
-### Purpose
-
-Let the user track body measurements.
-
-### Entry Point
-
-Bottom main bar overflow menu -> `Body Tracker`
-
-### Possible Measurements
-
-* Body weight
-* Body fat percentage
-* Waist
-* Chest
-* Arms
-* Legs
-* Custom measurements
-
-### Behavior
-
-Body Tracker uses the same persistent bottom main bar.
-
-It allows adding a measurement for a selected date.
-
-It shows recent measurement entries.
-
-Keep the UI simple and dark themed.
-
 ## Settings
 
 ### Entry Point
@@ -644,12 +612,11 @@ Do not include:
 4. Training Screen / Track Screen
 5. Workout Navigation Panel
 6. Calendar
-7. Body Tracker
-8. Settings
-9. Share Workout dialog
-10. Copy/Move Workout dialog
-11. Workout Timer dialog
-12. Set Comment dialog
+7. Settings
+8. Share Workout dialog
+9. Copy/Move Workout dialog
+10. Workout Timer dialog
+11. Set Comment dialog
 
 ## Technical Stack and Implementation Instructions
 
@@ -720,7 +687,6 @@ Prefer explicit domain types for:
 * exercises
 * sets
 * comments
-* body measurements
 * settings
 * backup files
 
@@ -739,7 +705,6 @@ Recommended routes:
 /exercise/new
 /exercise/:exerciseId/edit
 /calendar
-/body
 /settings
 ```
 
@@ -829,16 +794,6 @@ type SetEntry = {
   updatedAt: string
 }
 
-type BodyMeasurementEntry = {
-  id: string
-  localDate: string
-  measurementType: string
-  value: number
-  unit: string
-  createdAt: string
-  updatedAt: string
-}
-
 type AppSettings = {
   unitSystem: 'metric' | 'imperial'
   keepScreenOnDuringTraining: boolean
@@ -858,7 +813,6 @@ src/db/db.ts
 src/db/schema.ts
 src/db/repositories/workoutsRepo.ts
 src/db/repositories/exercisesRepo.ts
-src/db/repositories/bodyMeasurementsRepo.ts
 src/db/repositories/settingsRepo.ts
 ```
 
@@ -941,7 +895,6 @@ The Workout List / Navigation icon should open the Workout Navigation Panel.
 The Overflow icon should contain secondary actions such as:
 
 * Settings
-* Body Tracker
 * Time Workout
 * Share Workout
 * Copy/Move Workout
@@ -1033,7 +986,6 @@ type BackupFile = {
     workouts: Workout[]
     workoutExercises: WorkoutExercise[]
     sets: SetEntry[]
-    bodyMeasurements: BodyMeasurementEntry[]
     settings: AppSettings
   }
 }
@@ -1155,7 +1107,6 @@ src/
     repositories/
       workoutsRepo.ts
       exercisesRepo.ts
-      bodyMeasurementsRepo.ts
       settingsRepo.ts
 
   features/
@@ -1181,9 +1132,6 @@ src/
 
     calendar/
       CalendarScreen.tsx
-
-    body-tracker/
-      BodyTrackerScreen.tsx
 
     settings/
       SettingsScreen.tsx
@@ -1226,11 +1174,10 @@ Build the MVP in this order:
 12. Set comments.
 13. Add/Edit Exercise screen.
 14. Settings.
-15. Body Tracker.
-16. JSON export/import.
-17. Google Drive backup/restore.
-18. PWA offline/install behavior.
-19. Keep Screen On behavior for Training Screen.
+15. JSON export/import.
+16. Google Drive backup/restore.
+17. PWA offline/install behavior.
+18. Keep Screen On behavior for Training Screen.
 
 ## AI Agent Behavior
 

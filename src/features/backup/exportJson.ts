@@ -3,13 +3,12 @@ import { getSettings } from "@/db/repositories/settingsRepo"
 import type { BackupFile } from "./backupTypes"
 
 export async function buildBackupFile(): Promise<BackupFile> {
-  const [exercises, workouts, workoutExercises, sets, bodyMeasurements, settings] =
+  const [exercises, workouts, workoutExercises, sets, settings] =
     await Promise.all([
       db.exercises.toArray(),
       db.workouts.toArray(),
       db.workoutExercises.toArray(),
       db.sets.toArray(),
-      db.bodyMeasurements.toArray(),
       getSettings(),
     ])
 
@@ -22,7 +21,6 @@ export async function buildBackupFile(): Promise<BackupFile> {
       workouts,
       workoutExercises,
       sets,
-      bodyMeasurements,
       settings,
     },
   }

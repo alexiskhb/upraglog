@@ -6,7 +6,6 @@ import { TrainingScreen } from "@/features/training/TrainingScreen"
 import { ExercisePickerScreen } from "@/features/exercise-picker/ExercisePickerScreen"
 import { AddEditExerciseScreen } from "@/features/exercise-picker/AddEditExerciseScreen"
 import { CalendarScreen } from "@/features/calendar/CalendarScreen"
-import { BodyTrackerScreen } from "@/features/body-tracker/BodyTrackerScreen"
 import { SettingsScreen } from "@/features/settings/SettingsScreen"
 
 const rootRoute = createRootRoute({
@@ -55,12 +54,6 @@ const calendarRoute = createRoute({
   component: CalendarScreen,
 })
 
-const bodyRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/body",
-  component: BodyTrackerScreen,
-})
-
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/settings",
@@ -75,7 +68,6 @@ const routeTree = rootRoute.addChildren([
   newExerciseRoute,
   editExerciseRoute,
   calendarRoute,
-  bodyRoute,
   settingsRoute,
 ])
 

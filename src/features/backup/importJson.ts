@@ -16,7 +16,6 @@ export async function restoreBackup(backup: BackupFile) {
       db.workouts,
       db.workoutExercises,
       db.sets,
-      db.bodyMeasurements,
       db.settings,
     ],
     async () => {
@@ -25,7 +24,6 @@ export async function restoreBackup(backup: BackupFile) {
         db.workoutExercises.clear(),
         db.workouts.clear(),
         db.exercises.clear(),
-        db.bodyMeasurements.clear(),
         db.settings.clear(),
       ])
 
@@ -33,7 +31,6 @@ export async function restoreBackup(backup: BackupFile) {
       await db.workouts.bulkAdd(backup.data.workouts)
       await db.workoutExercises.bulkAdd(backup.data.workoutExercises)
       await db.sets.bulkAdd(backup.data.sets)
-      await db.bodyMeasurements.bulkAdd(backup.data.bodyMeasurements)
       await db.settings.add({
         id: "app",
         ...backup.data.settings,

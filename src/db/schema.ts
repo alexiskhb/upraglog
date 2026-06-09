@@ -61,16 +61,6 @@ export type SetEntry = {
   updatedAt: string
 }
 
-export type BodyMeasurementEntry = {
-  id: string
-  localDate: string
-  measurementType: string
-  value: number
-  unit: string
-  createdAt: string
-  updatedAt: string
-}
-
 export type AppSettings = {
   unitSystem: UnitSystem
   keepScreenOnDuringTraining: boolean

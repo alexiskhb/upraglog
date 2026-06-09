@@ -1,6 +1,5 @@
 import Dexie, { type Table } from "dexie"
 import type {
-  BodyMeasurementEntry,
   Exercise,
   SetEntry,
   StoredAppSettings,
@@ -13,7 +12,6 @@ class UpraglogDatabase extends Dexie {
   workouts!: Table<Workout, string>
   workoutExercises!: Table<WorkoutExercise, string>
   sets!: Table<SetEntry, string>
-  bodyMeasurements!: Table<BodyMeasurementEntry, string>
   settings!: Table<StoredAppSettings, string>
 
   constructor() {
@@ -25,6 +23,15 @@ class UpraglogDatabase extends Dexie {
       workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
       sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
       bodyMeasurements: "&id, localDate, measurementType, createdAt",
+      settings: "&id",
+    })
+
+    this.version(2).stores({
+      exercises: "&id, name, category, isFavorite, updatedAt",
+      workouts: "&id, &localDate, updatedAt",
+      workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
+      sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
+      bodyMeasurements: null,
       settings: "&id",
     })
   }

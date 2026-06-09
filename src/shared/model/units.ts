@@ -56,17 +56,3 @@ export function formatSetSecondaryValue(
 
   return `${Math.round(set.reps ?? 0)} reps`
 }
-
-export function defaultUnitForMeasurement(measurementType: string) {
-  const normalized = measurementType.toLowerCase()
-
-  if (normalized.includes("fat")) {
-    return "%"
-  }
-
-  if (normalized.includes("weight")) {
-    return "kg"
-  }
-
-  return "cm"
-}

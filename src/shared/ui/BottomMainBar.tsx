@@ -6,7 +6,6 @@ import {
   ListChecks,
   MoreVertical,
   Plus,
-  Scale,
   Settings,
   Share2,
   UserCircle,
@@ -106,13 +105,6 @@ export function BottomMainBar() {
             >
               <Settings className="size-4 text-cyan-300" />
               Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="gap-2 focus:bg-cyan-500/15"
-              onSelect={() => void navigate({ to: "/body" })}
-            >
-              <Scale className="size-4 text-cyan-300" />
-              Body Tracker
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-zinc-800" />
             <DropdownMenuItem
