@@ -59,6 +59,10 @@ export function HomeScreen() {
     void navigate({ to: "/day/$date", params: { date: nextDate } })
   }
 
+  const navigateToToday = () => {
+    navigateToDate(todayString())
+  }
+
   const startWorkout = async () => {
     await startWorkoutTimer(date)
     bumpRefresh()
@@ -92,6 +96,7 @@ export function HomeScreen() {
         localDate={date || todayString()}
         onNext={() => navigateToDate(shiftLocalDate(date, 1))}
         onPrevious={() => navigateToDate(shiftLocalDate(date, -1))}
+        onToday={navigateToToday}
       />
 
       <div className="flex items-center justify-between gap-3 px-1 text-xs uppercase tracking-normal text-zinc-500">

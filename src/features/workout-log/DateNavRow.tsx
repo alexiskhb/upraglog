@@ -6,9 +6,15 @@ type DateNavRowProps = {
   localDate: string
   onPrevious: () => void
   onNext: () => void
+  onToday: () => void
 }
 
-export function DateNavRow({ localDate, onPrevious, onNext }: DateNavRowProps) {
+export function DateNavRow({
+  localDate,
+  onPrevious,
+  onNext,
+  onToday,
+}: DateNavRowProps) {
   return (
     <div className="sticky top-0 z-10 -mx-4 bg-[var(--app-bg)] px-4 pb-3 pt-1 sm:-mx-5 sm:px-5">
       <div className="grid h-12 grid-cols-[3rem_1fr_3rem] items-center rounded-md border border-white/10 bg-[var(--app-surface-muted)] shadow-[0_10px_28px_rgba(0,0,0,0.2)]">
@@ -19,9 +25,15 @@ export function DateNavRow({ localDate, onPrevious, onNext }: DateNavRowProps) {
         >
           <ChevronLeft className="size-7" />
         </IconButton>
-        <div className="truncate text-center text-sm font-semibold uppercase tracking-normal text-zinc-100">
+        <button
+          aria-label="Jump to today"
+          className="min-w-0 truncate text-center text-sm font-semibold uppercase tracking-normal text-zinc-100 transition hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+          title="Jump to today"
+          type="button"
+          onClick={onToday}
+        >
           {formatDateLabel(localDate)}
-        </div>
+        </button>
         <IconButton className="text-cyan-300" title="Next day" onClick={onNext}>
           <ChevronRight className="size-7" />
         </IconButton>

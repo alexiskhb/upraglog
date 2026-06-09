@@ -19,6 +19,7 @@ import {
   getCalendarWeekdays,
   getFirstDayOfWeek,
   parseLocalDate,
+  todayString,
   toLocalDateString,
 } from "@/shared/model/dates"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
@@ -67,6 +68,13 @@ export function CalendarScreen() {
     void navigate({ to: "/day/$date", params: { date: localDate } })
   }
 
+  const jumpToToday = () => {
+    const currentDay = todayString()
+
+    setMonthDate(parseLocalDate(currentDay))
+    setSelectedDate(currentDay)
+  }
+
   return (
     <ScreenContainer className="gap-4">
       <div className="grid h-12 grid-cols-[3rem_1fr_3rem] items-center rounded-md border border-white/10 bg-[var(--app-surface-muted)] pt-1 shadow-[0_10px_28px_rgba(0,0,0,0.2)]">
@@ -77,9 +85,15 @@ export function CalendarScreen() {
         >
           <ChevronLeft className="size-7" />
         </IconButton>
-        <div className="text-center text-sm font-semibold uppercase tracking-normal">
+        <button
+          aria-label="Jump to today"
+          className="min-w-0 truncate text-center text-sm font-semibold uppercase tracking-normal text-zinc-100 transition hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+          title="Jump to today"
+          type="button"
+          onClick={jumpToToday}
+        >
           {formatMonthLabel(monthDate)}
-        </div>
+        </button>
         <IconButton
           className="text-cyan-300"
           title="Next month"
