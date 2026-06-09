@@ -42,7 +42,7 @@ export default defineConfig({
     githubPagesFallback(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "icons.svg"],
+      includeAssets: ["favicon.svg", "icons.svg", "logo.svg"],
       manifest: {
         name: "Upraglog",
         short_name: "Upraglog",
