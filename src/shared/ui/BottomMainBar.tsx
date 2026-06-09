@@ -229,7 +229,7 @@ export function BottomMainBar() {
               onSelect={goToDay}
             >
               <Dumbbell className="size-4 text-cyan-300" />
-              Daily Log
+              Home
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
