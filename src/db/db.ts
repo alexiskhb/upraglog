@@ -39,25 +39,9 @@ class UpraglogDatabase extends Dexie {
 
 export const db = new UpraglogDatabase()
 
-export async function initializeDatabase() {
-  const existingExercises = await db.exercises.count()
-  const existingSettings = await db.settings.get("app")
+let databaseInitialization: Promise<void> | undefined
 
-  if (!existingSettings) {
-    await db.settings.put({
-      id: "app",
-      unitSystem: "metric",
-      keepScreenOnDuringTraining: true,
-      updatedAt: new Date().toISOString(),
-    })
-  }
-
-  if (existingExercises > 0) {
-    return
-  }
-
-  const now = new Date().toISOString()
-  const exerciseSeeds: Omit<Exercise, "createdAt" | "updatedAt">[] = [
+const exerciseSeeds: Omit<Exercise, "createdAt" | "updatedAt">[] = [
     {
       id: "seed_flat_barbell_bench_press",
       name: "Flat Barbell Bench Press",
@@ -261,13 +245,45 @@ export async function initializeDatabase() {
       exerciseType: "distance_time",
       isFavorite: false,
     },
-  ]
+]
 
-  await db.exercises.bulkAdd(
-    exerciseSeeds.map((exercise) => ({
-      ...exercise,
-      createdAt: now,
-      updatedAt: now,
-    })),
+async function initializeDatabaseInternal() {
+  await db.transaction("rw", db.exercises, db.settings, async () => {
+    const existingSettings = await db.settings.get("app")
+
+    if (!existingSettings) {
+      await db.settings.put({
+        id: "app",
+        unitSystem: "metric",
+        keepScreenOnDuringTraining: true,
+        updatedAt: new Date().toISOString(),
+      })
+    }
+
+    const existingExercises = await db.exercises.count()
+
+    if (existingExercises > 0) {
+      return
+    }
+
+    const now = new Date().toISOString()
+
+    await db.exercises.bulkPut(
+      exerciseSeeds.map((exercise) => ({
+        ...exercise,
+        createdAt: now,
+        updatedAt: now,
+      })),
+    )
+  })
+}
+
+export function initializeDatabase() {
+  databaseInitialization ??= initializeDatabaseInternal().catch(
+    (error: unknown) => {
+      databaseInitialization = undefined
+      throw error
+    },
   )
+  return databaseInitialization
 }
