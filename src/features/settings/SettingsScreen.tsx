@@ -94,7 +94,7 @@ export function SettingsScreen() {
       <section className="app-surface space-y-4 rounded-md p-3.5">
         <div>
           <div className="mb-2 text-xs font-semibold uppercase tracking-normal text-zinc-400">
-            Unit System
+            Default Unit System
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -151,17 +151,17 @@ export function SettingsScreen() {
           </ActionButton>
           <ActionButton
             tone="secondary"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => void showGoogleDriveStatus("backup")}
           >
-            Import From Local Storage
+            Export to Drive
           </ActionButton>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton
             tone="neutral"
-            onClick={() => void showGoogleDriveStatus("backup")}
+            onClick={() => fileInputRef.current?.click()}
           >
-            Export to Drive
+            Import From Local Storage
           </ActionButton>
           <ActionButton
             tone="neutral"
