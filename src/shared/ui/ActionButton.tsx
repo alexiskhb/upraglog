@@ -24,7 +24,7 @@ export function ActionButton({
   return (
     <button
       className={cn(
-        "h-11 flex-1 rounded-sm px-4 text-sm font-semibold uppercase tracking-normal transition disabled:pointer-events-none disabled:opacity-50",
+        "h-11 flex-1 cursor-pointer rounded-sm px-4 text-sm font-semibold uppercase tracking-normal transition active:translate-y-px disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
         toneClassNames[tone],
         className,
       )}

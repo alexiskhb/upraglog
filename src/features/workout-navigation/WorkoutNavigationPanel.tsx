@@ -240,6 +240,7 @@ export function WorkoutNavigationPanel() {
             <ActionButton
               tone="save"
               onClick={() => {
+                setReplaceWorkoutExerciseId(undefined)
                 setOpen(false)
                 void navigate({ to: "/picker" })
               }}
@@ -251,10 +252,6 @@ export function WorkoutNavigationPanel() {
               tone="secondary"
               onClick={() => {
                 setOpen(false)
-                void navigate({
-                  to: "/day/$date",
-                  params: { date: selectedDate },
-                })
               }}
             >
               Close

@@ -15,7 +15,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -31,12 +30,21 @@ export function BottomMainBar() {
   const selectedDate = useAppStore((state) => state.selectedDate)
   const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
   const openDialog = useAppStore((state) => state.openDialog)
+  const setReplaceWorkoutExerciseId = useAppStore(
+    (state) => state.setReplaceWorkoutExerciseId,
+  )
 
   const goToDay = () => {
+    setReplaceWorkoutExerciseId(undefined)
     void navigate({
       to: "/day/$date",
       params: { date: selectedDate || todayString() },
     })
+  }
+
+  const openExercisePicker = () => {
+    setReplaceWorkoutExerciseId(undefined)
+    void navigate({ to: "/picker" })
   }
 
   return (
@@ -52,13 +60,8 @@ export function BottomMainBar() {
             align="start"
             className="w-52 border-zinc-800 bg-[#171a1f] text-zinc-100"
           >
-            <DropdownMenuLabel>Local Profile</DropdownMenuLabel>
-            <DropdownMenuItem className="focus:bg-cyan-500/15">
+            <DropdownMenuItem disabled className="focus:bg-transparent">
               Default profile
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-zinc-800" />
-            <DropdownMenuItem className="focus:bg-cyan-500/15">
-              Profile selection is local-only
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -66,7 +69,10 @@ export function BottomMainBar() {
         <IconButton
           active={pathname.startsWith("/calendar")}
           title="Calendar"
-          onClick={() => void navigate({ to: "/calendar" })}
+          onClick={() => {
+            setReplaceWorkoutExerciseId(undefined)
+            void navigate({ to: "/calendar" })
+          }}
         >
           <CalendarDays className="size-6" />
         </IconButton>
@@ -74,7 +80,6 @@ export function BottomMainBar() {
         <IconButton
           title="Workout list"
           onClick={() => {
-            goToDay()
             setWorkoutNavOpen(true)
           }}
         >
@@ -84,7 +89,7 @@ export function BottomMainBar() {
         <IconButton
           active={pathname.startsWith("/picker")}
           title="Add exercise"
-          onClick={() => void navigate({ to: "/picker" })}
+          onClick={openExercisePicker}
         >
           <Plus className="size-7" />
         </IconButton>
@@ -101,7 +106,10 @@ export function BottomMainBar() {
           >
             <DropdownMenuItem
               className="gap-2 focus:bg-cyan-500/15"
-              onSelect={() => void navigate({ to: "/settings" })}
+              onSelect={() => {
+                setReplaceWorkoutExerciseId(undefined)
+                void navigate({ to: "/settings" })
+              }}
             >
               <Settings className="size-4 text-cyan-300" />
               Settings
