@@ -1,13 +1,45 @@
+import { copyFileSync, writeFileSync } from "node:fs"
 import path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import { defineConfig, type Plugin } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
 
+function normalizeBasePath(basePath: string) {
+  if (!basePath || basePath === "/") {
+    return "/"
+  }
+
+  const withLeadingSlash = basePath.startsWith("/") ? basePath : `/${basePath}`
+  return withLeadingSlash.endsWith("/")
+    ? withLeadingSlash
+    : `${withLeadingSlash}/`
+}
+
+function githubPagesFallback(): Plugin {
+  return {
+    name: "github-pages-fallback",
+    apply: "build",
+    closeBundle() {
+      const distDir = path.resolve(__dirname, "dist")
+
+      copyFileSync(
+        path.join(distDir, "index.html"),
+        path.join(distDir, "404.html"),
+      )
+      writeFileSync(path.join(distDir, ".nojekyll"), "")
+    },
+  }
+}
+
+const basePath = normalizeBasePath(process.env.VITE_BASE_PATH ?? "/")
+
 export default defineConfig({
+  base: basePath,
   plugins: [
     react(),
     tailwindcss(),
+    githubPagesFallback(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons.svg"],
@@ -21,7 +53,7 @@ export default defineConfig({
         orientation: "portrait",
         icons: [
           {
-            src: "/favicon.svg",
+            src: `${basePath}favicon.svg`,
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any maskable",
@@ -29,7 +61,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        navigateFallback: "/index.html",
+        navigateFallback: `${basePath}index.html`,
       },
       devOptions: {
         enabled: true,

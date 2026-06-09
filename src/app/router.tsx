@@ -79,8 +79,14 @@ const routeTree = rootRoute.addChildren([
   settingsRoute,
 ])
 
+const routerBasepath =
+  import.meta.env.BASE_URL === "/"
+    ? "/"
+    : import.meta.env.BASE_URL.replace(/\/$/, "")
+
 export const router = createRouter({
   routeTree,
+  basepath: routerBasepath,
   defaultPreload: "intent",
 })
 

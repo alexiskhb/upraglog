@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:pages": "VITE_BASE_PATH=${VITE_BASE_PATH:-/$npm_package_name/} npm run build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "preview:pages": "VITE_BASE_PATH=${VITE_BASE_PATH:-/$npm_package_name/} vite preview"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
