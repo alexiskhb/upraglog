@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import type { AppSettings, WorkoutDayDetail } from "@/db/schema"
-import {
-  copyOrMoveWorkout,
-  getPreviousWorkoutDate,
-  getWorkoutDetailByDate,
-} from "@/db/repositories/workoutsRepo"
+import { getWorkoutDetailByDate } from "@/db/repositories/workoutsRepo"
 import { getSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import {
@@ -23,7 +19,6 @@ export function HomeScreen() {
   const navigate = useNavigate()
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const setSelectedDate = useAppStore((state) => state.setSelectedDate)
-  const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const [detail, setDetail] = useState<WorkoutDayDetail>({
     workout: undefined,
     exercises: [],
@@ -32,7 +27,6 @@ export function HomeScreen() {
     unitSystem: "metric",
     keepScreenOnDuringTraining: true,
   })
-  const [message, setMessage] = useState<string | undefined>()
   const [touchStartX, setTouchStartX] = useState<number | undefined>()
 
   useEffect(() => {
@@ -58,23 +52,6 @@ export function HomeScreen() {
 
   const navigateToDate = (nextDate: string) => {
     void navigate({ to: "/day/$date", params: { date: nextDate } })
-  }
-
-  const handleCopyPrevious = async () => {
-    const previousDate = await getPreviousWorkoutDate(date)
-
-    if (!previousDate) {
-      setMessage("No previous workout found.")
-      return
-    }
-
-    try {
-      await copyOrMoveWorkout(previousDate, date, "copy", false)
-      setMessage(`Copied workout from ${previousDate}.`)
-      bumpRefresh()
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Copy failed.")
-    }
   }
 
   const handleTouchEnd = (clientX: number) => {
@@ -107,12 +84,6 @@ export function HomeScreen() {
         {formatLongDate(date)}
       </div>
 
-      {message && (
-        <div className="rounded-sm border border-cyan-500/30 bg-cyan-950/20 px-3 py-2 text-sm text-cyan-100">
-          {message}
-        </div>
-      )}
-
       {detail.exercises.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 pb-20">
           <ActionButton
@@ -121,13 +92,6 @@ export function HomeScreen() {
             onClick={() => void navigate({ to: "/picker" })}
           >
             Start New Workout
-          </ActionButton>
-          <ActionButton
-            className="max-w-xs"
-            tone="secondary"
-            onClick={handleCopyPrevious}
-          >
-            Copy Previous Workout
           </ActionButton>
         </div>
       ) : (

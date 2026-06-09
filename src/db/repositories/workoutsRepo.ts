@@ -336,11 +336,6 @@ export async function getWorkoutDates() {
   return datesWithExerciseData.sort()
 }
 
-export async function getPreviousWorkoutDate(beforeLocalDate: string) {
-  const workoutDates = await getWorkoutDates()
-  return workoutDates.filter((date) => date < beforeLocalDate).at(-1)
-}
-
 export async function copyOrMoveWorkout(
   sourceLocalDate: string,
   targetLocalDate: string,
