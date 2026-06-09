@@ -10,6 +10,7 @@ import {
   downloadTextFile,
   exportBackupJson,
 } from "@/features/backup/exportJson"
+import { exportTrainingLogCsv } from "@/features/backup/exportTrainingLogCsv"
 import { parseBackupJson, restoreBackup } from "@/features/backup/importJson"
 import {
   backupToGoogleDrive,
@@ -52,6 +53,13 @@ export function SettingsScreen() {
     const text = await exportBackupJson()
     downloadTextFile(`upraglog-backup-${new Date().toISOString()}.json`, text)
     setMessage("Backup exported.")
+  }
+
+  const exportSpreadsheet = async () => {
+    const { filename, text } = await exportTrainingLogCsv()
+
+    downloadTextFile(filename, text, "text/csv;charset=utf-8")
+    setMessage("Spreadsheet CSV exported.")
   }
 
   const importJson = async (file: File) => {
@@ -145,6 +153,9 @@ export function SettingsScreen() {
         <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
           Backup
         </div>
+        <ActionButton tone="secondary" onClick={exportSpreadsheet}>
+          Spreadsheet Export
+        </ActionButton>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportJson}>
             Export to Local Storage

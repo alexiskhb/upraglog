@@ -31,8 +31,12 @@ export async function exportBackupJson() {
   return JSON.stringify(backup, null, 2)
 }
 
-export function downloadTextFile(filename: string, text: string) {
-  const blob = new Blob([text], { type: "application/json" })
+export function downloadTextFile(
+  filename: string,
+  text: string,
+  type = "application/json",
+) {
+  const blob = new Blob([text], { type })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement("a")
 
