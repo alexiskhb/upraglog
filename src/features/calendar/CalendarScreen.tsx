@@ -67,7 +67,7 @@ export function CalendarScreen() {
 
   return (
     <ScreenContainer className="gap-4">
-      <div className="grid h-12 grid-cols-[3rem_1fr_3rem] items-center border-b border-cyan-500/70 pt-1">
+      <div className="grid h-12 grid-cols-[3rem_1fr_3rem] items-center rounded-md border border-white/10 bg-[var(--app-surface-muted)] pt-1 shadow-[0_10px_28px_rgba(0,0,0,0.2)]">
         <IconButton
           className="text-cyan-300"
           title="Previous month"
@@ -105,9 +105,9 @@ export function CalendarScreen() {
           return (
             <button
               className={cn(
-                "relative aspect-square rounded-sm border border-zinc-800 bg-[#11151a] text-sm text-zinc-200 transition hover:border-cyan-500/70",
+                "relative aspect-square cursor-pointer rounded-md border border-white/10 bg-[var(--app-surface)] text-sm text-zinc-200 transition hover:border-cyan-300/50 hover:bg-[#1b2026]",
                 !inMonth && "text-zinc-700",
-                isSelected && "border-cyan-500 bg-cyan-500/15 text-cyan-100",
+                isSelected && "border-cyan-300/50 bg-cyan-400/15 text-cyan-100",
               )}
               key={localDate}
               type="button"

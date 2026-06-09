@@ -37,8 +37,8 @@ export function AppShell() {
 
   if (error) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-[#090b0d] p-6 text-zinc-100">
-        <div className="max-w-sm rounded-sm border border-red-500/40 bg-red-950/30 p-4 text-sm">
+      <main className="flex min-h-dvh items-center justify-center bg-[var(--app-bg)] p-6 text-zinc-100">
+        <div className="max-w-sm rounded-md border border-red-400/25 bg-red-500/10 p-4 text-sm shadow-2xl">
           {error}
         </div>
       </main>
@@ -47,7 +47,7 @@ export function AppShell() {
 
   if (!ready) {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-[#090b0d] text-sm uppercase tracking-normal text-cyan-300">
+      <main className="flex min-h-dvh items-center justify-center bg-[var(--app-bg)] text-sm uppercase tracking-normal text-cyan-200">
         Loading logbook
       </main>
     )

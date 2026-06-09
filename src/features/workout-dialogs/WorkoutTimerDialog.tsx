@@ -108,17 +108,17 @@ export function WorkoutTimerDialog() {
         }
       }}
     >
-      <DialogContent className="rounded-sm border-zinc-800 bg-[#15191e] text-zinc-100">
+      <DialogContent className="rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl">
         <DialogHeader>
           <DialogTitle>Workout Timer</DialogTitle>
         </DialogHeader>
         {message && (
-          <div className="rounded-sm border border-cyan-500/25 bg-cyan-950/20 px-3 py-2 text-sm text-cyan-100">
+          <div className="rounded-md border border-cyan-300/20 bg-cyan-400/10 px-3 py-2 text-sm text-cyan-100">
             {message}
           </div>
         )}
 
-        <div className="rounded-sm border border-cyan-500/25 bg-[#090b0d] py-6 text-center">
+        <div className="rounded-md border border-cyan-300/20 bg-[var(--app-surface-muted)] py-6 text-center">
           <div className="text-xs uppercase tracking-normal text-zinc-500">
             Duration
           </div>
@@ -141,7 +141,7 @@ export function WorkoutTimerDialog() {
             Manual Start Time
           </Label>
           <Input
-            className="h-11 rounded-sm border-cyan-500/35 bg-[#090b0d] text-base text-zinc-100 focus-visible:ring-cyan-500"
+            className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
             type="datetime-local"
             value={startedAt}
             onChange={(event) => setStartedAt(event.target.value)}
@@ -153,7 +153,7 @@ export function WorkoutTimerDialog() {
             Manual End Time
           </Label>
           <Input
-            className="h-11 rounded-sm border-cyan-500/35 bg-[#090b0d] text-base text-zinc-100 focus-visible:ring-cyan-500"
+            className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
             type="datetime-local"
             value={endedAt}
             onChange={(event) => setEndedAt(event.target.value)}

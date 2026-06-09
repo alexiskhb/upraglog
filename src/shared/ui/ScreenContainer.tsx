@@ -13,7 +13,7 @@ export function ScreenContainer({
   return (
     <main
       className={cn(
-        "mx-auto flex min-h-dvh w-full max-w-2xl flex-col bg-[#090b0d] px-3 pb-24 pt-3 text-zinc-100 sm:px-4",
+        "mx-auto flex min-h-dvh w-full max-w-2xl flex-col bg-[var(--app-bg)] px-4 pb-24 pt-3 text-zinc-100 sm:px-5",
         className,
       )}
       {...props}

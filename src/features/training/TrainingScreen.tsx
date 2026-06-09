@@ -295,7 +295,7 @@ export function TrainingScreen() {
         >
           {detail.exercise.name}
         </button>
-        <div className="mt-2 h-px bg-cyan-500/70" />
+        <div className="mt-2 h-px bg-cyan-300/50" />
       </div>
 
       <div className="space-y-4 py-2">
@@ -327,7 +327,7 @@ export function TrainingScreen() {
       </div>
 
       {message && (
-        <div className="rounded-sm border border-cyan-500/25 bg-cyan-950/20 px-3 py-2 text-sm text-cyan-100">
+        <div className="rounded-md border border-cyan-300/20 bg-cyan-400/10 px-3 py-2 text-sm text-cyan-100">
           {message}
         </div>
       )}
@@ -341,7 +341,7 @@ export function TrainingScreen() {
             items={detail.sets.map((set) => set.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="overflow-hidden rounded-sm bg-[#11151a]">
+            <div className="overflow-hidden rounded-md border border-white/10 bg-[var(--app-surface)]">
               {detail.sets.length === 0 ? (
                 <div className="px-3 py-8 text-center text-sm text-zinc-500">
                   No sets recorded

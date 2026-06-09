@@ -37,7 +37,7 @@ export function NumericStepper({
         {label}
         {unit ? <span className="text-zinc-500"> ({unit})</span> : null}
       </div>
-      <div className="grid h-16 grid-cols-[4rem_1fr_4rem] items-center border-b border-cyan-500/65 bg-[#11151a]">
+      <div className="grid h-16 grid-cols-[4rem_1fr_4rem] items-center rounded-md border border-cyan-300/25 bg-[var(--app-surface)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
         <IconButton
           className="mx-auto text-zinc-100"
           title={`Decrease ${label}`}

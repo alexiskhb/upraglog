@@ -51,22 +51,22 @@ export function CopyMoveWorkoutDialog() {
         }
       }}
     >
-      <DialogContent className="rounded-sm border-zinc-800 bg-[#15191e] text-zinc-100">
+      <DialogContent className="rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl">
         <DialogHeader>
           <DialogTitle>Copy/Move Workout</DialogTitle>
         </DialogHeader>
         {message && (
-          <div className="rounded-sm border border-cyan-500/25 bg-cyan-950/20 px-3 py-2 text-sm text-cyan-100">
+          <div className="rounded-md border border-cyan-300/20 bg-cyan-400/10 px-3 py-2 text-sm text-cyan-100">
             {message}
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-2">
           <button
-            className={`h-10 rounded-sm border text-sm uppercase ${
+            className={`h-10 cursor-pointer rounded-md border text-sm uppercase transition ${
               mode === "copy"
-                ? "border-cyan-500 bg-cyan-500/15 text-cyan-100"
-                : "border-zinc-700 text-zinc-300"
+                ? "border-cyan-300/55 bg-cyan-400/15 text-cyan-100"
+                : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
             }`}
             type="button"
             onClick={() => setMode("copy")}
@@ -74,10 +74,10 @@ export function CopyMoveWorkoutDialog() {
             Copy
           </button>
           <button
-            className={`h-10 rounded-sm border text-sm uppercase ${
+            className={`h-10 cursor-pointer rounded-md border text-sm uppercase transition ${
               mode === "move"
-                ? "border-cyan-500 bg-cyan-500/15 text-cyan-100"
-                : "border-zinc-700 text-zinc-300"
+                ? "border-cyan-300/55 bg-cyan-400/15 text-cyan-100"
+                : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
             }`}
             type="button"
             onClick={() => setMode("move")}
@@ -91,7 +91,7 @@ export function CopyMoveWorkoutDialog() {
             Source Date
           </Label>
           <Input
-            className="h-11 rounded-sm border-cyan-500/35 bg-[#090b0d] text-base text-zinc-100 focus-visible:ring-cyan-500"
+            className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
             type="date"
             value={sourceDate}
             onChange={(event) => setSourceDate(event.target.value)}
@@ -103,14 +103,14 @@ export function CopyMoveWorkoutDialog() {
             Target Date
           </Label>
           <Input
-            className="h-11 rounded-sm border-cyan-500/35 bg-[#090b0d] text-base text-zinc-100 focus-visible:ring-cyan-500"
+            className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
             type="date"
             value={targetDate}
             onChange={(event) => setTargetDate(event.target.value)}
           />
         </div>
 
-        <label className="flex items-center justify-between gap-3 border-t border-zinc-800 pt-3">
+        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
           <span className="text-sm text-zinc-200">Overwrite target date</span>
           <Switch
             checked={overwriteTarget}

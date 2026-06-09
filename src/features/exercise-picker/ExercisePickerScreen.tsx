@@ -188,14 +188,14 @@ export function ExercisePickerScreen() {
     <ScreenContainer className="gap-3">
       <div className="flex items-center gap-2 pt-2">
         <Input
-          className="h-11 rounded-sm border-cyan-500/40 bg-[#11151a] text-base text-zinc-100 placeholder:text-zinc-600 focus-visible:border-cyan-400 focus-visible:ring-cyan-500/30"
+          className="h-11 rounded-md border-white/10 bg-[var(--app-surface)] text-base text-zinc-100 placeholder:text-zinc-600 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
           placeholder="Search exercises"
           ref={searchRef}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
         <IconButton
-          className="bg-cyan-600 text-white hover:bg-cyan-500"
+          className="bg-cyan-400 text-slate-950 hover:bg-cyan-300"
           title="Create exercise"
           onClick={() => void navigate({ to: "/exercise/new" })}
         >
@@ -217,7 +217,7 @@ export function ExercisePickerScreen() {
         </span>
         {categoryFilter && (
           <button
-            className="text-cyan-300"
+            className="cursor-pointer text-cyan-300"
             type="button"
             onClick={() => setCategoryFilter(undefined)}
           >
@@ -227,14 +227,14 @@ export function ExercisePickerScreen() {
       </div>
 
       {message && (
-        <div className="rounded-sm border border-cyan-500/25 bg-cyan-950/20 px-3 py-2 text-sm text-cyan-100">
+        <div className="rounded-md border border-cyan-300/20 bg-cyan-400/10 px-3 py-2 text-sm text-cyan-100">
           {message}
         </div>
       )}
 
       <div className="space-y-2">
         {filteredExercises.length === 0 ? (
-          <div className="rounded-sm bg-[#11151a] px-3 py-8 text-center text-sm text-zinc-500">
+          <div className="rounded-md border border-white/10 bg-[var(--app-surface)] px-3 py-8 text-center text-sm text-zinc-500">
             No exercises found
           </div>
         ) : (
@@ -243,11 +243,11 @@ export function ExercisePickerScreen() {
 
             return (
               <div
-                className="grid grid-cols-[1fr_3rem_3rem] items-center rounded-sm bg-[#15191e] text-left"
+                className="grid grid-cols-[1fr_3rem_3rem] items-center rounded-md border border-white/10 bg-[var(--app-surface)] text-left shadow-[0_8px_24px_rgba(0,0,0,0.18)]"
                 key={exercise.id}
               >
                 <button
-                  className="min-w-0 px-3 py-3 text-left"
+                  className="min-w-0 cursor-pointer px-3 py-3 text-left"
                   type="button"
                   onClick={() => void selectExercise(exercise)}
                 >
@@ -269,7 +269,7 @@ export function ExercisePickerScreen() {
                 </button>
                 <button
                   className={cn(
-                    "mx-auto inline-flex size-10 items-center justify-center rounded-sm text-zinc-500 hover:bg-zinc-800",
+                    "mx-auto inline-flex size-10 cursor-pointer items-center justify-center rounded-md text-zinc-500 hover:bg-white/10",
                     exercise.isFavorite && "text-cyan-300",
                   )}
                   type="button"
@@ -289,7 +289,7 @@ export function ExercisePickerScreen() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="mx-auto inline-flex size-10 items-center justify-center rounded-sm text-zinc-400 hover:bg-zinc-800"
+                      className="mx-auto inline-flex size-10 cursor-pointer items-center justify-center rounded-md text-zinc-400 hover:bg-white/10"
                       type="button"
                       title="Exercise actions"
                     >
@@ -298,10 +298,10 @@ export function ExercisePickerScreen() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-44 border-zinc-800 bg-[#171a1f] text-zinc-100"
+                    className="w-44 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
                   >
                     <DropdownMenuItem
-                      className="gap-2 focus:bg-cyan-500/15"
+                      className="gap-2 rounded-md focus:bg-cyan-400/15"
                       onSelect={() =>
                         void navigate({
                           to: "/exercise/$exerciseId/edit",
@@ -312,7 +312,7 @@ export function ExercisePickerScreen() {
                       <Pencil className="size-4 text-cyan-300" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-zinc-800" />
+                    <DropdownMenuSeparator className="bg-white/10" />
                     <DropdownMenuItem
                       className="gap-2 text-red-300 focus:bg-red-500/10 focus:text-red-200"
                       onSelect={() => setPendingDelete(exercise)}
@@ -336,19 +336,19 @@ export function ExercisePickerScreen() {
           }
         }}
       >
-        <AlertDialogContent className="rounded-sm border-zinc-800 bg-[#15191e] text-zinc-100">
+        <AlertDialogContent className="rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete exercise?</AlertDialogTitle>
             <AlertDialogDescription className="text-zinc-400">
               This only works for exercises with no workout history.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="border-zinc-800 bg-[#11151a]">
-            <AlertDialogCancel className="rounded-sm border-zinc-700 bg-zinc-800 text-zinc-100 hover:bg-zinc-700">
+          <AlertDialogFooter className="border-white/10 bg-[var(--app-surface)]">
+            <AlertDialogCancel className="rounded-md border-white/10 bg-white/10 text-zinc-100 hover:bg-white/15">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="rounded-sm bg-red-700 text-white hover:bg-red-600"
+              className="rounded-md bg-red-500/20 text-red-100 ring-1 ring-red-400/25 hover:bg-red-500/30"
               onClick={confirmDelete}
             >
               Delete

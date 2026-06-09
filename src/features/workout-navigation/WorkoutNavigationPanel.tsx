@@ -57,12 +57,12 @@ function WorkoutNavRow({
 
   return (
     <div
-      className="grid min-h-14 grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2 border-b border-zinc-800 bg-[#15191e] px-2"
+      className="grid min-h-14 grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2 border-b border-white/10 bg-[var(--app-surface)] px-2 transition hover:bg-[#1b2026]"
       ref={setNodeRef}
       style={style}
     >
       <button
-        className="inline-flex size-9 items-center justify-center rounded-sm text-zinc-500 hover:bg-zinc-800"
+        className="inline-flex size-9 cursor-grab items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 active:cursor-grabbing"
         type="button"
         title="Drag exercise"
         {...attributes}
@@ -81,7 +81,7 @@ function WorkoutNavRow({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className="inline-flex size-9 items-center justify-center rounded-sm text-zinc-400 hover:bg-zinc-800"
+            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-400 hover:bg-white/10"
             type="button"
             title="Workout exercise actions"
           >
@@ -90,16 +90,16 @@ function WorkoutNavRow({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
-          className="w-44 border-zinc-800 bg-[#171a1f] text-zinc-100"
+          className="w-44 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
         >
           <DropdownMenuItem
-            className="gap-2 focus:bg-cyan-500/15"
+            className="gap-2 rounded-md focus:bg-cyan-400/15"
             onSelect={onReplace}
           >
             <Repeat2 className="size-4 text-cyan-300" />
             Replace
           </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-zinc-800" />
+          <DropdownMenuSeparator className="bg-white/10" />
           <DropdownMenuItem
             className="gap-2 text-red-300 focus:bg-red-500/10 focus:text-red-200"
             onSelect={onDelete}
@@ -178,10 +178,10 @@ export function WorkoutNavigationPanel() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        className="max-h-[86dvh] rounded-t-sm border-cyan-500/25 bg-[#111418] text-zinc-100 sm:mx-auto sm:max-w-2xl"
+        className="max-h-[86dvh] rounded-t-md border-white/10 bg-[#111418] text-zinc-100 shadow-[0_-24px_60px_rgba(0,0,0,0.5)] sm:mx-auto sm:max-w-2xl"
         side="bottom"
       >
-        <SheetHeader className="border-b border-cyan-500/40">
+        <SheetHeader className="border-b border-white/10">
           <SheetTitle>Workout List</SheetTitle>
           <SheetDescription className="text-zinc-500">
             {selectedDate}
@@ -190,7 +190,7 @@ export function WorkoutNavigationPanel() {
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3">
           {detail.exercises.length === 0 ? (
-            <div className="rounded-sm bg-[#15191e] px-3 py-8 text-center text-sm text-zinc-500">
+            <div className="rounded-md border border-white/10 bg-[var(--app-surface)] px-3 py-8 text-center text-sm text-zinc-500">
               No exercises in this workout
             </div>
           ) : (
@@ -204,7 +204,7 @@ export function WorkoutNavigationPanel() {
                 )}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="overflow-hidden rounded-sm">
+                <div className="overflow-hidden rounded-md border border-white/10">
                   {detail.exercises.map((entry) => (
                     <WorkoutNavRow
                       detail={entry}
@@ -235,7 +235,7 @@ export function WorkoutNavigationPanel() {
           )}
         </div>
 
-        <SheetFooter className="border-t border-zinc-800">
+        <SheetFooter className="border-t border-white/10">
           <div className="flex gap-2">
             <ActionButton
               tone="save"

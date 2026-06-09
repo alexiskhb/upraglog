@@ -50,24 +50,24 @@
 
 :root,
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
+    --background: oklch(0.13 0.006 255);
+    --foreground: oklch(0.965 0.004 255);
+    --card: oklch(0.2 0.008 255);
     --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
+    --popover: oklch(0.19 0.008 255);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
+    --primary: oklch(0.78 0.145 190);
+    --primary-foreground: oklch(0.12 0.008 255);
+    --secondary: oklch(0.27 0.008 255);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
+    --muted: oklch(0.24 0.008 255);
+    --muted-foreground: oklch(0.72 0.008 255);
+    --accent: oklch(0.28 0.026 190);
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
+    --border: oklch(1 0 0 / 12%);
+    --input: oklch(1 0 0 / 13%);
+    --ring: oklch(0.74 0.13 190);
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
@@ -81,6 +81,15 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    --app-bg: #090a0c;
+    --app-surface: #14161a;
+    --app-surface-raised: #1a1d22;
+    --app-surface-muted: #101216;
+    --app-border: rgb(255 255 255 / 0.09);
+    --app-border-strong: rgb(125 211 252 / 0.22);
+    --app-accent: #22d3ee;
+    --app-accent-soft: rgb(34 211 238 / 0.12);
+    --app-shadow: 0 12px 34px rgb(0 0 0 / 0.28);
 }
 
 @layer base {
@@ -94,12 +103,32 @@
     }
   html {
     @apply font-sans;
-    background: #090b0d;
+    background: var(--app-bg);
     }
   button,
   input,
   textarea,
   select {
     font: inherit;
+    }
+  ::selection {
+    background: rgb(34 211 238 / 0.28);
+    color: #f8fafc;
+    }
+}
+
+@layer components {
+  .app-surface {
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    box-shadow: var(--app-shadow);
+    }
+  .app-surface-raised {
+    background: var(--app-surface-raised);
+    border: 1px solid var(--app-border);
+    box-shadow: var(--app-shadow);
+    }
+  .app-soft-divider {
+    background: rgb(34 211 238 / 0.62);
     }
 }

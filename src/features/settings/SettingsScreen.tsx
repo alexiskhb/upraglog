@@ -82,26 +82,26 @@ export function SettingsScreen() {
     <ScreenContainer className="gap-4">
       <div className="pt-3">
         <h1 className="text-[17px] font-semibold text-zinc-50">Settings</h1>
-        <div className="mt-2 h-px bg-cyan-500/70" />
+        <div className="mt-2 h-px bg-cyan-300/50" />
       </div>
 
       {message && (
-        <div className="rounded-sm border border-cyan-500/25 bg-cyan-950/20 px-3 py-2 text-sm text-cyan-100">
+        <div className="rounded-md border border-cyan-300/20 bg-cyan-400/10 px-3 py-2 text-sm text-cyan-100">
           {message}
         </div>
       )}
 
-      <section className="space-y-4 rounded-sm bg-[#15191e] p-3">
+      <section className="app-surface space-y-4 rounded-md p-3.5">
         <div>
           <div className="mb-2 text-xs font-semibold uppercase tracking-normal text-zinc-400">
             Unit System
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
-              className={`h-11 rounded-sm border text-sm ${
+              className={`h-11 cursor-pointer rounded-md border text-sm transition ${
                 settings.unitSystem === "metric"
-                  ? "border-cyan-500 bg-cyan-500/15 text-cyan-100"
-                  : "border-zinc-700 text-zinc-300"
+                  ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100"
+                  : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
               }`}
               type="button"
               onClick={() => void saveSettings({ unitSystem: "metric" })}
@@ -109,10 +109,10 @@ export function SettingsScreen() {
               Metric / kg
             </button>
             <button
-              className={`h-11 rounded-sm border text-sm ${
+              className={`h-11 cursor-pointer rounded-md border text-sm transition ${
                 settings.unitSystem === "imperial"
-                  ? "border-cyan-500 bg-cyan-500/15 text-cyan-100"
-                  : "border-zinc-700 text-zinc-300"
+                  ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100"
+                  : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
               }`}
               type="button"
               onClick={() => void saveSettings({ unitSystem: "imperial" })}
@@ -122,7 +122,7 @@ export function SettingsScreen() {
           </div>
         </div>
 
-        <label className="flex items-center justify-between gap-3 border-t border-zinc-800 pt-3">
+        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
           <span>
             <Label className="text-sm text-zinc-200">
               Keep Screen On
@@ -141,7 +141,7 @@ export function SettingsScreen() {
         </label>
       </section>
 
-      <section className="space-y-3 rounded-sm bg-[#15191e] p-3">
+      <section className="app-surface space-y-3 rounded-md p-3.5">
         <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
           Backup
         </div>

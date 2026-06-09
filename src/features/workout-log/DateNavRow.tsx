@@ -10,8 +10,8 @@ type DateNavRowProps = {
 
 export function DateNavRow({ localDate, onPrevious, onNext }: DateNavRowProps) {
   return (
-    <div className="sticky top-0 z-10 -mx-3 bg-[#090b0d] px-3 pb-2 pt-1 sm:-mx-4 sm:px-4">
-      <div className="grid h-12 grid-cols-[3rem_1fr_3rem] items-center border-b border-cyan-500/70">
+    <div className="sticky top-0 z-10 -mx-4 bg-[var(--app-bg)] px-4 pb-3 pt-1 sm:-mx-5 sm:px-5">
+      <div className="grid h-12 grid-cols-[3rem_1fr_3rem] items-center rounded-md border border-white/10 bg-[var(--app-surface-muted)] shadow-[0_10px_28px_rgba(0,0,0,0.2)]">
         <IconButton
           className="text-cyan-300"
           title="Previous day"

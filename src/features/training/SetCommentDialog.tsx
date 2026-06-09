@@ -25,7 +25,7 @@ export function SetCommentDialog({
 }: SetCommentDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-sm border-zinc-800 bg-[#15191e] text-zinc-100">
+      <DialogContent className="rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl">
         <DialogHeader>
           <DialogTitle>Set Comment</DialogTitle>
         </DialogHeader>
@@ -64,7 +64,7 @@ function SetCommentForm({
   return (
     <>
       <Textarea
-        className="min-h-32 rounded-sm border-cyan-500/35 bg-[#090b0d] text-base text-zinc-100 focus-visible:ring-cyan-500"
+        className="min-h-32 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
         placeholder="Rest, form notes, machine settings..."
         value={comment}
         onChange={(event) => setComment(event.target.value)}

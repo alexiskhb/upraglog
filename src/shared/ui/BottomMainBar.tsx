@@ -48,8 +48,8 @@ export function BottomMainBar() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-cyan-500/25 bg-[#111418]/95 backdrop-blur">
-      <div className="mx-auto grid h-16 max-w-2xl grid-cols-5 items-center px-3">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
+      <div className="mx-auto grid h-16 max-w-2xl grid-cols-5 items-center px-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <IconButton title="Choose profile">
@@ -58,7 +58,7 @@ export function BottomMainBar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="start"
-            className="w-52 border-zinc-800 bg-[#171a1f] text-zinc-100"
+            className="w-52 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
           >
             <DropdownMenuItem disabled className="focus:bg-transparent">
               Default profile
@@ -102,10 +102,10 @@ export function BottomMainBar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 border-zinc-800 bg-[#171a1f] text-zinc-100"
+            className="w-56 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
           >
             <DropdownMenuItem
-              className="gap-2 focus:bg-cyan-500/15"
+              className="gap-2 rounded-md focus:bg-cyan-400/15"
               onSelect={() => {
                 setReplaceWorkoutExerciseId(undefined)
                 void navigate({ to: "/settings" })
@@ -114,31 +114,31 @@ export function BottomMainBar() {
               <Settings className="size-4 text-cyan-300" />
               Settings
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-zinc-800" />
+            <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
-              className="gap-2 focus:bg-cyan-500/15"
+              className="gap-2 rounded-md focus:bg-cyan-400/15"
               onSelect={() => openDialog("timer")}
             >
               <Clock3 className="size-4 text-cyan-300" />
               Time Workout
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="gap-2 focus:bg-cyan-500/15"
+              className="gap-2 rounded-md focus:bg-cyan-400/15"
               onSelect={() => openDialog("share")}
             >
               <Share2 className="size-4 text-cyan-300" />
               Share Workout
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="gap-2 focus:bg-cyan-500/15"
+              className="gap-2 rounded-md focus:bg-cyan-400/15"
               onSelect={() => openDialog("copyMove")}
             >
               <Copy className="size-4 text-cyan-300" />
               Copy/Move Workout
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-zinc-800" />
+            <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
-              className="gap-2 focus:bg-cyan-500/15"
+              className="gap-2 rounded-md focus:bg-cyan-400/15"
               onSelect={goToDay}
             >
               <Dumbbell className="size-4 text-cyan-300" />

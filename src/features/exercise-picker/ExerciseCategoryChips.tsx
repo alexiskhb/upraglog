@@ -20,9 +20,9 @@ export function ExerciseCategoryChips({
       {categories.map((category) => (
         <button
           className={cn(
-            "h-9 shrink-0 rounded-sm border border-zinc-700 px-3 text-sm text-zinc-200 transition hover:border-cyan-500/70",
+            "h-9 shrink-0 cursor-pointer rounded-md border border-white/10 bg-white/5 px-3 text-sm text-zinc-200 transition hover:border-cyan-300/50 hover:bg-white/10",
             activeCategory === category &&
-              "border-cyan-500 bg-cyan-500/15 text-cyan-100",
+              "border-cyan-300/50 bg-cyan-400/15 text-cyan-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.12)]",
           )}
           key={category}
           type="button"

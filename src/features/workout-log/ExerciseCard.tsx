@@ -21,12 +21,12 @@ export function ExerciseCard({
 }: ExerciseCardProps) {
   return (
     <button
-      className="w-full rounded-sm bg-[#15191e] p-3 text-left shadow-[0_1px_0_rgba(255,255,255,0.04)] transition hover:bg-[#1a1f25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+      className="app-surface w-full cursor-pointer rounded-md p-3.5 text-left transition hover:border-cyan-300/30 hover:bg-[#1b2026] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
       type="button"
       onClick={onOpen}
     >
       <div className="truncate text-[15px] font-medium text-zinc-50">{name}</div>
-      <div className="mt-2 h-px bg-cyan-500/75" />
+      <div className="mt-2 h-px bg-cyan-300/50" />
       <div className="mt-3 space-y-1">
         {sets.length === 0 ? (
           <div className="text-right text-sm text-zinc-500">No sets logged</div>
