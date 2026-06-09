@@ -28,6 +28,7 @@ import { useAppStore } from "@/shared/store/appStore"
 import { weightUnit, distanceUnit } from "@/shared/model/units"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
+import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
 import { NumericStepper } from "./NumericStepper"
 import { SetRow } from "./SetRow"
 import { SetCommentDialog } from "./SetCommentDialog"
@@ -250,18 +251,21 @@ export function TrainingScreen() {
   return (
     <ScreenContainer className="gap-4">
       <div className="pt-3">
-        <button
-          className="text-left text-[17px] font-semibold text-zinc-50"
-          type="button"
-          onClick={() =>
-            void navigate({
-              to: "/day/$date",
-              params: { date: detail.workout.localDate },
-            })
-          }
-        >
-          {detail.exercise.name}
-        </button>
+        <div className="flex items-start justify-between gap-3">
+          <button
+            className="min-w-0 text-left text-[17px] font-semibold text-zinc-50"
+            type="button"
+            onClick={() =>
+              void navigate({
+                to: "/day/$date",
+                params: { date: detail.workout.localDate },
+              })
+            }
+          >
+            <span className="block truncate">{detail.exercise.name}</span>
+          </button>
+          <WorkoutActiveTimer className="pt-1" workout={detail.workout} />
+        </div>
         <div className="mt-2 h-px bg-cyan-300/50" />
       </div>
 

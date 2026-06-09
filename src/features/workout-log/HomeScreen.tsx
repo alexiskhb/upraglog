@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import type { AppSettings, WorkoutDayDetail } from "@/db/schema"
-import { getWorkoutDetailByDate } from "@/db/repositories/workoutsRepo"
+import {
+  getWorkoutDetailByDate,
+  startWorkoutTimer,
+} from "@/db/repositories/workoutsRepo"
 import { getSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import {
@@ -11,6 +14,7 @@ import {
 } from "@/shared/model/dates"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
+import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
 import { DateNavRow } from "./DateNavRow"
 import { ExerciseCard } from "./ExerciseCard"
 
@@ -18,6 +22,7 @@ export function HomeScreen() {
   const { date } = useParams({ from: "/day/$date" })
   const navigate = useNavigate()
   const refreshVersion = useAppStore((state) => state.refreshVersion)
+  const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const setSelectedDate = useAppStore((state) => state.setSelectedDate)
   const [detail, setDetail] = useState<WorkoutDayDetail>({
     workout: undefined,
@@ -54,6 +59,12 @@ export function HomeScreen() {
     void navigate({ to: "/day/$date", params: { date: nextDate } })
   }
 
+  const startWorkout = async () => {
+    await startWorkoutTimer(date)
+    bumpRefresh()
+    void navigate({ to: "/picker" })
+  }
+
   const handleTouchEnd = (clientX: number) => {
     if (touchStartX === undefined) {
       return
@@ -80,8 +91,9 @@ export function HomeScreen() {
         onPrevious={() => navigateToDate(shiftLocalDate(date, -1))}
       />
 
-      <div className="px-1 text-xs uppercase tracking-normal text-zinc-500">
-        {formatLongDate(date)}
+      <div className="flex items-center justify-between gap-3 px-1 text-xs uppercase tracking-normal text-zinc-500">
+        <span className="min-w-0 truncate">{formatLongDate(date)}</span>
+        <WorkoutActiveTimer workout={detail.workout} />
       </div>
 
       {detail.exercises.length === 0 ? (
@@ -89,7 +101,7 @@ export function HomeScreen() {
           <ActionButton
             className="h-12 w-full max-w-64 flex-none px-5 text-sm"
             tone="save"
-            onClick={() => void navigate({ to: "/picker" })}
+            onClick={() => void startWorkout()}
           >
             Start Workout
           </ActionButton>

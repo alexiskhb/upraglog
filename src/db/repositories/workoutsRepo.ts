@@ -349,6 +349,29 @@ export async function updateWorkoutTimer(
   })
 }
 
+export async function startWorkoutTimer(localDate: string) {
+  const workout = await getOrCreateWorkout(localDate)
+
+  if (workout.startedAt && !workout.endedAt) {
+    return workout
+  }
+
+  const now = new Date().toISOString()
+
+  await db.workouts.update(workout.id, {
+    startedAt: now,
+    endedAt: undefined,
+    updatedAt: now,
+  })
+
+  return {
+    ...workout,
+    startedAt: now,
+    endedAt: undefined,
+    updatedAt: now,
+  }
+}
+
 async function touchWorkoutFromWorkoutExercise(workoutExerciseId: string) {
   const workoutExercise = await db.workoutExercises.get(workoutExerciseId)
 
