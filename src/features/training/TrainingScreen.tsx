@@ -124,37 +124,6 @@ function setInputFromFields(fields: FieldConfig[], input: InputState) {
   return setInput
 }
 
-function useScreenWakeLock(enabled: boolean) {
-  useEffect(() => {
-    if (!enabled) {
-      return
-    }
-
-    type WakeLockSentinel = {
-      release: () => Promise<void>
-    }
-    type WakeLockNavigator = Navigator & {
-      wakeLock?: {
-        request: (type: "screen") => Promise<WakeLockSentinel>
-      }
-    }
-
-    let sentinel: WakeLockSentinel | undefined
-    const wakeLockNavigator = navigator as WakeLockNavigator
-
-    wakeLockNavigator.wakeLock
-      ?.request("screen")
-      .then((lock) => {
-        sentinel = lock
-      })
-      .catch(() => undefined)
-
-    return () => {
-      void sentinel?.release()
-    }
-  }, [enabled])
-}
-
 export function TrainingScreen() {
   const { workoutExerciseId } = useParams({
     from: "/training/$workoutExerciseId",
@@ -172,8 +141,6 @@ export function TrainingScreen() {
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()
   const [commentSetId, setCommentSetId] = useState<string | undefined>()
   const [message, setMessage] = useState<string | undefined>()
-
-  useScreenWakeLock(settings.keepScreenOnDuringTraining)
 
   useEffect(() => {
     let cancelled = false

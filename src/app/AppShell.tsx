@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react"
 import { Outlet } from "@tanstack/react-router"
 import { initializeDatabase } from "@/db/db"
+import type { AppSettings } from "@/db/schema"
+import { getSettings } from "@/db/repositories/settingsRepo"
+import { useAppStore } from "@/shared/store/appStore"
+import { useScreenWakeLock } from "@/shared/model/wakeLock"
 import { BottomMainBar } from "@/shared/ui/BottomMainBar"
 import { WorkoutNavigationPanel } from "@/features/workout-navigation/WorkoutNavigationPanel"
 import { WorkoutTimerDialog } from "@/features/workout-dialogs/WorkoutTimerDialog"
@@ -8,6 +12,10 @@ import { WorkoutTimerDialog } from "@/features/workout-dialogs/WorkoutTimerDialo
 export function AppShell() {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | undefined>()
+  const refreshVersion = useAppStore((state) => state.refreshVersion)
+  const [settings, setSettings] = useState<AppSettings | undefined>()
+
+  useScreenWakeLock(ready && Boolean(settings?.keepScreenOnDuringTraining))
 
   useEffect(() => {
     let cancelled = false
@@ -32,6 +40,24 @@ export function AppShell() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    if (!ready) {
+      return
+    }
+
+    let cancelled = false
+
+    getSettings().then((appSettings) => {
+      if (!cancelled) {
+        setSettings(appSettings)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [ready, refreshVersion])
 
   if (error) {
     return (

@@ -128,7 +128,7 @@ export function SettingsScreen() {
               Keep Screen On
             </Label>
             <span className="mt-1 block text-xs text-zinc-500">
-              Applies while Training Screen is open.
+              Applies throughout Upraglog.
             </span>
           </span>
           <Switch
