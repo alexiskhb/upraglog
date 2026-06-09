@@ -1,13 +1,11 @@
 import {
   CalendarDays,
   Clock3,
-  Copy,
   Dumbbell,
   ListChecks,
   MoreVertical,
   Plus,
   Settings,
-  Share2,
   UserCircle,
 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
@@ -224,26 +222,6 @@ export function BottomMainBar() {
             >
               <Clock3 className="size-4 text-cyan-300" />
               Time Workout
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="gap-2 rounded-md focus:bg-cyan-400/15"
-              onSelect={() => {
-                setWorkoutNavOpen(false)
-                openDialog("share")
-              }}
-            >
-              <Share2 className="size-4 text-cyan-300" />
-              Share Workout
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="gap-2 rounded-md focus:bg-cyan-400/15"
-              onSelect={() => {
-                setWorkoutNavOpen(false)
-                openDialog("copyMove")
-              }}
-            >
-              <Copy className="size-4 text-cyan-300" />
-              Copy/Move Workout
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem

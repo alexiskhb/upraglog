@@ -3,8 +3,6 @@ import { Outlet } from "@tanstack/react-router"
 import { initializeDatabase } from "@/db/db"
 import { BottomMainBar } from "@/shared/ui/BottomMainBar"
 import { WorkoutNavigationPanel } from "@/features/workout-navigation/WorkoutNavigationPanel"
-import { ShareWorkoutDialog } from "@/features/workout-dialogs/ShareWorkoutDialog"
-import { CopyMoveWorkoutDialog } from "@/features/workout-dialogs/CopyMoveWorkoutDialog"
 import { WorkoutTimerDialog } from "@/features/workout-dialogs/WorkoutTimerDialog"
 
 export function AppShell() {
@@ -57,8 +55,6 @@ export function AppShell() {
     <>
       <Outlet />
       <WorkoutNavigationPanel />
-      <ShareWorkoutDialog />
-      <CopyMoveWorkoutDialog />
       <WorkoutTimerDialog />
       <BottomMainBar />
     </>

@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { todayString } from "@/shared/model/dates"
 
-export type AppDialog = "timer" | "share" | "copyMove" | undefined
+export type AppDialog = "timer" | undefined
 
 type AppState = {
   selectedDate: string
