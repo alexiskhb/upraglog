@@ -10,7 +10,7 @@ import {
   Share2,
   UserCircle,
 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useRouterState } from "@tanstack/react-router"
 import {
   DropdownMenu,
@@ -26,14 +26,17 @@ import { IconButton } from "./IconButton"
 export function BottomMainBar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const contextualReturnHrefRef = useRef<string | undefined>(undefined)
   const navigate = useNavigate()
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
+  const currentHref = useRouterState({
+    select: (state) => state.location.href,
+  })
   const selectedDate = useAppStore((state) => state.selectedDate)
   const workoutNavOpen = useAppStore((state) => state.workoutNavOpen)
   const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
-  const activeDialog = useAppStore((state) => state.activeDialog)
   const openDialog = useAppStore((state) => state.openDialog)
   const setReplaceWorkoutExerciseId = useAppStore(
     (state) => state.setReplaceWorkoutExerciseId,
@@ -42,30 +45,63 @@ export function BottomMainBar() {
   const calendarActive = pathname.startsWith("/calendar")
   const pickerActive =
     pathname.startsWith("/picker") || pathname.startsWith("/exercise/")
-  const moreActive =
-    moreMenuOpen || pathname.startsWith("/settings") || activeDialog !== undefined
+  const contextualRouteActive = calendarActive || pickerActive
 
-  const goToDay = () => {
-    setReplaceWorkoutExerciseId(undefined)
-    setWorkoutNavOpen(false)
+  useEffect(() => {
+    if (!contextualRouteActive && !workoutNavOpen) {
+      contextualReturnHrefRef.current = undefined
+    }
+  }, [contextualRouteActive, currentHref, workoutNavOpen])
+
+  const navigateToSelectedDay = () => {
     void navigate({
       to: "/day/$date",
       params: { date: selectedOrToday },
     })
   }
 
-  const toggleCalendar = () => {
+  const closeTaskSurface = () => {
     setReplaceWorkoutExerciseId(undefined)
     setWorkoutNavOpen(false)
     setProfileMenuOpen(false)
     setMoreMenuOpen(false)
 
-    if (calendarActive) {
-      goToDay()
+    const returnHref = contextualReturnHrefRef.current
+    contextualReturnHrefRef.current = undefined
+
+    if (returnHref && returnHref !== currentHref) {
+      void navigate({ href: returnHref })
       return
     }
 
-    void navigate({ to: "/calendar" })
+    navigateToSelectedDay()
+  }
+
+  const openTaskRoute = (to: "/calendar" | "/picker") => {
+    setReplaceWorkoutExerciseId(undefined)
+    setWorkoutNavOpen(false)
+    setProfileMenuOpen(false)
+    setMoreMenuOpen(false)
+    contextualReturnHrefRef.current ??= currentHref
+    void navigate({ to })
+  }
+
+  const goToDay = () => {
+    contextualReturnHrefRef.current = undefined
+    setReplaceWorkoutExerciseId(undefined)
+    setWorkoutNavOpen(false)
+    setProfileMenuOpen(false)
+    setMoreMenuOpen(false)
+    navigateToSelectedDay()
+  }
+
+  const toggleCalendar = () => {
+    if (calendarActive) {
+      closeTaskSurface()
+      return
+    }
+
+    openTaskRoute("/calendar")
   }
 
   const toggleWorkoutList = () => {
@@ -75,32 +111,19 @@ export function BottomMainBar() {
 
     if (workoutNavOpen) {
       setWorkoutNavOpen(false)
-      goToDay()
       return
-    }
-
-    if (!pathname.startsWith("/day/")) {
-      void navigate({
-        to: "/day/$date",
-        params: { date: selectedOrToday },
-      })
     }
 
     setWorkoutNavOpen(true)
   }
 
   const toggleExercisePicker = () => {
-    setReplaceWorkoutExerciseId(undefined)
-    setWorkoutNavOpen(false)
-    setProfileMenuOpen(false)
-    setMoreMenuOpen(false)
-
     if (pickerActive) {
-      goToDay()
+      closeTaskSurface()
       return
     }
 
-    void navigate({ to: "/picker" })
+    openTaskRoute("/picker")
   }
 
   return (
@@ -117,7 +140,7 @@ export function BottomMainBar() {
           }}
         >
           <DropdownMenuTrigger asChild>
-            <IconButton active={profileMenuOpen} title="Choose profile">
+            <IconButton className="text-zinc-400" title="Choose profile">
               <UserCircle className="size-6" />
             </IconButton>
           </DropdownMenuTrigger>
@@ -158,12 +181,6 @@ export function BottomMainBar() {
         <DropdownMenu
           open={moreMenuOpen}
           onOpenChange={(open) => {
-            if (open && pathname.startsWith("/settings")) {
-              goToDay()
-              setMoreMenuOpen(false)
-              return
-            }
-
             setMoreMenuOpen(open)
             if (open) {
               setProfileMenuOpen(false)
@@ -172,7 +189,7 @@ export function BottomMainBar() {
           }}
         >
           <DropdownMenuTrigger asChild>
-            <IconButton active={moreActive} title="More actions">
+            <IconButton className="text-zinc-400" title="More actions">
               <MoreVertical className="size-6" />
             </IconButton>
           </DropdownMenuTrigger>
