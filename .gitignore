@@ -1,0 +1,94 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build output
+dist/
+build/
+.out/
+
+# Vite
+.vite/
+vite.config.ts.timestamp-*
+vite.config.js.timestamp-*
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Local editor files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# Playwright / Cypress, if added later
+test-results/
+playwright-report/
+cypress/videos/
+cypress/screenshots/
+
+# PWA / Workbox generated artifacts, if emitted outside dist
+sw.js
+sw.js.map
+workbox-*.js
+workbox-*.js.map
+
+# Local certificates
+*.pem
+*.key
+*.crt
+*.p12
+
+# Temporary files
+tmp/
+temp/
+.cache/
+
+# Optional package manager caches
+.npm/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Keep Yarn releases/plugins if you ever use Yarn Berry
+!.yarn/releases/
+!.yarn/plugins/
+!.yarn/sdks/
+!.yarn/versions/
+
+# Local database / backup test artifacts
+*.sqlite
+*.sqlite3
+*.db
+*.bak
+*.backup
+local-backups/
