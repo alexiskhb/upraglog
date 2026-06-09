@@ -255,7 +255,7 @@ async function initializeDatabaseInternal() {
       await db.settings.put({
         id: "app",
         unitSystem: "metric",
-        keepScreenOnDuringTraining: true,
+        keepScreenOn: true,
         updatedAt: new Date().toISOString(),
       })
     }

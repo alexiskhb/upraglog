@@ -65,8 +65,13 @@ const setEntrySchema = z.object({
 
 const settingsSchema = z.object({
   unitSystem: z.enum(["metric", "imperial"]),
-  keepScreenOnDuringTraining: z.boolean(),
-})
+  keepScreenOn: z.boolean().optional(),
+  keepScreenOnDuringTraining: z.boolean().optional(),
+}).transform((settings) => ({
+  unitSystem: settings.unitSystem,
+  keepScreenOn:
+    settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
+}))
 
 export const backupFileSchema = z.object({
   app: z.literal("upraglog"),

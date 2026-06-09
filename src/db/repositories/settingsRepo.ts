@@ -4,7 +4,7 @@ import type { AppSettings, StoredAppSettings } from "@/db/schema"
 const defaultSettings: StoredAppSettings = {
   id: "app",
   unitSystem: "metric",
-  keepScreenOnDuringTraining: true,
+  keepScreenOn: true,
   updatedAt: new Date().toISOString(),
 }
 
@@ -18,14 +18,22 @@ export async function getSettings(): Promise<AppSettings> {
 
   return {
     unitSystem: settings.unitSystem,
-    keepScreenOnDuringTraining: settings.keepScreenOnDuringTraining,
+    keepScreenOn:
+      settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
   }
 }
 
 export async function updateSettings(input: Partial<AppSettings>) {
   const current = await db.settings.get("app")
+  const currentSettings = current
+    ? {
+        unitSystem: current.unitSystem,
+        keepScreenOn:
+          current.keepScreenOn ?? current.keepScreenOnDuringTraining ?? true,
+      }
+    : defaultSettings
   const updated: StoredAppSettings = {
-    ...(current ?? defaultSettings),
+    ...currentSettings,
     ...input,
     id: "app",
     updatedAt: new Date().toISOString(),

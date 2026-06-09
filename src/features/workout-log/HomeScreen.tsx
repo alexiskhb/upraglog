@@ -30,7 +30,7 @@ export function HomeScreen() {
   })
   const [settings, setSettings] = useState<AppSettings>({
     unitSystem: "metric",
-    keepScreenOnDuringTraining: true,
+    keepScreenOn: true,
   })
   const [touchStartX, setTouchStartX] = useState<number | undefined>()
 
@@ -78,6 +78,9 @@ export function HomeScreen() {
 
     setTouchStartX(undefined)
   }
+  const workoutActive = Boolean(
+    detail.workout?.startedAt && !detail.workout.endedAt,
+  )
 
   return (
     <ScreenContainer
@@ -103,7 +106,7 @@ export function HomeScreen() {
             tone="save"
             onClick={() => void startWorkout()}
           >
-            Start Workout
+            {workoutActive ? "Add Exercise" : "Start Workout"}
           </ActionButton>
         </div>
       ) : (

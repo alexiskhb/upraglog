@@ -341,11 +341,13 @@ export async function updateWorkoutTimer(
   input: { startedAt?: string; endedAt?: string },
 ) {
   const workout = await getOrCreateWorkout(localDate)
+  const now = new Date().toISOString()
 
-  await db.workouts.update(workout.id, {
+  await db.workouts.put({
+    ...workout,
     startedAt: input.startedAt,
     endedAt: input.endedAt,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
   })
 }
 
@@ -358,7 +360,8 @@ export async function startWorkoutTimer(localDate: string) {
 
   const now = new Date().toISOString()
 
-  await db.workouts.update(workout.id, {
+  await db.workouts.put({
+    ...workout,
     startedAt: now,
     endedAt: undefined,
     updatedAt: now,

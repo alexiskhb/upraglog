@@ -136,7 +136,7 @@ export function TrainingScreen() {
   const [detail, setDetail] = useState<TrainingDetail | undefined>()
   const [settings, setSettings] = useState<AppSettings>({
     unitSystem: "metric",
-    keepScreenOnDuringTraining: true,
+    keepScreenOn: true,
   })
   const [input, setInput] = useState<InputState>(defaultInput)
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()

@@ -15,7 +15,7 @@ export function AppShell() {
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const [settings, setSettings] = useState<AppSettings | undefined>()
 
-  useScreenWakeLock(ready && Boolean(settings?.keepScreenOnDuringTraining))
+  useScreenWakeLock(ready && Boolean(settings?.keepScreenOn))
 
   useEffect(() => {
     let cancelled = false

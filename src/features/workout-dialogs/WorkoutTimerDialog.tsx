@@ -37,7 +37,7 @@ export function WorkoutTimerDialog() {
   const open = activeDialog === "timer"
   const [startedAt, setStartedAt] = useState("")
   const [endedAt, setEndedAt] = useState("")
-  const [tick, setTick] = useState(0)
+  const [nowMs, setNowMs] = useState(() => Date.now())
   const [message, setMessage] = useState<string | undefined>()
 
   useEffect(() => {
@@ -51,6 +51,7 @@ export function WorkoutTimerDialog() {
       if (!cancelled) {
         setStartedAt(toDateTimeInputValue(workout?.startedAt))
         setEndedAt(toDateTimeInputValue(workout?.endedAt))
+        setMessage(undefined)
       }
     })
 
@@ -65,7 +66,7 @@ export function WorkoutTimerDialog() {
     }
 
     const interval = window.setInterval(() => {
-      setTick((current) => current + 1)
+      setNowMs(Date.now())
     }, 1000)
 
     return () => window.clearInterval(interval)
@@ -73,7 +74,11 @@ export function WorkoutTimerDialog() {
 
   const startedIso = fromDateTimeInputValue(startedAt)
   const endedIso = fromDateTimeInputValue(endedAt)
-  const durationSeconds = getWorkoutDurationSeconds(startedIso, endedIso)
+  const active = Boolean(startedIso && !endedIso)
+  const durationSeconds =
+    active && startedIso
+      ? Math.max(0, Math.round((nowMs - new Date(startedIso).getTime()) / 1000))
+      : getWorkoutDurationSeconds(startedIso, endedIso)
 
   const saveTimer = async (nextStartedAt = startedAt, nextEndedAt = endedAt) => {
     await updateWorkoutTimer(selectedDate, {
@@ -86,6 +91,7 @@ export function WorkoutTimerDialog() {
 
   const startTimer = async () => {
     const now = toDateTimeInputValue(new Date().toISOString())
+    setNowMs(Date.now())
     setStartedAt(now)
     setEndedAt("")
     await saveTimer(now, "")
@@ -94,9 +100,22 @@ export function WorkoutTimerDialog() {
   const stopTimer = async () => {
     const now = toDateTimeInputValue(new Date().toISOString())
     const nextStartedAt = startedAt || now
+    setNowMs(Date.now())
     setStartedAt(nextStartedAt)
     setEndedAt(now)
     await saveTimer(nextStartedAt, now)
+  }
+
+  const clearTimer = async () => {
+    setNowMs(Date.now())
+    setStartedAt("")
+    setEndedAt("")
+    await updateWorkoutTimer(selectedDate, {
+      startedAt: undefined,
+      endedAt: undefined,
+    })
+    bumpRefresh()
+    setMessage("Timer cleared.")
   }
 
   return (
@@ -123,16 +142,16 @@ export function WorkoutTimerDialog() {
             Duration
           </div>
           <div className="mt-1 text-4xl font-medium tabular-nums text-cyan-100">
-            {formatDuration(durationSeconds + tick * 0)}
+            {formatDuration(durationSeconds)}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="save" onClick={startTimer}>
-            Start
+            {active ? "Restart Workout" : "Start Workout"}
           </ActionButton>
           <ActionButton tone="delete" onClick={stopTimer}>
-            Stop
+            Stop Workout
           </ActionButton>
         </div>
 
@@ -160,9 +179,14 @@ export function WorkoutTimerDialog() {
           />
         </div>
 
-        <ActionButton tone="secondary" onClick={() => saveTimer()}>
-          Update
-        </ActionButton>
+        <div className="grid grid-cols-2 gap-2">
+          <ActionButton tone="secondary" onClick={() => saveTimer()}>
+            Update Timer
+          </ActionButton>
+          <ActionButton tone="neutral" onClick={clearTimer}>
+            Clear Timer
+          </ActionButton>
+        </div>
       </DialogContent>
     </Dialog>
   )

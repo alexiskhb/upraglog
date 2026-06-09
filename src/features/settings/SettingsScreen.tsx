@@ -12,17 +12,13 @@ import {
 } from "@/features/backup/exportJson"
 import { exportTrainingLogCsv } from "@/features/backup/exportTrainingLogCsv"
 import { parseBackupJson, restoreBackup } from "@/features/backup/importJson"
-import {
-  backupToGoogleDrive,
-  restoreFromGoogleDrive,
-} from "@/features/backup/googleDriveBackup"
 
 export function SettingsScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const [settings, setSettings] = useState<AppSettings>({
     unitSystem: "metric",
-    keepScreenOnDuringTraining: true,
+    keepScreenOn: true,
   })
   const [message, setMessage] = useState<string | undefined>()
 
@@ -44,7 +40,7 @@ export function SettingsScreen() {
     const updated = await updateSettings(input)
     setSettings({
       unitSystem: updated.unitSystem,
-      keepScreenOnDuringTraining: updated.keepScreenOnDuringTraining,
+      keepScreenOn: updated.keepScreenOn,
     })
     bumpRefresh()
   }
@@ -78,12 +74,6 @@ export function SettingsScreen() {
         fileInputRef.current.value = ""
       }
     }
-  }
-
-  const showGoogleDriveStatus = async (mode: "backup" | "restore") => {
-    const status =
-      mode === "backup" ? await backupToGoogleDrive() : await restoreFromGoogleDrive()
-    setMessage(status)
   }
 
   return (
@@ -140,10 +130,10 @@ export function SettingsScreen() {
             </span>
           </span>
           <Switch
-            checked={settings.keepScreenOnDuringTraining}
+            checked={settings.keepScreenOn}
             className="data-checked:bg-cyan-500"
-            onCheckedChange={(keepScreenOnDuringTraining) =>
-              void saveSettings({ keepScreenOnDuringTraining })
+            onCheckedChange={(keepScreenOn) =>
+              void saveSettings({ keepScreenOn })
             }
           />
         </label>
@@ -151,34 +141,26 @@ export function SettingsScreen() {
 
       <section className="app-surface space-y-3 rounded-md p-3.5">
         <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
-          Backup
+          Spreadsheet
         </div>
         <ActionButton tone="secondary" onClick={exportSpreadsheet}>
           Spreadsheet Export
         </ActionButton>
+      </section>
+
+      <section className="app-surface space-y-3 rounded-md p-3.5">
+        <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
+          Backup
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportJson}>
             Export to Local Storage
           </ActionButton>
           <ActionButton
-            tone="secondary"
-            onClick={() => void showGoogleDriveStatus("backup")}
-          >
-            Export to Drive
-          </ActionButton>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <ActionButton
             tone="neutral"
             onClick={() => fileInputRef.current?.click()}
           >
             Import From Local Storage
-          </ActionButton>
-          <ActionButton
-            tone="neutral"
-            onClick={() => void showGoogleDriveStatus("restore")}
-          >
-            Import From Drive
           </ActionButton>
         </div>
         <input
