@@ -85,13 +85,13 @@ export function HomeScreen() {
       </div>
 
       {detail.exercises.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 pb-20">
+        <div className="flex flex-1 flex-col items-center justify-start pb-24 pt-[22dvh]">
           <ActionButton
-            className="max-w-xs"
+            className="h-12 w-full max-w-64 flex-none px-5 text-sm"
             tone="save"
             onClick={() => void navigate({ to: "/picker" })}
           >
-            Start New Workout
+            Start Workout
           </ActionButton>
         </div>
       ) : (
