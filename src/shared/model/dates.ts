@@ -6,6 +6,42 @@ import {
   parseISO,
 } from "date-fns"
 
+type WeekStartsOn = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
+type IntlWithLocale = {
+  Locale?: new (tag?: string) => {
+    weekInfo?: {
+      firstDay?: number
+    }
+  }
+}
+
+function getUserLocales() {
+  if (typeof navigator === "undefined") {
+    return undefined
+  }
+
+  return navigator.languages.length > 0
+    ? navigator.languages
+    : navigator.language || undefined
+}
+
+function getPrimaryUserLocale() {
+  if (typeof navigator === "undefined") {
+    return undefined
+  }
+
+  return navigator.languages[0] || navigator.language || undefined
+}
+
+function formatDisplayDate(date: Date, options: Intl.DateTimeFormatOptions) {
+  return new Intl.DateTimeFormat(getUserLocales(), options).format(date)
+}
+
+function toLocaleUpper(value: string) {
+  return value.toLocaleUpperCase(getUserLocales())
+}
+
 export function toLocalDateString(date: Date) {
   return format(date, "yyyy-MM-dd")
 }
@@ -26,22 +62,77 @@ export function formatDateLabel(localDate: string) {
   const date = parseLocalDate(localDate)
 
   if (isToday(date)) {
-    return "TODAY"
+    return toLocaleUpper(
+      new Intl.RelativeTimeFormat(getUserLocales(), {
+        numeric: "auto",
+      }).format(0, "day"),
+    )
   }
 
-  return format(date, "EEE, MMM d").toUpperCase()
+  return toLocaleUpper(
+    formatDisplayDate(date, {
+      day: "numeric",
+      month: "short",
+      weekday: "short",
+    }),
+  )
 }
 
 export function formatLongDate(localDate: string) {
-  return format(parseLocalDate(localDate), "EEEE, MMM d, yyyy")
+  return formatDisplayDate(parseLocalDate(localDate), {
+    day: "numeric",
+    month: "short",
+    weekday: "long",
+    year: "numeric",
+  })
 }
 
 export function formatShortDate(localDate: string) {
-  return format(parseLocalDate(localDate), "MMM d")
+  return formatDisplayDate(parseLocalDate(localDate), {
+    day: "numeric",
+    month: "short",
+  })
 }
 
 export function formatMonthLabel(date: Date) {
-  return format(date, "MMMM yyyy").toUpperCase()
+  return toLocaleUpper(
+    formatDisplayDate(date, {
+      month: "long",
+      year: "numeric",
+    }),
+  )
+}
+
+export function formatDayOfMonth(date: Date) {
+  return formatDisplayDate(date, { day: "numeric" })
+}
+
+export function getFirstDayOfWeek(): WeekStartsOn {
+  const locale = getPrimaryUserLocale()
+  const LocaleConstructor = (Intl as unknown as IntlWithLocale).Locale
+
+  if (locale && LocaleConstructor) {
+    const firstDay = new LocaleConstructor(locale).weekInfo?.firstDay
+
+    if (firstDay && firstDay >= 1 && firstDay <= 7) {
+      return (firstDay % 7) as WeekStartsOn
+    }
+  }
+
+  return 1
+}
+
+export function getCalendarWeekdays() {
+  const firstDay = getFirstDayOfWeek()
+  const formatter = new Intl.DateTimeFormat(getUserLocales(), {
+    weekday: "short",
+  })
+  const firstSunday = new Date(2020, 5, 7)
+
+  return Array.from({ length: 7 }, (_, index) => {
+    const weekday = (firstDay + index) % 7
+    return formatter.format(addDays(firstSunday, weekday))
+  })
 }
 
 export function formatDuration(totalSeconds: number) {

@@ -5,7 +5,6 @@ import {
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
-  format,
   isSameMonth,
   startOfMonth,
   startOfWeek,
@@ -15,15 +14,16 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { getWorkoutDates } from "@/db/repositories/workoutsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import {
+  formatDayOfMonth,
   formatMonthLabel,
+  getCalendarWeekdays,
+  getFirstDayOfWeek,
   parseLocalDate,
   toLocalDateString,
 } from "@/shared/model/dates"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { IconButton } from "@/shared/ui/IconButton"
 import { cn } from "@/lib/utils"
-
-const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 export function CalendarScreen() {
   const navigate = useNavigate()
@@ -32,6 +32,8 @@ export function CalendarScreen() {
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const [monthDate, setMonthDate] = useState(() => parseLocalDate(selectedDate))
   const [workoutDates, setWorkoutDates] = useState<string[]>([])
+  const weekStartsOn = getFirstDayOfWeek()
+  const weekdays = useMemo(() => getCalendarWeekdays(), [])
 
   useEffect(() => {
     let cancelled = false
@@ -53,10 +55,10 @@ export function CalendarScreen() {
     const monthEnd = endOfMonth(monthDate)
 
     return eachDayOfInterval({
-      start: startOfWeek(monthStart, { weekStartsOn: 1 }),
-      end: endOfWeek(monthEnd, { weekStartsOn: 1 }),
+      start: startOfWeek(monthStart, { weekStartsOn }),
+      end: endOfWeek(monthEnd, { weekStartsOn }),
     })
-  }, [monthDate])
+  }, [monthDate, weekStartsOn])
 
   const openDate = (date: Date) => {
     const localDate = toLocalDateString(date)
@@ -113,7 +115,7 @@ export function CalendarScreen() {
               type="button"
               onClick={() => openDate(day)}
             >
-              <span>{format(day, "d")}</span>
+              <span>{formatDayOfMonth(day)}</span>
               {hasWorkout && (
                 <span className="absolute inset-x-0 bottom-2 mx-auto h-1 w-5 rounded-full bg-cyan-400" />
               )}
