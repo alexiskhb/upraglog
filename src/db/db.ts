@@ -254,7 +254,6 @@ async function initializeDatabaseInternal() {
     if (!existingSettings) {
       await db.settings.put({
         id: "app",
-        unitSystem: "metric",
         keepScreenOn: true,
         skipEmptyDaysOnDayNavigation: false,
         updatedAt: new Date().toISOString(),

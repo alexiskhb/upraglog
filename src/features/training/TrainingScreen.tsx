@@ -11,7 +11,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import type {
-  AppSettings,
   ExerciseType,
   ExerciseSetDefaults,
   SetEntry,
@@ -25,9 +24,7 @@ import {
   reorderSets,
   updateSet,
 } from "@/db/repositories/workoutsRepo"
-import { getSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
-import { weightUnit, distanceUnit } from "@/shared/model/units"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
@@ -59,13 +56,11 @@ type FieldConfig = {
 
 function fieldsForExerciseType(
   exerciseType: ExerciseType,
-  settings: AppSettings,
 ): FieldConfig[] {
   const weightField: FieldConfig = {
     key: "weight",
     label: "Weight",
-    step: settings.unitSystem === "metric" ? 2.5 : 5,
-    unit: weightUnit(settings.unitSystem),
+    step: 2.5,
   }
   const repsField: FieldConfig = {
     key: "reps",
@@ -76,7 +71,6 @@ function fieldsForExerciseType(
     key: "distance",
     label: "Distance",
     step: 0.1,
-    unit: distanceUnit(settings.unitSystem),
   }
   const durationField: FieldConfig = {
     key: "durationSeconds",
@@ -147,11 +141,6 @@ export function TrainingScreen() {
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const setSelectedDate = useAppStore((state) => state.setSelectedDate)
   const [detail, setDetail] = useState<TrainingDetail | undefined>()
-  const [settings, setSettings] = useState<AppSettings>({
-    unitSystem: "metric",
-    keepScreenOn: true,
-    skipEmptyDaysOnDayNavigation: false,
-  })
   const [input, setInput] = useState<InputState>(defaultInput)
   const [loadedWorkoutExerciseId, setLoadedWorkoutExerciseId] = useState<
     string | undefined
@@ -163,28 +152,23 @@ export function TrainingScreen() {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([getWorkoutExerciseDetail(workoutExerciseId), getSettings()]).then(
-      ([nextDetail, appSettings]) => {
-        if (cancelled) {
-          return
+    getWorkoutExerciseDetail(workoutExerciseId).then((nextDetail) => {
+      if (cancelled) {
+        return
+      }
+
+      setDetail(nextDetail)
+
+      if (nextDetail) {
+        setSelectedDate(nextDetail.workout.localDate)
+
+        if (nextDetail.workoutExercise.id !== loadedWorkoutExerciseId) {
+          setInput(inputFromExerciseSetDefaults(nextDetail.exercise.lastSetInput))
+          setSelectedSetId(undefined)
+          setLoadedWorkoutExerciseId(nextDetail.workoutExercise.id)
         }
-
-        setDetail(nextDetail)
-        setSettings(appSettings)
-
-        if (nextDetail) {
-          setSelectedDate(nextDetail.workout.localDate)
-
-          if (nextDetail.workoutExercise.id !== loadedWorkoutExerciseId) {
-            setInput(
-              inputFromExerciseSetDefaults(nextDetail.exercise.lastSetInput),
-            )
-            setSelectedSetId(undefined)
-            setLoadedWorkoutExerciseId(nextDetail.workoutExercise.id)
-          }
-        }
-      },
-    )
+      }
+    })
 
     return () => {
       cancelled = true
@@ -195,9 +179,8 @@ export function TrainingScreen() {
     () =>
       fieldsForExerciseType(
         detail?.exercise.exerciseType ?? "strength",
-        settings,
       ),
-    [detail?.exercise.exerciseType, settings],
+    [detail?.exercise.exerciseType],
   )
   const selectedSet = detail?.sets.find((set) => set.id === selectedSetId)
   const commentSet = detail?.sets.find((set) => set.id === commentSetId)
@@ -355,7 +338,6 @@ export function TrainingScreen() {
                     key={set.id}
                     selected={set.id === selectedSetId}
                     set={set}
-                    unitSystem={settings.unitSystem}
                     onComment={() => setCommentSetId(set.id)}
                     onSelect={() => {
                       if (set.id === selectedSetId) {

@@ -1,13 +1,5 @@
-import type { ExerciseType, SetEntry, UnitSystem } from "@/db/schema"
+import type { ExerciseType, SetEntry } from "@/db/schema"
 import { formatDuration } from "./dates"
-
-export function weightUnit(unitSystem: UnitSystem) {
-  return unitSystem === "metric" ? "kgs" : "lbs"
-}
-
-export function distanceUnit(unitSystem: UnitSystem) {
-  return unitSystem === "metric" ? "km" : "mi"
-}
 
 export function displayNumber(
   value: number | null | undefined,
@@ -33,10 +25,9 @@ function displayDuration(value: number | null | undefined) {
 export function formatSetPrimaryValue(
   set: SetEntry,
   exerciseType: ExerciseType,
-  unitSystem: UnitSystem,
 ) {
   if (exerciseType === "cardio" || exerciseType === "distance_time") {
-    return `${displayNumber(set.distance)} ${distanceUnit(unitSystem)}`
+    return displayNumber(set.distance)
   }
 
   if (exerciseType === "time_only") {
@@ -47,7 +38,7 @@ export function formatSetPrimaryValue(
     return displayReps(set.reps)
   }
 
-  return `${displayNumber(set.weight)} ${weightUnit(unitSystem)}`
+  return displayNumber(set.weight)
 }
 
 export function formatSetSecondaryValue(

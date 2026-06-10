@@ -72,13 +72,12 @@ const setEntrySchema = z.object({
 })
 
 const settingsSchema = z.object({
-  unitSystem: z.enum(["metric", "imperial"]),
+  unitSystem: z.enum(["metric", "imperial"]).optional(),
   keepScreenOn: z.boolean().optional(),
   keepScreenOnDuringTraining: z.boolean().optional(),
   skipEmptyDaysOnDayNavigation: z.boolean().optional(),
   skipEmptyDaysOnSwipe: z.boolean().optional(),
 }).transform((settings) => ({
-  unitSystem: settings.unitSystem,
   keepScreenOn:
     settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
   skipEmptyDaysOnDayNavigation:

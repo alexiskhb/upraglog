@@ -1,4 +1,4 @@
-import type { ExerciseType, SetEntry, UnitSystem } from "@/db/schema"
+import type { ExerciseType, SetEntry } from "@/db/schema"
 import {
   formatSetPrimaryValue,
   formatSetSecondaryValue,
@@ -8,7 +8,6 @@ type ExerciseCardProps = {
   name: string
   exerciseType: ExerciseType
   sets: SetEntry[]
-  unitSystem: UnitSystem
   onOpen: () => void
 }
 
@@ -16,7 +15,6 @@ export function ExerciseCard({
   name,
   exerciseType,
   sets,
-  unitSystem,
   onOpen,
 }: ExerciseCardProps) {
   return (
@@ -38,7 +36,7 @@ export function ExerciseCard({
             >
               <span />
               <span className="text-right">
-                {formatSetPrimaryValue(set, exerciseType, unitSystem)}
+                {formatSetPrimaryValue(set, exerciseType)}
               </span>
               <span className="text-right">
                 {formatSetSecondaryValue(set, exerciseType)}

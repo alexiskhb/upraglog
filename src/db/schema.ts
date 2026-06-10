@@ -18,8 +18,6 @@ export type ExerciseType =
   | "time_only"
   | "distance_time"
 
-export type UnitSystem = "metric" | "imperial"
-
 export type ExerciseSetDefaults = {
   weight?: number | null
   reps?: number | null
@@ -70,7 +68,6 @@ export type SetEntry = {
 }
 
 export type AppSettings = {
-  unitSystem: UnitSystem
   keepScreenOn: boolean
   skipEmptyDaysOnDayNavigation: boolean
 }
@@ -80,6 +77,7 @@ export type StoredAppSettings = AppSettings & {
   updatedAt: string
   keepScreenOnDuringTraining?: boolean
   skipEmptyDaysOnSwipe?: boolean
+  unitSystem?: "metric" | "imperial"
 }
 
 export type WorkoutExerciseDetail = {

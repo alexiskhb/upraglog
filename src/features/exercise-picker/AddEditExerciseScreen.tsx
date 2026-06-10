@@ -180,7 +180,7 @@ export function AddEditExerciseScreen() {
           Save
         </ActionButton>
         <ActionButton tone="secondary" onClick={() => void navigate({ to: "/picker" })}>
-          Clear
+          Cancel
         </ActionButton>
       </div>
     </ScreenContainer>

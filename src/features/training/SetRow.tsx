@@ -1,7 +1,7 @@
 import { MessageCircle, GripVertical } from "lucide-react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import type { ExerciseType, SetEntry, UnitSystem } from "@/db/schema"
+import type { ExerciseType, SetEntry } from "@/db/schema"
 import {
   formatSetPrimaryValue,
   formatSetSecondaryValue,
@@ -12,7 +12,6 @@ type SetRowProps = {
   set: SetEntry
   index: number
   exerciseType: ExerciseType
-  unitSystem: UnitSystem
   selected: boolean
   onSelect: () => void
   onComment: () => void
@@ -22,7 +21,6 @@ export function SetRow({
   set,
   index,
   exerciseType,
-  unitSystem,
   selected,
   onSelect,
   onComment,
@@ -64,7 +62,7 @@ export function SetRow({
       >
         <span className="text-center text-zinc-400">{index + 1}</span>
         <span className="text-right">
-          {formatSetPrimaryValue(set, exerciseType, unitSystem)}
+          {formatSetPrimaryValue(set, exerciseType)}
         </span>
         <span className="text-right">
           {formatSetSecondaryValue(set, exerciseType)}

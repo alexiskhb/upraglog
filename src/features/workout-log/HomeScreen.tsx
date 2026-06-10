@@ -44,7 +44,6 @@ export function HomeScreen() {
     exercises: [],
   })
   const [settings, setSettings] = useState<AppSettings>({
-    unitSystem: "metric",
     keepScreenOn: true,
     skipEmptyDaysOnDayNavigation: false,
   })
@@ -172,7 +171,6 @@ export function HomeScreen() {
               key={entry.workoutExercise.id}
               name={entry.exercise.name}
               sets={entry.sets}
-              unitSystem={settings.unitSystem}
               onOpen={() =>
                 void navigate({
                   to: "/training/$workoutExerciseId",

@@ -2,14 +2,11 @@ import { db } from "@/db/db"
 import type {
   Exercise,
   SetEntry,
-  UnitSystem,
   Workout,
   WorkoutExercise,
 } from "@/db/schema"
-import { getSettings } from "@/db/repositories/settingsRepo"
 import { formatDuration, getWorkoutDurationSeconds } from "@/shared/model/dates"
 import { formatExerciseCategory, formatExerciseType } from "@/shared/model/exercises"
-import { distanceUnit, weightUnit } from "@/shared/model/units"
 
 const csvHeaders = [
   "Workout Date",
@@ -22,10 +19,8 @@ const csvHeaders = [
   "Exercise Type",
   "Set Number",
   "Weight",
-  "Weight Unit",
   "Reps",
   "Distance",
-  "Distance Unit",
   "Set Duration",
   "Comment",
 ]
@@ -95,14 +90,12 @@ function buildSetRow({
   exercise,
   set,
   setIndex,
-  unitSystem,
 }: {
   workout: Workout
   workoutExercise: WorkoutExercise
   exercise: Exercise
   set?: SetEntry
   setIndex?: number
-  unitSystem: UnitSystem
 }): TrainingLogRow {
   return [
     workout.localDate,
@@ -115,10 +108,8 @@ function buildSetRow({
     formatExerciseType(exercise.exerciseType),
     setIndex === undefined ? undefined : setIndex + 1,
     set?.weight ?? undefined,
-    set?.weight == null ? undefined : weightUnit(unitSystem),
     set?.reps ?? undefined,
     set?.distance ?? undefined,
-    set?.distance == null ? undefined : distanceUnit(unitSystem),
     set?.durationSeconds == null
       ? undefined
       : formatDuration(set.durationSeconds),
@@ -127,14 +118,12 @@ function buildSetRow({
 }
 
 export async function exportTrainingLogCsv() {
-  const [workouts, workoutExercises, sets, exercises, settings] =
-    await Promise.all([
-      db.workouts.toArray(),
-      db.workoutExercises.toArray(),
-      db.sets.toArray(),
-      db.exercises.toArray(),
-      getSettings(),
-    ])
+  const [workouts, workoutExercises, sets, exercises] = await Promise.all([
+    db.workouts.toArray(),
+    db.workoutExercises.toArray(),
+    db.sets.toArray(),
+    db.exercises.toArray(),
+  ])
   const workoutExercisesByWorkoutId = new Map<string, WorkoutExercise[]>()
   const setsByWorkoutExerciseId = new Map<string, SetEntry[]>()
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
@@ -185,7 +174,6 @@ export async function exportTrainingLogCsv() {
             workout,
             workoutExercise,
             exercise,
-            unitSystem: settings.unitSystem,
           }),
         )
         continue
@@ -199,7 +187,6 @@ export async function exportTrainingLogCsv() {
             exercise,
             set,
             setIndex,
-            unitSystem: settings.unitSystem,
           }),
         )
       })

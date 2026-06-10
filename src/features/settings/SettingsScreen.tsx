@@ -17,7 +17,6 @@ export function SettingsScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const [settings, setSettings] = useState<AppSettings>({
-    unitSystem: "metric",
     keepScreenOn: true,
     skipEmptyDaysOnDayNavigation: false,
   })
@@ -40,7 +39,6 @@ export function SettingsScreen() {
   const saveSettings = async (input: Partial<AppSettings>) => {
     const updated = await updateSettings(input)
     setSettings({
-      unitSystem: updated.unitSystem,
       keepScreenOn: updated.keepScreenOn,
       skipEmptyDaysOnDayNavigation: updated.skipEmptyDaysOnDayNavigation,
     })
@@ -92,37 +90,7 @@ export function SettingsScreen() {
       )}
 
       <section className="app-surface space-y-4 rounded-md p-3.5">
-        <div>
-          <div className="mb-2 text-xs font-semibold uppercase tracking-normal text-zinc-400">
-            Default Unit System
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              className={`h-11 cursor-pointer rounded-md border text-sm transition ${
-                settings.unitSystem === "metric"
-                  ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100"
-                  : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
-              }`}
-              type="button"
-              onClick={() => void saveSettings({ unitSystem: "metric" })}
-            >
-              Metric / kg
-            </button>
-            <button
-              className={`h-11 cursor-pointer rounded-md border text-sm transition ${
-                settings.unitSystem === "imperial"
-                  ? "border-cyan-300/50 bg-cyan-400/15 text-cyan-100"
-                  : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
-              }`}
-              type="button"
-              onClick={() => void saveSettings({ unitSystem: "imperial" })}
-            >
-              Imperial / lbs
-            </button>
-          </div>
-        </div>
-
-        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+        <label className="flex items-center justify-between gap-3">
           <span>
             <Label className="text-sm text-zinc-200">
               Keep Screen On
