@@ -24,7 +24,6 @@ const csvHeaders = [
   "Weight",
   "Reps",
   "Distance",
-  "Set Duration",
   "Comment",
 ]
 
@@ -83,9 +82,10 @@ function getWorkoutProfileName(workout: Workout) {
   return workout.profileName || defaultProfileName
 }
 
-function byWorkoutDate(a: Workout, b: Workout) {
+function byWorkoutExportOrder(a: Workout, b: Workout) {
   return (
     a.localDate.localeCompare(b.localDate) ||
+    (a.startedAt ?? "").localeCompare(b.startedAt ?? "") ||
     getWorkoutProfileName(a).localeCompare(getWorkoutProfileName(b))
   )
 }
@@ -121,9 +121,6 @@ function buildSetRow({
     set?.weight ?? undefined,
     set?.reps ?? undefined,
     set?.distance ?? undefined,
-    set?.durationSeconds == null
-      ? undefined
-      : formatDuration(set.durationSeconds),
     set?.comment,
   ]
 }
@@ -157,7 +154,7 @@ export async function exportTrainingLogCsv() {
     setsByWorkoutExerciseId.set(set.workoutExerciseId, current)
   }
 
-  for (const workout of workouts.sort(byWorkoutDate)) {
+  for (const workout of workouts.sort(byWorkoutExportOrder)) {
     if (!exportProfiles.has(getWorkoutProfileName(workout))) {
       continue
     }
@@ -167,13 +164,6 @@ export async function exportTrainingLogCsv() {
     ).sort(byOrder)
 
     if (workoutExerciseRows.length === 0) {
-      rows.push([
-        workout.localDate,
-        getWorkoutProfileName(workout),
-        formatStoredDateTime(workout.startedAt),
-        formatStoredDateTime(workout.endedAt),
-        formatWorkoutDuration(workout),
-      ])
       continue
     }
 
