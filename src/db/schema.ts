@@ -21,10 +21,10 @@ export type ExerciseType =
 export type UnitSystem = "metric" | "imperial"
 
 export type ExerciseSetDefaults = {
-  weight?: number
-  reps?: number
-  distance?: number
-  durationSeconds?: number
+  weight?: number | null
+  reps?: number | null
+  distance?: number | null
+  durationSeconds?: number | null
 }
 
 export type Exercise = {
@@ -60,10 +60,10 @@ export type SetEntry = {
   id: string
   workoutExerciseId: string
   order: number
-  weight?: number
-  reps?: number
-  distance?: number
-  durationSeconds?: number
+  weight?: number | null
+  reps?: number | null
+  distance?: number | null
+  durationSeconds?: number | null
   comment?: string
   createdAt: string
   updatedAt: string
@@ -99,10 +99,10 @@ export type ExerciseUsageStats = {
 }
 
 export type SetEntryInput = {
-  weight?: number
-  reps?: number
-  distance?: number
-  durationSeconds?: number
+  weight?: number | null
+  reps?: number | null
+  distance?: number | null
+  durationSeconds?: number | null
   comment?: string
 }
 

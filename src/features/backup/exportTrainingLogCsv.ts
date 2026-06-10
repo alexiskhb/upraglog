@@ -114,12 +114,12 @@ function buildSetRow({
     formatExerciseCategory(exercise.category),
     formatExerciseType(exercise.exerciseType),
     setIndex === undefined ? undefined : setIndex + 1,
-    set?.weight,
-    set?.weight === undefined ? undefined : weightUnit(unitSystem),
-    set?.reps,
-    set?.distance,
-    set?.distance === undefined ? undefined : distanceUnit(unitSystem),
-    set?.durationSeconds === undefined
+    set?.weight ?? undefined,
+    set?.weight == null ? undefined : weightUnit(unitSystem),
+    set?.reps ?? undefined,
+    set?.distance ?? undefined,
+    set?.distance == null ? undefined : distanceUnit(unitSystem),
+    set?.durationSeconds == null
       ? undefined
       : formatDuration(set.durationSeconds),
     set?.comment,

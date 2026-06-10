@@ -4,12 +4,12 @@ import { formatDuration } from "@/shared/model/dates"
 
 type NumericStepperProps = {
   label: string
-  value: number
+  value: number | null
   step: number
   min?: number
   unit?: string
   isDuration?: boolean
-  onChange: (value: number) => void
+  onChange: (value: number | null) => void
 }
 
 export function NumericStepper({
@@ -21,14 +21,25 @@ export function NumericStepper({
   isDuration = false,
   onChange,
 }: NumericStepperProps) {
-  const displayValue = isDuration
-    ? formatDuration(value)
-    : Number.isInteger(value)
-      ? value.toString()
-      : value.toFixed(1)
+  const displayValue =
+    value === null
+      ? ""
+      : isDuration
+        ? formatDuration(value)
+        : Number.isInteger(value)
+          ? value.toString()
+          : value.toFixed(1)
 
   const setValue = (nextValue: number) => {
     onChange(Math.max(min, Number(nextValue.toFixed(1))))
+  }
+
+  const decreaseValue = () => {
+    setValue(value === null ? min : value - step)
+  }
+
+  const increaseValue = () => {
+    setValue((value ?? min) + step)
   }
 
   return (
@@ -41,7 +52,7 @@ export function NumericStepper({
         <IconButton
           className="mx-auto text-zinc-100"
           title={`Decrease ${label}`}
-          onClick={() => setValue(value - step)}
+          onClick={decreaseValue}
         >
           <Minus className="size-5" />
         </IconButton>
@@ -51,7 +62,7 @@ export function NumericStepper({
         <IconButton
           className="mx-auto text-zinc-100"
           title={`Increase ${label}`}
-          onClick={() => setValue(value + step)}
+          onClick={increaseValue}
         >
           <Plus className="size-5" />
         </IconButton>

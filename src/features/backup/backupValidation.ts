@@ -23,10 +23,10 @@ const exerciseTypeSchema = z.enum([
 ])
 
 const exerciseSetDefaultsSchema = z.object({
-  weight: z.number().optional(),
-  reps: z.number().optional(),
-  distance: z.number().optional(),
-  durationSeconds: z.number().optional(),
+  weight: z.number().nullable().optional(),
+  reps: z.number().nullable().optional(),
+  distance: z.number().nullable().optional(),
+  durationSeconds: z.number().nullable().optional(),
 })
 
 const exerciseSchema = z.object({
@@ -62,10 +62,10 @@ const setEntrySchema = z.object({
   id: z.string(),
   workoutExerciseId: z.string(),
   order: z.number(),
-  weight: z.number().optional(),
-  reps: z.number().optional(),
-  distance: z.number().optional(),
-  durationSeconds: z.number().optional(),
+  weight: z.number().nullable().optional(),
+  reps: z.number().nullable().optional(),
+  distance: z.number().nullable().optional(),
+  durationSeconds: z.number().nullable().optional(),
   comment: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),

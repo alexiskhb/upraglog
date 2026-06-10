@@ -9,12 +9,25 @@ export function distanceUnit(unitSystem: UnitSystem) {
   return unitSystem === "metric" ? "km" : "mi"
 }
 
-export function displayNumber(value: number | undefined, fractionDigits = 1) {
-  if (value === undefined || Number.isNaN(value)) {
+export function displayNumber(
+  value: number | null | undefined,
+  fractionDigits = 1,
+) {
+  if (value === null || value === undefined || Number.isNaN(value)) {
     return "-"
   }
 
   return value.toFixed(fractionDigits)
+}
+
+function displayReps(value: number | null | undefined) {
+  return value === null || value === undefined
+    ? "- reps"
+    : `${Math.round(value)} reps`
+}
+
+function displayDuration(value: number | null | undefined) {
+  return value === null || value === undefined ? "-" : formatDuration(value)
 }
 
 export function formatSetPrimaryValue(
@@ -27,11 +40,11 @@ export function formatSetPrimaryValue(
   }
 
   if (exerciseType === "time_only") {
-    return formatDuration(set.durationSeconds ?? 0)
+    return displayDuration(set.durationSeconds)
   }
 
   if (exerciseType === "reps_only" || exerciseType === "reps_time") {
-    return `${Math.round(set.reps ?? 0)} reps`
+    return displayReps(set.reps)
   }
 
   return `${displayNumber(set.weight)} ${weightUnit(unitSystem)}`
@@ -51,8 +64,8 @@ export function formatSetSecondaryValue(
     exerciseType === "weight_time" ||
     exerciseType === "reps_time"
   ) {
-    return formatDuration(set.durationSeconds ?? 0)
+    return displayDuration(set.durationSeconds)
   }
 
-  return `${Math.round(set.reps ?? 0)} reps`
+  return displayReps(set.reps)
 }

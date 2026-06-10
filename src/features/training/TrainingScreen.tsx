@@ -40,13 +40,13 @@ type TrainingDetail = NonNullable<
 >
 
 type FieldKey = "weight" | "reps" | "distance" | "durationSeconds"
-type InputState = Record<FieldKey, number>
+type InputState = Record<FieldKey, number | null>
 
 const defaultInput: InputState = {
-  weight: 0,
-  reps: 5,
-  distance: 0,
-  durationSeconds: 300,
+  weight: null,
+  reps: null,
+  distance: null,
+  durationSeconds: null,
 }
 
 type FieldConfig = {
@@ -110,10 +110,10 @@ function fieldsForExerciseType(
 
 function inputFromSet(set: SetEntry): InputState {
   return {
-    weight: set.weight ?? defaultInput.weight,
-    reps: set.reps ?? defaultInput.reps,
-    distance: set.distance ?? defaultInput.distance,
-    durationSeconds: set.durationSeconds ?? defaultInput.durationSeconds,
+    weight: set.weight ?? null,
+    reps: set.reps ?? null,
+    distance: set.distance ?? null,
+    durationSeconds: set.durationSeconds ?? null,
   }
 }
 
@@ -121,11 +121,10 @@ function inputFromExerciseSetDefaults(
   lastSetInput?: ExerciseSetDefaults,
 ): InputState {
   return {
-    weight: lastSetInput?.weight ?? defaultInput.weight,
-    reps: lastSetInput?.reps ?? defaultInput.reps,
-    distance: lastSetInput?.distance ?? defaultInput.distance,
-    durationSeconds:
-      lastSetInput?.durationSeconds ?? defaultInput.durationSeconds,
+    weight: lastSetInput?.weight ?? null,
+    reps: lastSetInput?.reps ?? null,
+    distance: lastSetInput?.distance ?? null,
+    durationSeconds: lastSetInput?.durationSeconds ?? null,
   }
 }
 
