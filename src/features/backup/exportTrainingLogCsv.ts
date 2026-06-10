@@ -29,6 +29,7 @@ const csvHeaders = [
   "Weight",
   "Reps",
   "Distance",
+  "Time",
   "Comment",
 ]
 
@@ -87,6 +88,14 @@ function formatWorkoutDuration(workout: Workout) {
   )
 }
 
+function formatSetDuration(set?: SetEntry) {
+  if (set?.durationSeconds === null || set?.durationSeconds === undefined) {
+    return undefined
+  }
+
+  return formatDuration(set.durationSeconds)
+}
+
 function getWorkoutProfileName(workout: Workout) {
   return workout.profileName || defaultProfileName
 }
@@ -138,6 +147,7 @@ function buildSetRow({
     set?.weight ?? undefined,
     set?.reps ?? undefined,
     set?.distance ?? undefined,
+    formatSetDuration(set),
     set?.comment,
   ]
 }

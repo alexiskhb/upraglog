@@ -57,6 +57,8 @@ export function HomeScreen() {
     exportAllProfiles: false,
     spreadsheetExportMonthLimit: null,
     spreadsheetShareMessage: "",
+    spreadsheetShareIncludeMessage: true,
+    spreadsheetShareIncludeAiInstructions: true,
     setCommentTemplates: [...defaultSetCommentTemplates],
   })
   const [workoutDates, setWorkoutDates] = useState<string[]>([])

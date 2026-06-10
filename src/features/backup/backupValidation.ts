@@ -95,6 +95,8 @@ const settingsSchema = z.object({
   exportAllProfiles: z.boolean().optional(),
   spreadsheetExportMonthLimit: z.number().nullable().optional(),
   spreadsheetShareMessage: z.string().optional(),
+  spreadsheetShareIncludeMessage: z.boolean().optional(),
+  spreadsheetShareIncludeAiInstructions: z.boolean().optional(),
   setCommentTemplates: z.array(z.string()).optional(),
 }).transform((settings) => ({
   ...resolveSelectedProfile(settings.profiles, settings.selectedProfile),
@@ -111,6 +113,9 @@ const settingsSchema = z.object({
       ? Math.floor(settings.spreadsheetExportMonthLimit)
       : null,
   spreadsheetShareMessage: settings.spreadsheetShareMessage ?? "",
+  spreadsheetShareIncludeMessage: settings.spreadsheetShareIncludeMessage ?? true,
+  spreadsheetShareIncludeAiInstructions:
+    settings.spreadsheetShareIncludeAiInstructions ?? true,
   setCommentTemplates: normalizeSetCommentTemplates(
     settings.setCommentTemplates,
   ),

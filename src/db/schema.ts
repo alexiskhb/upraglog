@@ -72,6 +72,8 @@ export type AppSettings = {
   exportAllProfiles: boolean
   spreadsheetExportMonthLimit: number | null
   spreadsheetShareMessage: string
+  spreadsheetShareIncludeMessage: boolean
+  spreadsheetShareIncludeAiInstructions: boolean
   setCommentTemplates: string[]
 }
 

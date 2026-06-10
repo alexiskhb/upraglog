@@ -250,6 +250,8 @@ async function initializeDatabaseInternal() {
           exportAllProfiles: false,
           spreadsheetExportMonthLimit: null,
           spreadsheetShareMessage: "",
+          spreadsheetShareIncludeMessage: true,
+          spreadsheetShareIncludeAiInstructions: true,
           setCommentTemplates: [...defaultSetCommentTemplates],
           updatedAt: new Date().toISOString(),
         })

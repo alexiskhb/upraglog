@@ -19,6 +19,8 @@ const defaultSettings: StoredAppSettings = {
   exportAllProfiles: false,
   spreadsheetExportMonthLimit: null,
   spreadsheetShareMessage: "",
+  spreadsheetShareIncludeMessage: true,
+  spreadsheetShareIncludeAiInstructions: true,
   setCommentTemplates: [...defaultSetCommentTemplates],
   updatedAt: new Date().toISOString(),
 }
@@ -55,6 +57,10 @@ function normalizeSettings(settings?: Partial<StoredAppSettings>): AppSettings {
       settings?.spreadsheetExportMonthLimit,
     ),
     spreadsheetShareMessage: settings?.spreadsheetShareMessage ?? "",
+    spreadsheetShareIncludeMessage:
+      settings?.spreadsheetShareIncludeMessage ?? true,
+    spreadsheetShareIncludeAiInstructions:
+      settings?.spreadsheetShareIncludeAiInstructions ?? true,
     setCommentTemplates: normalizeSetCommentTemplates(
       settings?.setCommentTemplates,
     ),

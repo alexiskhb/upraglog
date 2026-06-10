@@ -24,6 +24,7 @@ import {
   downloadTextFile,
   exportBackupJson,
 } from "@/features/backup/exportJson"
+import { buildTrainingLogShareInstructions } from "@/features/backup/shareTrainingLogMessage"
 import { exportTrainingLogCsv } from "@/features/backup/exportTrainingLogCsv"
 import { parseBackupJson, restoreBackup } from "@/features/backup/importJson"
 
@@ -45,6 +46,8 @@ export function SettingsScreen() {
     exportAllProfiles: false,
     spreadsheetExportMonthLimit: null,
     spreadsheetShareMessage: "",
+    spreadsheetShareIncludeMessage: true,
+    spreadsheetShareIncludeAiInstructions: true,
     setCommentTemplates: [...defaultSetCommentTemplates],
   })
   const [newProfileName, setNewProfileName] = useState("")
@@ -218,9 +221,15 @@ export function SettingsScreen() {
       monthLimit: settings.spreadsheetExportMonthLimit,
     })
     const file = new File([text], filename, { type: "text/csv;charset=utf-8" })
+    const shareTextParts = [
+      settings.spreadsheetShareIncludeMessage ? shareMessage.trim() : "",
+      settings.spreadsheetShareIncludeAiInstructions
+        ? await buildTrainingLogShareInstructions()
+        : "",
+    ].filter(Boolean)
     const shareData: ShareData = {
       files: [file],
-      text: shareMessage.trim() || undefined,
+      text: shareTextParts.join("\n\n") || undefined,
       title: "Upraglog training log",
     }
 
@@ -395,8 +404,37 @@ export function SettingsScreen() {
             Message
             <ChevronDown className="size-4 text-zinc-500 transition group-open:rotate-180" />
           </summary>
+          <label className="mt-2 flex min-h-10 items-center justify-between gap-3 rounded-md border border-white/10 bg-[var(--app-surface)] px-3">
+            <span className="text-sm text-zinc-200">
+              Include AI Instructions
+            </span>
+            <input
+              checked={settings.spreadsheetShareIncludeAiInstructions}
+              className="size-5 accent-cyan-500"
+              type="checkbox"
+              onChange={(event) =>
+                void saveSettings({
+                  spreadsheetShareIncludeAiInstructions: event.target.checked,
+                })
+              }
+            />
+          </label>
+          <label className="mt-3 flex min-h-10 items-center justify-between gap-3 rounded-md border border-white/10 bg-[var(--app-surface)] px-3">
+            <span className="text-sm text-zinc-200">Include Message</span>
+            <input
+              checked={settings.spreadsheetShareIncludeMessage}
+              className="size-5 accent-cyan-500"
+              type="checkbox"
+              onChange={(event) =>
+                void saveSettings({
+                  spreadsheetShareIncludeMessage: event.target.checked,
+                })
+              }
+            />
+          </label>
           <Textarea
             className="mt-2 min-h-24 rounded-md border-white/10 bg-[var(--app-surface)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+            disabled={!settings.spreadsheetShareIncludeMessage}
             value={spreadsheetShareMessageDraft}
             onBlur={() => void saveSpreadsheetShareMessage()}
             onChange={(event) =>
