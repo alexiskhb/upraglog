@@ -7,6 +7,8 @@ type DateNavRowProps = {
   onPrevious: () => void
   onNext: () => void
   onToday: () => void
+  previousDisabled?: boolean
+  nextDisabled?: boolean
 }
 
 export function DateNavRow({
@@ -14,6 +16,8 @@ export function DateNavRow({
   onPrevious,
   onNext,
   onToday,
+  previousDisabled = false,
+  nextDisabled = false,
 }: DateNavRowProps) {
   return (
     <div className="sticky top-0 z-10 -mx-4 bg-[var(--app-bg)] px-4 pb-3 pt-1 sm:-mx-5 sm:px-5">
@@ -21,6 +25,7 @@ export function DateNavRow({
         <IconButton
           className="text-cyan-300"
           title="Previous day"
+          disabled={previousDisabled}
           onClick={onPrevious}
         >
           <ChevronLeft className="size-7" />
@@ -34,7 +39,12 @@ export function DateNavRow({
         >
           {formatDateLabel(localDate)}
         </button>
-        <IconButton className="text-cyan-300" title="Next day" onClick={onNext}>
+        <IconButton
+          className="text-cyan-300"
+          title="Next day"
+          disabled={nextDisabled}
+          onClick={onNext}
+        >
           <ChevronRight className="size-7" />
         </IconButton>
       </div>

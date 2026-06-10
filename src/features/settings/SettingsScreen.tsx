@@ -19,6 +19,7 @@ export function SettingsScreen() {
   const [settings, setSettings] = useState<AppSettings>({
     unitSystem: "metric",
     keepScreenOn: true,
+    skipEmptyDaysOnDayNavigation: false,
   })
   const [message, setMessage] = useState<string | undefined>()
 
@@ -41,6 +42,7 @@ export function SettingsScreen() {
     setSettings({
       unitSystem: updated.unitSystem,
       keepScreenOn: updated.keepScreenOn,
+      skipEmptyDaysOnDayNavigation: updated.skipEmptyDaysOnDayNavigation,
     })
     bumpRefresh()
   }
@@ -134,6 +136,24 @@ export function SettingsScreen() {
             className="data-checked:bg-cyan-500"
             onCheckedChange={(keepScreenOn) =>
               void saveSettings({ keepScreenOn })
+            }
+          />
+        </label>
+
+        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+          <span>
+            <Label className="text-sm text-zinc-200">
+              Skip Empty Days
+            </Label>
+            <span className="mt-1 block text-xs text-zinc-500">
+              Day arrows and swipes move only through training history.
+            </span>
+          </span>
+          <Switch
+            checked={settings.skipEmptyDaysOnDayNavigation}
+            className="data-checked:bg-cyan-500"
+            onCheckedChange={(skipEmptyDaysOnDayNavigation) =>
+              void saveSettings({ skipEmptyDaysOnDayNavigation })
             }
           />
         </label>

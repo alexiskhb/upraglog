@@ -5,6 +5,7 @@ const defaultSettings: StoredAppSettings = {
   id: "app",
   unitSystem: "metric",
   keepScreenOn: true,
+  skipEmptyDaysOnDayNavigation: false,
   updatedAt: new Date().toISOString(),
 }
 
@@ -20,6 +21,10 @@ export async function getSettings(): Promise<AppSettings> {
     unitSystem: settings.unitSystem,
     keepScreenOn:
       settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
+    skipEmptyDaysOnDayNavigation:
+      settings.skipEmptyDaysOnDayNavigation ??
+      settings.skipEmptyDaysOnSwipe ??
+      false,
   }
 }
 
@@ -30,6 +35,10 @@ export async function updateSettings(input: Partial<AppSettings>) {
         unitSystem: current.unitSystem,
         keepScreenOn:
           current.keepScreenOn ?? current.keepScreenOnDuringTraining ?? true,
+        skipEmptyDaysOnDayNavigation:
+          current.skipEmptyDaysOnDayNavigation ??
+          current.skipEmptyDaysOnSwipe ??
+          false,
       }
     : defaultSettings
   const updated: StoredAppSettings = {

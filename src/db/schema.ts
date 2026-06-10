@@ -64,12 +64,14 @@ export type SetEntry = {
 export type AppSettings = {
   unitSystem: UnitSystem
   keepScreenOn: boolean
+  skipEmptyDaysOnDayNavigation: boolean
 }
 
 export type StoredAppSettings = AppSettings & {
   id: "app"
   updatedAt: string
   keepScreenOnDuringTraining?: boolean
+  skipEmptyDaysOnSwipe?: boolean
 }
 
 export type WorkoutExerciseDetail = {

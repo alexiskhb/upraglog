@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import type { AppSettings, WorkoutDayDetail } from "@/db/schema"
 import {
+  getWorkoutDates,
   getWorkoutDetailByDate,
   startWorkoutTimer,
 } from "@/db/repositories/workoutsRepo"
@@ -18,6 +19,20 @@ import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
 import { DateNavRow } from "./DateNavRow"
 import { ExerciseCard } from "./ExerciseCard"
 
+type DayDirection = -1 | 1
+
+function getDayTransitionClass(currentDate: string, previousDate: string) {
+  if (currentDate > previousDate) {
+    return "day-transition-next"
+  }
+
+  if (currentDate < previousDate) {
+    return "day-transition-previous"
+  }
+
+  return ""
+}
+
 export function HomeScreen() {
   const { date } = useParams({ from: "/day/$date" })
   const navigate = useNavigate()
@@ -31,8 +46,24 @@ export function HomeScreen() {
   const [settings, setSettings] = useState<AppSettings>({
     unitSystem: "metric",
     keepScreenOn: true,
+    skipEmptyDaysOnDayNavigation: false,
   })
+  const [workoutDates, setWorkoutDates] = useState<string[]>([])
   const [touchStartX, setTouchStartX] = useState<number | undefined>()
+  const [dayTransitionClass, setDayTransitionClass] = useState("")
+  const today = todayString()
+  const skipEmptyDays = settings.skipEmptyDaysOnDayNavigation
+  const navigationDates = [...new Set([...workoutDates, today])].sort()
+  const previousNavigationDate = navigationDates.findLast(
+    (navigationDate) => navigationDate < date,
+  )
+  const nextNavigationDate = navigationDates.find(
+    (navigationDate) => navigationDate > date,
+  )
+  const previousDate = skipEmptyDays
+    ? previousNavigationDate
+    : shiftLocalDate(date, -1)
+  const nextDate = skipEmptyDays ? nextNavigationDate : shiftLocalDate(date, 1)
 
   useEffect(() => {
     setSelectedDate(date)
@@ -41,14 +72,17 @@ export function HomeScreen() {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([getWorkoutDetailByDate(date), getSettings()]).then(
-      ([workoutDetail, appSettings]) => {
-        if (!cancelled) {
-          setDetail(workoutDetail)
-          setSettings(appSettings)
-        }
-      },
-    )
+    Promise.all([
+      getWorkoutDetailByDate(date),
+      getSettings(),
+      getWorkoutDates(),
+    ]).then(([workoutDetail, appSettings, nextWorkoutDates]) => {
+      if (!cancelled) {
+        setDetail(workoutDetail)
+        setSettings(appSettings)
+        setWorkoutDates(nextWorkoutDates)
+      }
+    })
 
     return () => {
       cancelled = true
@@ -56,11 +90,24 @@ export function HomeScreen() {
   }, [date, refreshVersion])
 
   const navigateToDate = (nextDate: string) => {
+    setDayTransitionClass(getDayTransitionClass(nextDate, date))
     void navigate({ to: "/day/$date", params: { date: nextDate } })
   }
 
   const navigateToToday = () => {
-    navigateToDate(todayString())
+    navigateToDate(today)
+  }
+
+  const resolveAdjacentDate = (direction: DayDirection) => {
+    return direction > 0 ? nextDate : previousDate
+  }
+
+  const navigateAdjacent = (direction: DayDirection) => {
+    const nextAdjacentDate = resolveAdjacentDate(direction)
+
+    if (nextAdjacentDate) {
+      navigateToDate(nextAdjacentDate)
+    }
   }
 
   const startWorkout = async () => {
@@ -77,7 +124,7 @@ export function HomeScreen() {
     const delta = clientX - touchStartX
 
     if (Math.abs(delta) > 60) {
-      navigateToDate(shiftLocalDate(date, delta > 0 ? -1 : 1))
+      navigateAdjacent(delta > 0 ? -1 : 1)
     }
 
     setTouchStartX(undefined)
@@ -88,15 +135,18 @@ export function HomeScreen() {
 
   return (
     <ScreenContainer
-      className="gap-3"
+      className={`gap-3 ${dayTransitionClass}`}
+      key={date}
       onTouchStart={(event) => setTouchStartX(event.changedTouches[0].clientX)}
       onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0].clientX)}
     >
       <DateNavRow
-        localDate={date || todayString()}
-        onNext={() => navigateToDate(shiftLocalDate(date, 1))}
-        onPrevious={() => navigateToDate(shiftLocalDate(date, -1))}
+        localDate={date || today}
+        onNext={() => navigateAdjacent(1)}
+        onPrevious={() => navigateAdjacent(-1)}
         onToday={navigateToToday}
+        nextDisabled={!nextDate}
+        previousDisabled={!previousDate}
       />
 
       <div className="flex items-center justify-between gap-3 px-1 text-xs uppercase tracking-normal text-zinc-500">

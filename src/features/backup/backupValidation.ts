@@ -67,10 +67,16 @@ const settingsSchema = z.object({
   unitSystem: z.enum(["metric", "imperial"]),
   keepScreenOn: z.boolean().optional(),
   keepScreenOnDuringTraining: z.boolean().optional(),
+  skipEmptyDaysOnDayNavigation: z.boolean().optional(),
+  skipEmptyDaysOnSwipe: z.boolean().optional(),
 }).transform((settings) => ({
   unitSystem: settings.unitSystem,
   keepScreenOn:
     settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
+  skipEmptyDaysOnDayNavigation:
+    settings.skipEmptyDaysOnDayNavigation ??
+    settings.skipEmptyDaysOnSwipe ??
+    false,
 }))
 
 export const backupFileSchema = z.object({
