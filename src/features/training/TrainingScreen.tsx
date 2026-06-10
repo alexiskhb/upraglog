@@ -4,10 +4,15 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
+  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import type {
@@ -150,6 +155,17 @@ export function TrainingScreen() {
   }))
   const selectedSet = detail?.sets.find((set) => set.id === selectedSetId)
   const commentSet = detail?.sets.find((set) => set.id === commentSetId)
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 350,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  )
 
   const refreshDetail = async () => {
     const nextDetail = await getWorkoutExerciseDetail(workoutExerciseId)
@@ -278,7 +294,11 @@ export function TrainingScreen() {
         <div className="mb-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
           Set list
         </div>
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          collisionDetection={closestCenter}
+          sensors={sensors}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={detail.sets.map((set) => set.id)}
             strategy={verticalListSortingStrategy}

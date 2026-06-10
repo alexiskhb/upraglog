@@ -4,15 +4,20 @@ import {
   closestCenter,
   DndContext,
   type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
+  sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { GripVertical, MoreVertical, Plus, Repeat2, Trash2 } from "lucide-react"
+import { MoreVertical, Plus, Repeat2, Trash2 } from "lucide-react"
 import type { WorkoutDayDetail, WorkoutExerciseDetail } from "@/db/schema"
 import {
   deleteWorkoutExercise,
@@ -63,17 +68,15 @@ function WorkoutNavRow({
       style={style}
       onDelete={onDelete}
     >
-      <div className="grid min-h-14 grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2 bg-[var(--app-surface)] px-2 transition hover:bg-[#1b2026]">
+      <div className="grid min-h-14 grid-cols-[1fr_2.5rem] items-center gap-2 bg-[var(--app-surface)] px-2 transition hover:bg-[#1b2026]">
         <button
-          className="inline-flex size-9 cursor-grab items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 active:cursor-grabbing"
+          className="min-w-0 text-left"
           type="button"
-          title="Drag exercise"
+          title="Long press to move exercise"
+          onClick={onOpen}
           {...attributes}
           {...listeners}
         >
-          <GripVertical className="size-4" />
-        </button>
-        <button className="min-w-0 text-left" type="button" onClick={onOpen}>
           <div className="truncate text-sm font-medium text-zinc-50">
             {detail.exercise.id}
           </div>
@@ -132,6 +135,17 @@ export function WorkoutNavigationPanel() {
     workout: undefined,
     exercises: [],
   })
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 350,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  )
 
   useEffect(() => {
     if (!open) {
@@ -212,6 +226,7 @@ export function WorkoutNavigationPanel() {
           ) : (
             <DndContext
               collisionDetection={closestCenter}
+              sensors={sensors}
               onDragEnd={handleDragEnd}
             >
               <SortableContext

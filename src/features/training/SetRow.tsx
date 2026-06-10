@@ -1,4 +1,4 @@
-import { MessageCircle, GripVertical } from "lucide-react"
+import { MessageCircle } from "lucide-react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import type { ExerciseType, SetEntry } from "@/db/schema"
@@ -46,20 +46,11 @@ export function SetRow({
     >
       <div
         className={cn(
-          "grid min-h-12 grid-cols-[2.25rem_2.25rem_2rem_minmax(0,1fr)_5.5rem_2rem] items-center gap-2 bg-[var(--app-surface)] px-1 text-sm tabular-nums text-zinc-100 transition hover:bg-[#1b2026]",
+          "grid min-h-12 grid-cols-[2.25rem_2rem_minmax(0,1fr)_5.5rem_2.25rem] items-center gap-2 bg-[var(--app-surface)] px-1 text-sm tabular-nums text-zinc-100 transition hover:bg-[#1b2026]",
           selected &&
             "bg-cyan-400/15 text-cyan-50 shadow-[inset_3px_0_0_rgba(34,211,238,0.75)]",
         )}
       >
-        <input
-          aria-label={`Set ${index + 1} finished`}
-          checked={Boolean(set.finishedAt)}
-          className="mx-auto size-5 accent-cyan-500"
-          title="Set finished"
-          type="checkbox"
-          onChange={(event) => onFinishedChange(event.target.checked)}
-          onClick={(event) => event.stopPropagation()}
-        />
         <button
           className={cn(
             "inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 hover:text-cyan-300",
@@ -74,7 +65,14 @@ export function SetRow({
         >
           <MessageCircle className="size-4" />
         </button>
-        <button className="contents" type="button" onClick={onSelect}>
+        <button
+          className="contents"
+          type="button"
+          title="Long press to move set"
+          onClick={onSelect}
+          {...attributes}
+          {...listeners}
+        >
           <span className="text-center text-zinc-400">{index + 1}</span>
           <span className="text-right">
             {formatSetPrimaryValue(set, exerciseType)}
@@ -83,15 +81,15 @@ export function SetRow({
             {formatSetSecondaryValue(set, exerciseType)}
           </span>
         </button>
-        <button
-          className="inline-flex size-8 cursor-grab items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 active:cursor-grabbing"
-          type="button"
-          title="Drag set"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="size-4" />
-        </button>
+        <input
+          aria-label={`Set ${index + 1} finished`}
+          checked={Boolean(set.finishedAt)}
+          className="mx-auto size-5 accent-cyan-500"
+          title="Set finished"
+          type="checkbox"
+          onChange={(event) => onFinishedChange(event.target.checked)}
+          onClick={(event) => event.stopPropagation()}
+        />
       </div>
     </SwipeToDelete>
   )
