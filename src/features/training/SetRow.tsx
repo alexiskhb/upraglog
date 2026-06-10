@@ -6,6 +6,7 @@ import {
   formatSetPrimaryValue,
   formatSetSecondaryValue,
 } from "@/shared/model/units"
+import { SwipeToDelete } from "@/shared/ui/SwipeToDelete"
 import { cn } from "@/lib/utils"
 
 type SetRowProps = {
@@ -15,6 +16,7 @@ type SetRowProps = {
   selected: boolean
   onSelect: () => void
   onComment: () => void
+  onDelete: () => void
 }
 
 export function SetRow({
@@ -24,6 +26,7 @@ export function SetRow({
   selected,
   onSelect,
   onComment,
+  onDelete,
 }: SetRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: set.id })
@@ -33,50 +36,52 @@ export function SetRow({
   }
 
   return (
-    <div
-      className={cn(
-        "grid min-h-12 grid-cols-[2.5rem_2.5rem_1fr_6rem_2rem] items-center gap-2 border-b border-white/10 px-1 text-sm tabular-nums text-zinc-100 transition hover:bg-white/5",
-        selected && "bg-cyan-400/15 text-cyan-50 shadow-[inset_3px_0_0_rgba(34,211,238,0.75)]",
-      )}
+    <SwipeToDelete
+      className="border-b border-white/10"
       ref={setNodeRef}
       style={style}
+      onDelete={onDelete}
     >
-      <button
+      <div
         className={cn(
-          "inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 hover:text-cyan-300",
-          set.comment && "text-cyan-300",
+          "grid min-h-12 grid-cols-[2.5rem_2.5rem_1fr_6rem_2rem] items-center gap-2 bg-[var(--app-surface)] px-1 text-sm tabular-nums text-zinc-100 transition hover:bg-[#1b2026]",
+          selected &&
+            "bg-cyan-400/15 text-cyan-50 shadow-[inset_3px_0_0_rgba(34,211,238,0.75)]",
         )}
-        type="button"
-        title="Set comment"
-        onClick={(event) => {
-          event.stopPropagation()
-          onComment()
-        }}
       >
-        <MessageCircle className="size-4" />
-      </button>
-      <button
-        className="contents"
-        type="button"
-        onClick={onSelect}
-      >
-        <span className="text-center text-zinc-400">{index + 1}</span>
-        <span className="text-right">
-          {formatSetPrimaryValue(set, exerciseType)}
-        </span>
-        <span className="text-right">
-          {formatSetSecondaryValue(set, exerciseType)}
-        </span>
-      </button>
-      <button
-        className="inline-flex size-8 cursor-grab items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 active:cursor-grabbing"
-        type="button"
-        title="Drag set"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="size-4" />
-      </button>
-    </div>
+        <button
+          className={cn(
+            "inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 hover:text-cyan-300",
+            set.comment && "text-cyan-300",
+          )}
+          type="button"
+          title="Set comment"
+          onClick={(event) => {
+            event.stopPropagation()
+            onComment()
+          }}
+        >
+          <MessageCircle className="size-4" />
+        </button>
+        <button className="contents" type="button" onClick={onSelect}>
+          <span className="text-center text-zinc-400">{index + 1}</span>
+          <span className="text-right">
+            {formatSetPrimaryValue(set, exerciseType)}
+          </span>
+          <span className="text-right">
+            {formatSetSecondaryValue(set, exerciseType)}
+          </span>
+        </button>
+        <button
+          className="inline-flex size-8 cursor-grab items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 active:cursor-grabbing"
+          type="button"
+          title="Drag set"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-4" />
+        </button>
+      </div>
+    </SwipeToDelete>
   )
 }

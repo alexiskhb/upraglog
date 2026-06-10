@@ -145,11 +145,6 @@ export function TrainingScreen() {
     bumpRefresh()
   }
 
-  const clearForm = () => {
-    setInput(defaultInput)
-    setSelectedSetId(undefined)
-  }
-
   const clearSelection = () => {
     setSelectedSetId(undefined)
   }
@@ -174,15 +169,12 @@ export function TrainingScreen() {
     await refreshDetail()
   }
 
-  const deleteSelectedSet = async () => {
-    if (!selectedSet) {
-      clearForm()
-      return
-    }
-
-    await deleteSet(selectedSet.id)
+  const deleteSetRow = async (setId: string) => {
+    await deleteSet(setId)
     setMessage("Set deleted.")
-    clearSelection()
+    if (setId === selectedSetId) {
+      clearSelection()
+    }
     await refreshDetail()
   }
 
@@ -251,15 +243,9 @@ export function TrainingScreen() {
         ))}
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex">
         <ActionButton tone="save" onClick={saveSet}>
-          {selectedSet ? "Update" : "Save"}
-        </ActionButton>
-        <ActionButton
-          tone={selectedSet ? "delete" : "secondary"}
-          onClick={deleteSelectedSet}
-        >
-          {selectedSet ? "Delete" : "Clear"}
+          {selectedSet ? "Update" : "Add"}
         </ActionButton>
       </div>
 
@@ -280,8 +266,8 @@ export function TrainingScreen() {
           >
             <div className="overflow-hidden rounded-md border border-white/10 bg-[var(--app-surface)]">
               {detail.sets.length === 0 ? (
-                <div className="px-3 py-8 text-center text-sm text-zinc-500">
-                  No sets recorded
+                <div className="flex min-h-12 items-center justify-center px-3 text-center text-sm text-zinc-500">
+                  No sets added
                 </div>
               ) : (
                 detail.sets.map((set, index) => (
@@ -292,6 +278,7 @@ export function TrainingScreen() {
                     selected={set.id === selectedSetId}
                     set={set}
                     onComment={() => setCommentSetId(set.id)}
+                    onDelete={() => void deleteSetRow(set.id)}
                     onSelect={() => {
                       if (set.id === selectedSetId) {
                         setSelectedSetId(undefined)

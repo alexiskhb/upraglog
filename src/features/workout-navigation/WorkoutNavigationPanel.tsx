@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/sheet"
 import { useAppStore } from "@/shared/store/appStore"
 import { ActionButton } from "@/shared/ui/ActionButton"
+import { SwipeToDelete } from "@/shared/ui/SwipeToDelete"
 
 function WorkoutNavRow({
   detail,
@@ -56,60 +57,63 @@ function WorkoutNavRow({
   }
 
   return (
-    <div
-      className="grid min-h-14 grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2 border-b border-white/10 bg-[var(--app-surface)] px-2 transition hover:bg-[#1b2026]"
+    <SwipeToDelete
+      className="border-b border-white/10"
       ref={setNodeRef}
       style={style}
+      onDelete={onDelete}
     >
-      <button
-        className="inline-flex size-9 cursor-grab items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 active:cursor-grabbing"
-        type="button"
-        title="Drag exercise"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="size-4" />
-      </button>
-      <button className="min-w-0 text-left" type="button" onClick={onOpen}>
-        <div className="truncate text-sm font-medium text-zinc-50">
-          {detail.exercise.name}
-        </div>
-        <div className="text-xs text-zinc-500">
-          {detail.sets.length} {detail.sets.length === 1 ? "set" : "sets"}
-        </div>
-      </button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-400 hover:bg-white/10"
-            type="button"
-            title="Workout exercise actions"
-          >
-            <MoreVertical className="size-5" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          className="w-44 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
+      <div className="grid min-h-14 grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2 bg-[var(--app-surface)] px-2 transition hover:bg-[#1b2026]">
+        <button
+          className="inline-flex size-9 cursor-grab items-center justify-center rounded-md text-zinc-500 hover:bg-white/10 active:cursor-grabbing"
+          type="button"
+          title="Drag exercise"
+          {...attributes}
+          {...listeners}
         >
-          <DropdownMenuItem
-            className="gap-2 rounded-md focus:bg-cyan-400/15"
-            onSelect={onReplace}
+          <GripVertical className="size-4" />
+        </button>
+        <button className="min-w-0 text-left" type="button" onClick={onOpen}>
+          <div className="truncate text-sm font-medium text-zinc-50">
+            {detail.exercise.name}
+          </div>
+          <div className="text-xs text-zinc-500">
+            {detail.sets.length} {detail.sets.length === 1 ? "set" : "sets"}
+          </div>
+        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-400 hover:bg-white/10"
+              type="button"
+              title="Workout exercise actions"
+            >
+              <MoreVertical className="size-5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-44 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
           >
-            <Repeat2 className="size-4 text-cyan-300" />
-            Replace
-          </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-white/10" />
-          <DropdownMenuItem
-            className="gap-2 text-red-300 focus:bg-red-500/10 focus:text-red-200"
-            onSelect={onDelete}
-          >
-            <Trash2 className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+            <DropdownMenuItem
+              className="gap-2 rounded-md focus:bg-cyan-400/15"
+              onSelect={onReplace}
+            >
+              <Repeat2 className="size-4 text-cyan-300" />
+              Replace
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem
+              className="gap-2 text-red-300 focus:bg-red-500/10 focus:text-red-200"
+              onSelect={onDelete}
+            >
+              <Trash2 className="size-4" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </SwipeToDelete>
   )
 }
 

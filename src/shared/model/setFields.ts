@@ -10,7 +10,7 @@ export type SetFieldDefinition = {
   defaultIncrement: number
   isDuration?: boolean
 }
-
+  
 export const defaultSetIncrements: Record<SetFieldKey, number> = {
   weight: 2.5,
   reps: 1,
