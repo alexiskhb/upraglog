@@ -179,6 +179,17 @@ export function WorkoutNavigationPanel() {
     bumpRefresh()
   }
 
+  const deleteWorkoutExerciseRow = async (workoutExerciseId: string) => {
+    await deleteWorkoutExercise(workoutExerciseId)
+    setDetail((current) => ({
+      ...current,
+      exercises: current.exercises.filter(
+        (entry) => entry.workoutExercise.id !== workoutExerciseId,
+      ),
+    }))
+    bumpRefresh()
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
@@ -213,10 +224,9 @@ export function WorkoutNavigationPanel() {
                     <WorkoutNavRow
                       detail={entry}
                       key={entry.workoutExercise.id}
-                      onDelete={async () => {
-                        await deleteWorkoutExercise(entry.workoutExercise.id)
-                        bumpRefresh()
-                      }}
+                      onDelete={() =>
+                        void deleteWorkoutExerciseRow(entry.workoutExercise.id)
+                      }
                       onOpen={() => {
                         setOpen(false)
                         void navigate({
