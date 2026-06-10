@@ -22,12 +22,20 @@ const exerciseTypeSchema = z.enum([
   "distance_time",
 ])
 
+const exerciseSetDefaultsSchema = z.object({
+  weight: z.number().optional(),
+  reps: z.number().optional(),
+  distance: z.number().optional(),
+  durationSeconds: z.number().optional(),
+})
+
 const exerciseSchema = z.object({
   id: z.string(),
   name: z.string(),
   category: exerciseCategorySchema,
   exerciseType: exerciseTypeSchema,
   isFavorite: z.boolean(),
+  lastSetInput: exerciseSetDefaultsSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 })

@@ -20,12 +20,20 @@ export type ExerciseType =
 
 export type UnitSystem = "metric" | "imperial"
 
+export type ExerciseSetDefaults = {
+  weight?: number
+  reps?: number
+  distance?: number
+  durationSeconds?: number
+}
+
 export type Exercise = {
   id: string
   name: string
   category: ExerciseCategory
   exerciseType: ExerciseType
   isFavorite: boolean
+  lastSetInput?: ExerciseSetDefaults
   createdAt: string
   updatedAt: string
 }

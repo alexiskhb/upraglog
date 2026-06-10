@@ -2,6 +2,7 @@ import { db } from "@/db/db"
 import type {
   Exercise,
   ExerciseInput,
+  ExerciseSetDefaults,
   ExerciseUsageStats,
 } from "@/db/schema"
 import { createId } from "@/shared/model/ids"
@@ -47,6 +48,16 @@ export async function updateExercise(
 export async function toggleExerciseFavorite(exercise: Exercise) {
   await db.exercises.update(exercise.id, {
     isFavorite: !exercise.isFavorite,
+    updatedAt: new Date().toISOString(),
+  })
+}
+
+export async function updateExerciseSetDefaults(
+  exerciseId: string,
+  lastSetInput: ExerciseSetDefaults,
+) {
+  await db.exercises.update(exerciseId, {
+    lastSetInput,
     updatedAt: new Date().toISOString(),
   })
 }

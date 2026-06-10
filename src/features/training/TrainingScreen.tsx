@@ -13,9 +13,11 @@ import {
 import type {
   AppSettings,
   ExerciseType,
+  ExerciseSetDefaults,
   SetEntry,
   SetEntryInput,
 } from "@/db/schema"
+import { updateExerciseSetDefaults } from "@/db/repositories/exercisesRepo"
 import {
   addSetToWorkoutExercise,
   deleteSet,
@@ -115,6 +117,18 @@ function inputFromSet(set: SetEntry): InputState {
   }
 }
 
+function inputFromExerciseSetDefaults(
+  lastSetInput?: ExerciseSetDefaults,
+): InputState {
+  return {
+    weight: lastSetInput?.weight ?? defaultInput.weight,
+    reps: lastSetInput?.reps ?? defaultInput.reps,
+    distance: lastSetInput?.distance ?? defaultInput.distance,
+    durationSeconds:
+      lastSetInput?.durationSeconds ?? defaultInput.durationSeconds,
+  }
+}
+
 function setInputFromFields(fields: FieldConfig[], input: InputState) {
   const setInput: SetEntryInput = {}
 
@@ -140,6 +154,9 @@ export function TrainingScreen() {
     skipEmptyDaysOnDayNavigation: false,
   })
   const [input, setInput] = useState<InputState>(defaultInput)
+  const [loadedWorkoutExerciseId, setLoadedWorkoutExerciseId] = useState<
+    string | undefined
+  >()
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()
   const [commentSetId, setCommentSetId] = useState<string | undefined>()
   const [message, setMessage] = useState<string | undefined>()
@@ -158,6 +175,14 @@ export function TrainingScreen() {
 
         if (nextDetail) {
           setSelectedDate(nextDetail.workout.localDate)
+
+          if (nextDetail.workoutExercise.id !== loadedWorkoutExerciseId) {
+            setInput(
+              inputFromExerciseSetDefaults(nextDetail.exercise.lastSetInput),
+            )
+            setSelectedSetId(undefined)
+            setLoadedWorkoutExerciseId(nextDetail.workoutExercise.id)
+          }
         }
       },
     )
@@ -165,7 +190,7 @@ export function TrainingScreen() {
     return () => {
       cancelled = true
     }
-  }, [workoutExerciseId, refreshVersion, setSelectedDate])
+  }, [loadedWorkoutExerciseId, workoutExerciseId, refreshVersion, setSelectedDate])
 
   const fields = useMemo(
     () =>
@@ -189,6 +214,10 @@ export function TrainingScreen() {
     setSelectedSetId(undefined)
   }
 
+  const clearSelection = () => {
+    setSelectedSetId(undefined)
+  }
+
   const saveSet = async () => {
     if (!detail) {
       return
@@ -204,7 +233,8 @@ export function TrainingScreen() {
       setMessage("Set saved.")
     }
 
-    clearForm()
+    await updateExerciseSetDefaults(detail.exercise.id, setInput)
+    clearSelection()
     await refreshDetail()
   }
 
@@ -216,7 +246,7 @@ export function TrainingScreen() {
 
     await deleteSet(selectedSet.id)
     setMessage("Set deleted.")
-    clearForm()
+    clearSelection()
     await refreshDetail()
   }
 
