@@ -100,10 +100,18 @@
     @apply bg-background text-foreground antialiased;
     color-scheme: dark;
     min-width: 320px;
+    overflow-x: hidden;
+    overflow-x: clip;
     }
   html {
     @apply font-sans;
     background: var(--app-bg);
+    overflow-x: hidden;
+    overflow-x: clip;
+    }
+  #root {
+    overflow-x: hidden;
+    overflow-x: clip;
     }
   button,
   input,
