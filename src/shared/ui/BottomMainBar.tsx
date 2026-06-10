@@ -28,6 +28,8 @@ import {
 import { cn } from "@/lib/utils"
 import { IconButton } from "./IconButton"
 
+const bottomBarButtonClassName = "h-full w-full rounded-none"
+
 export function BottomMainBar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
@@ -152,7 +154,7 @@ export function BottomMainBar() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[60] border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
-      <div className="mx-auto grid h-16 max-w-2xl grid-cols-5 items-center px-4">
+      <div className="grid h-16 w-full grid-cols-5 items-stretch">
         <DropdownMenu
           open={profileMenuOpen}
           onOpenChange={(open) => {
@@ -165,7 +167,7 @@ export function BottomMainBar() {
         >
           <DropdownMenuTrigger asChild>
             <IconButton
-              className="text-zinc-400"
+              className={cn(bottomBarButtonClassName, "text-zinc-400")}
               title={`Choose profile: ${selectedProfile}`}
             >
               <UserCircle className="size-6" />
@@ -198,6 +200,7 @@ export function BottomMainBar() {
 
         <IconButton
           active={calendarActive && !profileMenuOpen && !moreMenuOpen}
+          className={bottomBarButtonClassName}
           title="Calendar"
           onClick={toggleCalendar}
         >
@@ -206,6 +209,7 @@ export function BottomMainBar() {
 
         <IconButton
           active={workoutNavOpen && !profileMenuOpen && !moreMenuOpen}
+          className={bottomBarButtonClassName}
           title="Workout list"
           onClick={toggleWorkoutList}
         >
@@ -214,6 +218,7 @@ export function BottomMainBar() {
 
         <IconButton
           active={pickerActive && !profileMenuOpen && !moreMenuOpen}
+          className={bottomBarButtonClassName}
           title="Add exercise"
           onClick={toggleExercisePicker}
         >
@@ -231,7 +236,10 @@ export function BottomMainBar() {
           }}
         >
           <DropdownMenuTrigger asChild>
-            <IconButton className="text-zinc-400" title="More actions">
+            <IconButton
+              className={cn(bottomBarButtonClassName, "text-zinc-400")}
+              title="More actions"
+            >
               <MoreVertical className="size-6" />
             </IconButton>
           </DropdownMenuTrigger>
