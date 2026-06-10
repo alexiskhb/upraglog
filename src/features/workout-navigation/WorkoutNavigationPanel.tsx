@@ -263,14 +263,6 @@ export function WorkoutNavigationPanel() {
               <Plus className="mr-1 inline size-4" />
               Add Exercise
             </ActionButton>
-            <ActionButton
-              tone="secondary"
-              onClick={() => {
-                setOpen(false)
-              }}
-            >
-              Close
-            </ActionButton>
           </div>
         </SheetFooter>
       </SheetContent>
