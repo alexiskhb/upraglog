@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Minus, Plus } from "lucide-react"
 import { IconButton } from "@/shared/ui/IconButton"
 import { formatDuration } from "@/shared/model/dates"
@@ -21,14 +22,17 @@ export function NumericStepper({
   isDuration = false,
   onChange,
 }: NumericStepperProps) {
+  const [editing, setEditing] = useState(false)
+  const [draftValue, setDraftValue] = useState("")
   const displayValue =
     value === null
       ? ""
       : isDuration
         ? formatDuration(value)
-        : Number.isInteger(value)
-          ? value.toString()
-          : value.toFixed(1)
+        : value.toString()
+  const inputValue = editing ? draftValue : displayValue
+
+  const toDraftValue = () => (value === null ? "" : value.toString())
 
   const setValue = (nextValue: number) => {
     onChange(Math.max(min, Number(nextValue.toFixed(1))))
@@ -40,6 +44,39 @@ export function NumericStepper({
 
   const increaseValue = () => {
     setValue((value ?? min) + step)
+  }
+
+  const commitInput = (rawValue: string) => {
+    const nextDraftValue = rawValue.replace(",", ".")
+
+    if (isDuration && !/^\d*$/.test(nextDraftValue)) {
+      return
+    }
+
+    if (!isDuration && !/^\d*\.?\d*$/.test(nextDraftValue)) {
+      return
+    }
+
+    setDraftValue(nextDraftValue)
+
+    if (nextDraftValue === "" || nextDraftValue === ".") {
+      onChange(null)
+      return
+    }
+
+    const nextValue = Number(nextDraftValue)
+
+    if (Number.isFinite(nextValue)) {
+      onChange(Math.max(min, nextValue))
+    }
+  }
+
+  const finishEditing = () => {
+    if (draftValue === "." || draftValue === "") {
+      onChange(null)
+    }
+
+    setEditing(false)
   }
 
   return (
@@ -56,9 +93,21 @@ export function NumericStepper({
         >
           <Minus className="size-5" />
         </IconButton>
-        <div className="min-w-0 text-center text-3xl font-medium tabular-nums text-zinc-50">
-          {displayValue}
-        </div>
+        <input
+          aria-label={label}
+          className="h-full min-w-0 bg-transparent px-1 text-center text-3xl font-medium tabular-nums text-zinc-50 outline-none placeholder:text-zinc-600"
+          enterKeyHint="done"
+          inputMode={isDuration ? "numeric" : "decimal"}
+          value={inputValue}
+          onBlur={finishEditing}
+          onChange={(event) => commitInput(event.target.value)}
+          onFocus={(event) => {
+            const nextDraftValue = toDraftValue()
+            setDraftValue(nextDraftValue)
+            setEditing(true)
+            event.currentTarget.select()
+          }}
+        />
         <IconButton
           className="mx-auto text-zinc-100"
           title={`Increase ${label}`}
