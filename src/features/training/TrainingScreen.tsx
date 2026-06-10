@@ -102,7 +102,7 @@ export function TrainingScreen() {
   >()
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()
   const [commentSetId, setCommentSetId] = useState<string | undefined>()
-  const [message, setMessage] = useState<string | undefined>()
+  const [message] = useState<string | undefined>()
 
   useEffect(() => {
     let cancelled = false
@@ -158,10 +158,8 @@ export function TrainingScreen() {
 
     if (selectedSet) {
       await updateSet(selectedSet.id, setInput)
-      setMessage("Set updated.")
     } else {
       await addSetToWorkoutExercise(detail.workoutExercise.id, setInput)
-      setMessage("Set saved.")
     }
 
     await updateExerciseSetDefaults(detail.exercise.id, setInput)
@@ -171,7 +169,6 @@ export function TrainingScreen() {
 
   const deleteSetRow = async (setId: string) => {
     await deleteSet(setId)
-    setMessage("Set deleted.")
     if (setId === selectedSetId) {
       clearSelection()
     }
@@ -210,9 +207,10 @@ export function TrainingScreen() {
   return (
     <ScreenContainer className="gap-4">
       <div className="pt-3">
-        <div className="flex items-start justify-between gap-3">
+        <div className="grid grid-cols-[4rem_minmax(0,1fr)_4rem] items-start gap-2">
+          <div />
           <button
-            className="min-w-0 text-left text-[17px] font-semibold text-zinc-50"
+            className="min-w-0 text-center text-[17px] font-semibold text-zinc-50"
             type="button"
             onClick={() =>
               void navigate({
@@ -223,7 +221,10 @@ export function TrainingScreen() {
           >
             <span className="block truncate">{detail.exercise.name}</span>
           </button>
-          <WorkoutActiveTimer className="pt-1" workout={detail.workout} />
+          <WorkoutActiveTimer
+            className="justify-self-end pt-1"
+            workout={detail.workout}
+          />
         </div>
         <div className="mt-2 h-px bg-cyan-300/50" />
       </div>
