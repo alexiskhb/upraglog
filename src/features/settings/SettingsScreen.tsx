@@ -239,6 +239,9 @@ export function SettingsScreen() {
         <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
           Spreadsheet
         </div>
+        <div className="text-xs text-zinc-500">
+          Export training logs as CSV for spreadsheet apps.
+        </div>
         <label className="flex items-center justify-between gap-3">
           <span>
             <Label className="text-sm text-zinc-200">
@@ -261,6 +264,9 @@ export function SettingsScreen() {
       <section className="app-surface space-y-3 rounded-md p-3.5">
         <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
           Backup
+        </div>
+        <div className="text-xs text-zinc-500">
+          Save or restore all exercises, profiles, workouts, sets, and settings.
         </div>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportJson}>
