@@ -252,6 +252,7 @@ async function initializeDatabaseInternal() {
           spreadsheetShareMessage: "",
           spreadsheetShareIncludeMessage: true,
           spreadsheetShareIncludeAiInstructions: true,
+          treatLongWorkoutTimerAsLatestSetFinish: false,
           setCommentTemplates: [...defaultSetCommentTemplates],
           updatedAt: new Date().toISOString(),
         })

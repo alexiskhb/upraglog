@@ -48,6 +48,7 @@ export function SettingsScreen() {
     spreadsheetShareMessage: "",
     spreadsheetShareIncludeMessage: true,
     spreadsheetShareIncludeAiInstructions: true,
+    treatLongWorkoutTimerAsLatestSetFinish: false,
     setCommentTemplates: [...defaultSetCommentTemplates],
   })
   const [newProfileName, setNewProfileName] = useState("")
@@ -333,6 +334,28 @@ export function SettingsScreen() {
             className="data-checked:bg-cyan-500"
             onCheckedChange={(skipEmptyDaysOnDayNavigation) =>
               void saveSettings({ skipEmptyDaysOnDayNavigation })
+            }
+          />
+        </label>
+
+        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+          <span className="min-w-0">
+            <Label className="text-sm text-zinc-200">
+              If workout timer exceeds 3 hours, treat the latest set finish as
+              workout end
+            </Label>
+            <span className="mt-1 block text-xs text-zinc-500">
+              Uses the most recent checked set when a timer was left running.
+            </span>
+          </span>
+          <input
+            checked={settings.treatLongWorkoutTimerAsLatestSetFinish}
+            className="size-5 shrink-0 accent-cyan-500"
+            type="checkbox"
+            onChange={(event) =>
+              void saveSettings({
+                treatLongWorkoutTimerAsLatestSetFinish: event.target.checked,
+              })
             }
           />
         </label>

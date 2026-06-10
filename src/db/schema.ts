@@ -60,6 +60,7 @@ export type SetEntry = {
   distance?: number | null
   durationSeconds?: number | null
   comment?: string
+  finishedAt?: string
   createdAt: string
   updatedAt: string
 }
@@ -74,6 +75,7 @@ export type AppSettings = {
   spreadsheetShareMessage: string
   spreadsheetShareIncludeMessage: boolean
   spreadsheetShareIncludeAiInstructions: boolean
+  treatLongWorkoutTimerAsLatestSetFinish: boolean
   setCommentTemplates: string[]
 }
 

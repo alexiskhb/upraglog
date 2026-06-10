@@ -14,6 +14,7 @@ import {
 } from "@/shared/model/dates"
 import { formatExerciseCategory, formatExerciseType } from "@/shared/model/exercises"
 import { defaultProfileName } from "@/shared/model/profiles"
+import { getEffectiveWorkoutEndedAt } from "@/shared/model/workoutTimer"
 
 const csvHeaders = [
   "Workout Date",
@@ -26,6 +27,8 @@ const csvHeaders = [
   "Category",
   "Exercise Type",
   "Set Number",
+  "Set Finished",
+  "Set Finished At",
   "Weight",
   "Reps",
   "Distance",
@@ -78,13 +81,13 @@ function formatStoredDateTime(iso?: string) {
   return iso ? formatLocalDateTime(new Date(iso)) : undefined
 }
 
-function formatWorkoutDuration(workout: Workout) {
+function formatWorkoutDuration(workout: Workout, endedAt?: string) {
   if (!workout.startedAt) {
     return undefined
   }
 
   return formatDuration(
-    getWorkoutDurationSeconds(workout.startedAt, workout.endedAt),
+    getWorkoutDurationSeconds(workout.startedAt, endedAt),
   )
 }
 
@@ -98,6 +101,14 @@ function formatSetDuration(set?: SetEntry) {
 
 function getWorkoutProfileName(workout: Workout) {
   return workout.profileName || defaultProfileName
+}
+
+function formatSetFinished(set?: SetEntry) {
+  if (!set) {
+    return undefined
+  }
+
+  return set.finishedAt ? "Yes" : "No"
 }
 
 function getExportStartDate(monthLimit?: number | null) {
@@ -126,24 +137,28 @@ function buildSetRow({
   exercise,
   set,
   setIndex,
+  endedAt,
 }: {
   workout: Workout
   workoutExercise: WorkoutExercise
   exercise: Exercise
   set?: SetEntry
   setIndex?: number
+  endedAt?: string
 }): TrainingLogRow {
   return [
     workout.localDate,
     getWorkoutProfileName(workout),
     formatStoredDateTime(workout.startedAt),
-    formatStoredDateTime(workout.endedAt),
-    formatWorkoutDuration(workout),
+    formatStoredDateTime(endedAt),
+    formatWorkoutDuration(workout, endedAt),
     workoutExercise.order + 1,
     exercise.id,
     formatExerciseCategory(exercise.category),
     formatExerciseType(exercise.exerciseType),
     setIndex === undefined ? undefined : setIndex + 1,
+    formatSetFinished(set),
+    formatStoredDateTime(set?.finishedAt),
     set?.weight ?? undefined,
     set?.reps ?? undefined,
     set?.distance ?? undefined,
@@ -170,6 +185,7 @@ export async function exportTrainingLogCsv(
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
   const rows: TrainingLogRow[] = []
   const exportStartDate = getExportStartDate(options.monthLimit)
+  const nowMs = Date.now()
 
   for (const workoutExercise of workoutExercises) {
     const current =
@@ -196,6 +212,17 @@ export async function exportTrainingLogCsv(
     const workoutExerciseRows = (
       workoutExercisesByWorkoutId.get(workout.id) ?? []
     ).sort(byOrder)
+    const workoutSets = workoutExerciseRows.flatMap(
+      (workoutExercise) =>
+        setsByWorkoutExerciseId.get(workoutExercise.id) ?? [],
+    )
+    const endedAt = getEffectiveWorkoutEndedAt({
+      workout,
+      sets: workoutSets,
+      treatLongTimerAsLatestSetFinish:
+        settings.treatLongWorkoutTimerAsLatestSetFinish,
+      nowMs,
+    })
 
     if (workoutExerciseRows.length === 0) {
       continue
@@ -218,6 +245,7 @@ export async function exportTrainingLogCsv(
             workout,
             workoutExercise,
             exercise,
+            endedAt,
           }),
         )
         continue
@@ -231,6 +259,7 @@ export async function exportTrainingLogCsv(
             exercise,
             set,
             setIndex,
+            endedAt,
           }),
         )
       })

@@ -23,7 +23,9 @@ import {
   getWorkoutExerciseDetail,
   reorderSets,
   updateSet,
+  updateSetFinished,
 } from "@/db/repositories/workoutsRepo"
+import { getSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import {
   getSetIncrement,
@@ -102,17 +104,27 @@ export function TrainingScreen() {
   >()
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()
   const [commentSetId, setCommentSetId] = useState<string | undefined>()
+  const [
+    treatLongTimerAsLatestSetFinish,
+    setTreatLongTimerAsLatestSetFinish,
+  ] = useState(false)
   const [message] = useState<string | undefined>()
 
   useEffect(() => {
     let cancelled = false
 
-    getWorkoutExerciseDetail(workoutExerciseId).then((nextDetail) => {
+    Promise.all([
+      getWorkoutExerciseDetail(workoutExerciseId),
+      getSettings(),
+    ]).then(([nextDetail, appSettings]) => {
       if (cancelled) {
         return
       }
 
       setDetail(nextDetail)
+      setTreatLongTimerAsLatestSetFinish(
+        appSettings.treatLongWorkoutTimerAsLatestSetFinish,
+      )
 
       if (nextDetail) {
         setSelectedDate(nextDetail.workout.localDate)
@@ -175,6 +187,11 @@ export function TrainingScreen() {
     await refreshDetail()
   }
 
+  const updateSetFinishedRow = async (setId: string, finished: boolean) => {
+    await updateSetFinished(setId, finished)
+    await refreshDetail()
+  }
+
   const handleDragEnd = async (event: DragEndEvent) => {
     if (!detail || event.active.id === event.over?.id || !event.over) {
       return
@@ -222,6 +239,8 @@ export function TrainingScreen() {
           </button>
           <WorkoutActiveTimer
             className="justify-self-end pt-1"
+            sets={detail.workoutSets}
+            treatLongTimerAsLatestSetFinish={treatLongTimerAsLatestSetFinish}
             workout={detail.workout}
           />
         </div>
@@ -279,6 +298,9 @@ export function TrainingScreen() {
                     set={set}
                     onComment={() => setCommentSetId(set.id)}
                     onDelete={() => void deleteSetRow(set.id)}
+                    onFinishedChange={(finished) =>
+                      void updateSetFinishedRow(set.id, finished)
+                    }
                     onSelect={() => {
                       if (set.id === selectedSetId) {
                         setSelectedSetId(undefined)

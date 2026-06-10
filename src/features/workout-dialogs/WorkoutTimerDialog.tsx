@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import {
-  getWorkoutByDate,
+  getWorkoutDetailByDate,
   updateWorkoutTimer,
 } from "@/db/repositories/workoutsRepo"
+import { getSettings } from "@/db/repositories/settingsRepo"
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { useAppStore } from "@/shared/store/appStore"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { formatDuration, getWorkoutDurationSeconds } from "@/shared/model/dates"
+import { getEffectiveWorkoutEndedAt } from "@/shared/model/workoutTimer"
 
 function toDateTimeInputValue(iso?: string) {
   if (!iso) {
@@ -55,12 +57,24 @@ export function WorkoutTimerDialog() {
 
     let cancelled = false
 
-    getWorkoutByDate(selectedDate, selectedProfile).then((workout) => {
+    Promise.all([
+      getWorkoutDetailByDate(selectedDate, selectedProfile),
+      getSettings(),
+    ]).then(([detail, settings]) => {
       if (!cancelled) {
+        const workout = detail.workout
+        const workoutSets = detail.exercises.flatMap((entry) => entry.sets)
+        const effectiveEndedAt = getEffectiveWorkoutEndedAt({
+          workout,
+          sets: workoutSets,
+          treatLongTimerAsLatestSetFinish:
+            settings.treatLongWorkoutTimerAsLatestSetFinish,
+        })
+
         setStartedAt(toDateTimeInputValue(workout?.startedAt))
-        setEndedAt(toDateTimeInputValue(workout?.endedAt))
+        setEndedAt(toDateTimeInputValue(effectiveEndedAt))
         setStartedAtIso(workout?.startedAt)
-        setEndedAtIso(workout?.endedAt)
+        setEndedAtIso(effectiveEndedAt)
         setNowMs(Date.now())
         setMessage(undefined)
       }

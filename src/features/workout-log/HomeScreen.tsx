@@ -21,6 +21,7 @@ import {
   defaultProfileNames,
 } from "@/shared/model/profiles"
 import { defaultSetCommentTemplates } from "@/shared/model/setCommentTemplates"
+import { isWorkoutTimerActive } from "@/shared/model/workoutTimer"
 import { DateNavRow } from "./DateNavRow"
 import { ExerciseCard } from "./ExerciseCard"
 
@@ -59,6 +60,7 @@ export function HomeScreen() {
     spreadsheetShareMessage: "",
     spreadsheetShareIncludeMessage: true,
     spreadsheetShareIncludeAiInstructions: true,
+    treatLongWorkoutTimerAsLatestSetFinish: false,
     setCommentTemplates: [...defaultSetCommentTemplates],
   })
   const [workoutDates, setWorkoutDates] = useState<string[]>([])
@@ -142,9 +144,13 @@ export function HomeScreen() {
 
     setTouchStartX(undefined)
   }
-  const workoutActive = Boolean(
-    detail.workout?.startedAt && !detail.workout.endedAt,
-  )
+  const workoutSets = detail.exercises.flatMap((entry) => entry.sets)
+  const workoutActive = isWorkoutTimerActive({
+    workout: detail.workout,
+    sets: workoutSets,
+    treatLongTimerAsLatestSetFinish:
+      settings.treatLongWorkoutTimerAsLatestSetFinish,
+  })
 
   return (
     <ScreenContainer
@@ -164,7 +170,13 @@ export function HomeScreen() {
 
       <div className="flex items-center justify-between gap-3 px-1 text-xs uppercase tracking-normal text-zinc-500">
         <span className="min-w-0 truncate">{formatLongDate(date)}</span>
-        <WorkoutActiveTimer workout={detail.workout} />
+        <WorkoutActiveTimer
+          sets={workoutSets}
+          treatLongTimerAsLatestSetFinish={
+            settings.treatLongWorkoutTimerAsLatestSetFinish
+          }
+          workout={detail.workout}
+        />
       </div>
 
       {detail.exercises.length === 0 ? (

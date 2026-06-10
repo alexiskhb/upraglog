@@ -80,6 +80,7 @@ const setEntrySchema = z.object({
   distance: z.number().nullable().optional(),
   durationSeconds: z.number().nullable().optional(),
   comment: z.string().optional(),
+  finishedAt: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 })
@@ -97,6 +98,7 @@ const settingsSchema = z.object({
   spreadsheetShareMessage: z.string().optional(),
   spreadsheetShareIncludeMessage: z.boolean().optional(),
   spreadsheetShareIncludeAiInstructions: z.boolean().optional(),
+  treatLongWorkoutTimerAsLatestSetFinish: z.boolean().optional(),
   setCommentTemplates: z.array(z.string()).optional(),
 }).transform((settings) => ({
   ...resolveSelectedProfile(settings.profiles, settings.selectedProfile),
@@ -116,6 +118,8 @@ const settingsSchema = z.object({
   spreadsheetShareIncludeMessage: settings.spreadsheetShareIncludeMessage ?? true,
   spreadsheetShareIncludeAiInstructions:
     settings.spreadsheetShareIncludeAiInstructions ?? true,
+  treatLongWorkoutTimerAsLatestSetFinish:
+    settings.treatLongWorkoutTimerAsLatestSetFinish ?? false,
   setCommentTemplates: normalizeSetCommentTemplates(
     settings.setCommentTemplates,
   ),

@@ -46,6 +46,8 @@ export async function buildTrainingLogShareInstructions() {
     "Reps: plain number without unit text.",
     "Distance: plain number without unit text.",
     "Time: duration text formatted as m:ss or h:mm:ss, for example 0:45 or 1:05:00.",
+    "Set Finished: Yes when the set checkbox was checked, otherwise No.",
+    "Set Finished At: local timestamp for when the set checkbox was checked.",
     "",
     "If the user asks for a workout routine, answer with exactly one fenced code block containing a CSV table and no extra prose. The first column must be Exercise ID. Use this exact header:",
     routineCsvColumns.join(","),

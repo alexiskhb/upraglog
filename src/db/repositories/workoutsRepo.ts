@@ -154,11 +154,24 @@ export async function getWorkoutExerciseDetail(workoutExerciseId: string) {
     return undefined
   }
 
+  const workoutExercises = await db.workoutExercises
+    .where("workoutId")
+    .equals(workout.id)
+    .toArray()
+  const workoutSets =
+    workoutExercises.length === 0
+      ? []
+      : await db.sets
+          .where("workoutExerciseId")
+          .anyOf(workoutExercises.map((entry) => entry.id))
+          .toArray()
+
   return {
     workout,
     workoutExercise,
     exercise,
     sets: sets.sort(byOrder),
+    workoutSets,
   }
 }
 
@@ -260,6 +273,22 @@ export async function updateSetComment(setId: string, comment: string) {
   await db.sets.update(setId, {
     comment: comment.trim() || undefined,
     updatedAt: new Date().toISOString(),
+  })
+  await touchWorkoutFromWorkoutExercise(set.workoutExerciseId)
+}
+
+export async function updateSetFinished(setId: string, finished: boolean) {
+  const set = await db.sets.get(setId)
+
+  if (!set) {
+    return
+  }
+
+  const now = new Date().toISOString()
+
+  await db.sets.update(setId, {
+    finishedAt: finished ? now : undefined,
+    updatedAt: now,
   })
   await touchWorkoutFromWorkoutExercise(set.workoutExerciseId)
 }
