@@ -1,6 +1,7 @@
 import type {
   AppSettings,
   Exercise,
+  ExerciseCategoryEntry,
   SetEntry,
   Workout,
   WorkoutExercise,
@@ -11,6 +12,7 @@ export type BackupFile = {
   version: number
   exportedAt: string
   data: {
+    exerciseCategories: ExerciseCategoryEntry[]
     exercises: Exercise[]
     workouts: Workout[]
     workoutExercises: WorkoutExercise[]

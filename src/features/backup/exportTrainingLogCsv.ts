@@ -114,7 +114,7 @@ function buildSetRow({
     formatStoredDateTime(workout.endedAt),
     formatWorkoutDuration(workout),
     workoutExercise.order + 1,
-    exercise.name,
+    exercise.id,
     formatExerciseCategory(exercise.category),
     formatExerciseType(exercise.exerciseType),
     setIndex === undefined ? undefined : setIndex + 1,

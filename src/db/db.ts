@@ -1,6 +1,9 @@
 import Dexie, { type Table } from "dexie"
 import type {
   Exercise,
+  ExerciseCategory,
+  ExerciseCategoryEntry,
+  ExerciseType,
   SetEntry,
   StoredAppSettings,
   Workout,
@@ -9,11 +12,14 @@ import type {
 import {
   defaultProfileName,
   defaultProfileNames,
-  normalizeProfileList,
-  resolveSelectedProfile,
 } from "@/shared/model/profiles"
+import {
+  defaultExerciseCategories,
+  normalizeExerciseCategory,
+} from "@/shared/model/exercises"
 
 class UpraglogDatabase extends Dexie {
+  exerciseCategories!: Table<ExerciseCategoryEntry, string>
   exercises!: Table<Exercise, string>
   workouts!: Table<Workout, string>
   workoutExercises!: Table<WorkoutExercise, string>
@@ -23,109 +29,14 @@ class UpraglogDatabase extends Dexie {
   constructor() {
     super("upraglog")
 
-    this.version(1).stores({
-      exercises: "&id, name, category, isFavorite, updatedAt",
-      workouts: "&id, &localDate, updatedAt",
+    this.version(6).stores({
+      exerciseCategories: "&id",
+      exercises: "&id, category, isFavorite",
+      workouts: "&id, localDate, profileName, [localDate+profileName], updatedAt",
       workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
       sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
-      bodyMeasurements: "&id, localDate, measurementType, createdAt",
       settings: "&id",
     })
-
-    this.version(2).stores({
-      exercises: "&id, name, category, isFavorite, updatedAt",
-      workouts: "&id, &localDate, updatedAt",
-      workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
-      sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
-      bodyMeasurements: null,
-      settings: "&id",
-    })
-
-    this.version(3)
-      .stores({
-        exercises: "&id, name, category, isFavorite, updatedAt",
-        workouts: "&id, localDate, profileName, [localDate+profileName], updatedAt",
-        workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
-        sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
-        settings: "&id",
-      })
-      .upgrade(async (transaction) => {
-        const workouts = transaction.table<Workout, string>("workouts")
-        const settings = transaction.table<StoredAppSettings, string>("settings")
-
-        await workouts.toCollection().modify((workout) => {
-          workout.profileName = workout.profileName || defaultProfileName
-        })
-
-        const currentSettings = await settings.get("app")
-        const resolvedSettings = resolveSelectedProfile(
-          currentSettings?.profiles,
-          currentSettings?.selectedProfile,
-        )
-
-        await settings.put({
-          id: "app",
-          keepScreenOn:
-            currentSettings?.keepScreenOn ??
-            currentSettings?.keepScreenOnDuringTraining ??
-            true,
-          skipEmptyDaysOnDayNavigation:
-            currentSettings?.skipEmptyDaysOnDayNavigation ??
-            currentSettings?.skipEmptyDaysOnSwipe ??
-            false,
-          profiles: resolvedSettings.profiles,
-          selectedProfile: resolvedSettings.selectedProfile,
-          exportAllProfiles: currentSettings?.exportAllProfiles ?? false,
-          updatedAt: new Date().toISOString(),
-        })
-      })
-
-    this.version(4)
-      .stores({
-        exercises: "&id, name, category, isFavorite, updatedAt",
-        workouts: "&id, localDate, profileName, [localDate+profileName], updatedAt",
-        workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
-        sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
-        settings: "&id",
-      })
-      .upgrade(async (transaction) => {
-        const settings = transaction.table<StoredAppSettings, string>("settings")
-        const currentSettings = await settings.get("app")
-        const profiles = normalizeProfileList(currentSettings?.profiles)
-
-        for (const defaultProfile of defaultProfileNames) {
-          const alreadyExists = profiles.some(
-            (profileName) =>
-              profileName.toLocaleLowerCase() ===
-              defaultProfile.toLocaleLowerCase(),
-          )
-
-          if (!alreadyExists) {
-            profiles.push(defaultProfile)
-          }
-        }
-
-        const resolvedSettings = resolveSelectedProfile(
-          profiles,
-          currentSettings?.selectedProfile,
-        )
-
-        await settings.put({
-          id: "app",
-          keepScreenOn:
-            currentSettings?.keepScreenOn ??
-            currentSettings?.keepScreenOnDuringTraining ??
-            true,
-          skipEmptyDaysOnDayNavigation:
-            currentSettings?.skipEmptyDaysOnDayNavigation ??
-            currentSettings?.skipEmptyDaysOnSwipe ??
-            false,
-          profiles: resolvedSettings.profiles,
-          selectedProfile: resolvedSettings.selectedProfile,
-          exportAllProfiles: currentSettings?.exportAllProfiles ?? false,
-          updatedAt: new Date().toISOString(),
-        })
-      })
   }
 }
 
@@ -133,244 +44,113 @@ export const db = new UpraglogDatabase()
 
 let databaseInitialization: Promise<void> | undefined
 
-const exerciseSeeds: Omit<Exercise, "createdAt" | "updatedAt">[] = [
-    {
-      id: "seed_flat_barbell_bench_press",
-      name: "Flat Barbell Bench Press",
-      category: "chest",
-      exerciseType: "strength",
-      isFavorite: true,
-    },
-    {
-      id: "seed_incline_barbell_bench_press",
-      name: "Incline Barbell Bench Press",
-      category: "chest",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_incline_dumbbell_press",
-      name: "Incline Dumbbell Press",
-      category: "chest",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_cable_fly",
-      name: "Cable Fly",
-      category: "chest",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_pull_up",
-      name: "Pull Up",
-      category: "back",
-      exerciseType: "reps_only",
-      isFavorite: true,
-    },
-    {
-      id: "seed_lat_pulldown",
-      name: "Lat Pulldown",
-      category: "back",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_barbell_row",
-      name: "Barbell Row",
-      category: "back",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_seated_cable_row",
-      name: "Seated Cable Row",
-      category: "back",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_squat",
-      name: "Squat",
-      category: "legs",
-      exerciseType: "strength",
-      isFavorite: true,
-    },
-    {
-      id: "seed_leg_press",
-      name: "Leg Press",
-      category: "legs",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_romanian_deadlift",
-      name: "Romanian Deadlift",
-      category: "legs",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_leg_extension",
-      name: "Leg Extension",
-      category: "legs",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_leg_curl",
-      name: "Leg Curl",
-      category: "legs",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_standing_calf_raise",
-      name: "Standing Calf Raise",
-      category: "legs",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_overhead_press",
-      name: "Overhead Press",
-      category: "shoulders",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_lateral_raise",
-      name: "Lateral Raise",
-      category: "shoulders",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_rear_delt_fly",
-      name: "Rear Delt Fly",
-      category: "shoulders",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_barbell_curl",
-      name: "Barbell Curl",
-      category: "biceps",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_dumbbell_curl",
-      name: "Dumbbell Curl",
-      category: "biceps",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_hammer_curl",
-      name: "Hammer Curl",
-      category: "biceps",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_triceps_pushdown",
-      name: "Triceps Pushdown",
-      category: "triceps",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_skull_crusher",
-      name: "Skull Crusher",
-      category: "triceps",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_close_grip_bench_press",
-      name: "Close-Grip Bench Press",
-      category: "triceps",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_hanging_leg_raise",
-      name: "Hanging Leg Raise",
-      category: "abs",
-      exerciseType: "reps_only",
-      isFavorite: false,
-    },
-    {
-      id: "seed_cable_crunch",
-      name: "Cable Crunch",
-      category: "abs",
-      exerciseType: "strength",
-      isFavorite: false,
-    },
-    {
-      id: "seed_plank",
-      name: "Plank",
-      category: "abs",
-      exerciseType: "time_only",
-      isFavorite: false,
-    },
-    {
-      id: "seed_treadmill_run",
-      name: "Treadmill Run",
-      category: "cardio",
-      exerciseType: "distance_time",
-      isFavorite: false,
-    },
-    {
-      id: "seed_cycling",
-      name: "Cycling",
-      category: "cardio",
-      exerciseType: "distance_time",
-      isFavorite: false,
-    },
-    {
-      id: "seed_rowing_machine",
-      name: "Rowing Machine",
-      category: "cardio",
-      exerciseType: "distance_time",
-      isFavorite: false,
-    },
+function exerciseSeed(
+  id: string,
+  category: ExerciseCategory,
+  exerciseType: ExerciseType,
+  isFavorite = false,
+): Exercise {
+  return {
+    id,
+    category,
+    exerciseType,
+    isFavorite,
+  }
+}
+
+const exerciseSeeds: Exercise[] = [
+  exerciseSeed("Flat Barbell Bench Press", "Chest", "strength", true),
+  exerciseSeed("Incline Barbell Bench Press", "Chest", "strength"),
+  exerciseSeed("Incline Dumbbell Press", "Chest", "strength"),
+  exerciseSeed("Cable Fly", "Chest", "strength"),
+  exerciseSeed("Pull Up", "Back", "reps_only", true),
+  exerciseSeed("Lat Pulldown", "Back", "strength"),
+  exerciseSeed("Barbell Row", "Back", "strength"),
+  exerciseSeed("Seated Cable Row", "Back", "strength"),
+  exerciseSeed("Squat", "Legs", "strength", true),
+  exerciseSeed("Leg Press", "Legs", "strength"),
+  exerciseSeed("Romanian Deadlift", "Legs", "strength"),
+  exerciseSeed("Leg Extension", "Legs", "strength"),
+  exerciseSeed("Leg Curl", "Legs", "strength"),
+  exerciseSeed("Standing Calf Raise", "Legs", "strength"),
+  exerciseSeed("Overhead Press", "Shoulders", "strength"),
+  exerciseSeed("Lateral Raise", "Shoulders", "strength"),
+  exerciseSeed("Rear Delt Fly", "Shoulders", "strength"),
+  exerciseSeed("Barbell Curl", "Biceps", "strength"),
+  exerciseSeed("Dumbbell Curl", "Biceps", "strength"),
+  exerciseSeed("Hammer Curl", "Biceps", "strength"),
+  exerciseSeed("Triceps Pushdown", "Triceps", "strength"),
+  exerciseSeed("Skull Crusher", "Triceps", "strength"),
+  exerciseSeed("Close-Grip Bench Press", "Triceps", "strength"),
+  exerciseSeed("Hanging Leg Raise", "Abs", "reps_only"),
+  exerciseSeed("Cable Crunch", "Abs", "strength"),
+  exerciseSeed("Plank", "Abs", "time_only"),
+  exerciseSeed("Treadmill Run", "Cardio", "distance_time"),
+  exerciseSeed("Cycling", "Cardio", "distance_time"),
+  exerciseSeed("Rowing Machine", "Cardio", "distance_time"),
 ]
 
 async function initializeDatabaseInternal() {
-  await db.transaction("rw", db.exercises, db.settings, async () => {
-    const existingSettings = await db.settings.get("app")
+  await db.transaction(
+    "rw",
+    db.exerciseCategories,
+    db.exercises,
+    db.workoutExercises,
+    db.settings,
+    async () => {
+      const existingSettings = await db.settings.get("app")
 
-    if (!existingSettings) {
-      await db.settings.put({
-        id: "app",
-        keepScreenOn: true,
-        skipEmptyDaysOnDayNavigation: false,
-        profiles: [...defaultProfileNames],
-        selectedProfile: defaultProfileName,
-        exportAllProfiles: false,
-        updatedAt: new Date().toISOString(),
-      })
-    }
+      if (!existingSettings) {
+        await db.settings.put({
+          id: "app",
+          keepScreenOn: true,
+          skipEmptyDaysOnDayNavigation: false,
+          profiles: [...defaultProfileNames],
+          selectedProfile: defaultProfileName,
+          exportAllProfiles: false,
+          updatedAt: new Date().toISOString(),
+        })
+      }
 
-    const existingExercises = await db.exercises.count()
+      const existingCategories = await db.exerciseCategories.count()
 
-    if (existingExercises > 0) {
-      return
-    }
+      if (existingCategories === 0) {
+        await db.exerciseCategories.bulkPut(
+          defaultExerciseCategories.map((id) => ({ id })),
+        )
+      }
 
-    const now = new Date().toISOString()
+      const existingExercises = await db.exercises.toArray()
 
-    await db.exercises.bulkPut(
-      exerciseSeeds.map((exercise) => ({
-        ...exercise,
-        createdAt: now,
-        updatedAt: now,
-      })),
-    )
-  })
+      if (existingExercises.length > 0) {
+        const normalizedExercises = existingExercises.map((exercise) => {
+          const id = exercise.id.trim()
+
+          return {
+            id,
+            category: normalizeExerciseCategory(exercise.category),
+            exerciseType: exercise.exerciseType,
+            isFavorite: exercise.isFavorite,
+            lastSetInput: exercise.lastSetInput,
+            setIncrements: exercise.setIncrements,
+          }
+        })
+
+        await db.exercises.clear()
+        await db.exerciseCategories.bulkPut(
+          [
+            ...new Set(
+              normalizedExercises.map((exercise) => exercise.category),
+            ),
+          ].map((id) => ({ id })),
+        )
+        await db.exercises.bulkPut(normalizedExercises)
+        return
+      }
+
+      await db.exercises.bulkPut(exerciseSeeds)
+    },
+  )
 }
 
 export function initializeDatabase() {

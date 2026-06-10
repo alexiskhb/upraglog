@@ -75,7 +75,7 @@ function WorkoutNavRow({
         </button>
         <button className="min-w-0 text-left" type="button" onClick={onOpen}>
           <div className="truncate text-sm font-medium text-zinc-50">
-            {detail.exercise.name}
+            {detail.exercise.id}
           </div>
           <div className="text-xs text-zinc-500">
             {detail.sets.length} {detail.sets.length === 1 ? "set" : "sets"}

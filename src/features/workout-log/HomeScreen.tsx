@@ -177,8 +177,8 @@ export function HomeScreen() {
             <ExerciseCard
               exerciseType={entry.exercise.exerciseType}
               key={entry.workoutExercise.id}
-              name={entry.exercise.name}
               sets={entry.sets}
+              title={entry.exercise.id}
               onOpen={() =>
                 void navigate({
                   to: "/training/$workoutExerciseId",

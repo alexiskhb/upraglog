@@ -3,18 +3,15 @@ import {
   defaultProfileName,
   resolveSelectedProfile,
 } from "@/shared/model/profiles"
+import { normalizeExerciseCategory } from "@/shared/model/exercises"
 
-const exerciseCategorySchema = z.enum([
-  "chest",
-  "back",
-  "legs",
-  "shoulders",
-  "biceps",
-  "triceps",
-  "abs",
-  "cardio",
-  "custom",
-])
+const exerciseCategorySchema = z.string().trim().min(1)
+
+const exerciseCategoryEntrySchema = z.object({
+  id: exerciseCategorySchema,
+}).transform((category) => ({
+  id: normalizeExerciseCategory(category.id),
+}))
 
 const exerciseTypeSchema = z.enum([
   "strength",
@@ -41,16 +38,16 @@ const exerciseSetIncrementsSchema = z.object({
 })
 
 const exerciseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
+  id: z.string().trim().min(1),
   category: exerciseCategorySchema,
   exerciseType: exerciseTypeSchema,
   isFavorite: z.boolean(),
   lastSetInput: exerciseSetDefaultsSchema.optional(),
   setIncrements: exerciseSetIncrementsSchema.optional(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-})
+}).transform((exercise) => ({
+  ...exercise,
+  category: normalizeExerciseCategory(exercise.category),
+}))
 
 const workoutSchema = z.object({
   id: z.string(),
@@ -112,10 +109,24 @@ export const backupFileSchema = z.object({
   version: z.number(),
   exportedAt: z.string(),
   data: z.object({
+    exerciseCategories: z.array(exerciseCategoryEntrySchema),
     exercises: z.array(exerciseSchema),
     workouts: z.array(workoutSchema),
     workoutExercises: z.array(workoutExerciseSchema),
     sets: z.array(setEntrySchema),
     settings: settingsSchema,
+  }).transform((data) => {
+    const exerciseCategories = new Map(
+      data.exerciseCategories.map((category) => [category.id, category]),
+    )
+
+    for (const exercise of data.exercises) {
+      exerciseCategories.set(exercise.category, { id: exercise.category })
+    }
+
+    return {
+      ...data,
+      exerciseCategories: [...exerciseCategories.values()],
+    }
   }),
 })

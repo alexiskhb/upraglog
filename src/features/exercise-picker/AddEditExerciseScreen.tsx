@@ -10,6 +10,7 @@ import type {
 import {
   createExercise,
   getExercise,
+  getExerciseCategories,
   updateExercise,
 } from "@/db/repositories/exercisesRepo"
 import { Input } from "@/components/ui/input"
@@ -18,7 +19,7 @@ import { Switch } from "@/components/ui/switch"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import {
-  exerciseCategories,
+  defaultExerciseCategories,
   exerciseTypes,
   formatExerciseCategory,
   formatExerciseType,
@@ -31,8 +32,8 @@ import {
 import { useAppStore } from "@/shared/store/appStore"
 
 const exerciseFormSchema = z.object({
-  name: z.string().trim().min(1, "Name is required."),
-  category: z.enum(exerciseCategories),
+  id: z.string().trim().min(1, "Name is required."),
+  category: z.string().trim().min(1, "Category is required."),
   exerciseType: z.enum(exerciseTypes),
   isFavorite: z.boolean(),
 })
@@ -57,8 +58,8 @@ function buildIncrementForm(
 }
 
 const defaultForm: ExerciseFormState = {
-  name: "",
-  category: "custom",
+  id: "",
+  category: "Custom",
   exerciseType: "strength",
   isFavorite: false,
   setIncrements: buildIncrementForm(),
@@ -74,12 +75,36 @@ export function AddEditExerciseScreen() {
     const match = pathname.match(/^\/exercise\/(.+)\/edit$/)
     return match ? decodeURIComponent(match[1]) : undefined
   }, [pathname])
+  const [categories, setCategories] = useState<ExerciseCategory[]>([
+    ...defaultExerciseCategories,
+  ])
   const [form, setForm] = useState<ExerciseFormState>(defaultForm)
   const [error, setError] = useState<string | undefined>()
   const incrementFields = useMemo(
     () => setFieldsForExerciseType(form.exerciseType),
     [form.exerciseType],
   )
+  const categoryOptions = useMemo(() => {
+    if (categories.includes(form.category)) {
+      return categories
+    }
+
+    return [...categories, form.category]
+  }, [categories, form.category])
+
+  useEffect(() => {
+    let cancelled = false
+
+    getExerciseCategories().then((nextCategories) => {
+      if (!cancelled && nextCategories.length > 0) {
+        setCategories(nextCategories)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!exerciseId) {
@@ -91,7 +116,7 @@ export function AddEditExerciseScreen() {
     getExercise(exerciseId).then((exercise) => {
       if (!cancelled && exercise) {
         setForm({
-          name: exercise.name,
+          id: exercise.id,
           category: exercise.category,
           exerciseType: exercise.exerciseType,
           isFavorite: exercise.isFavorite,
@@ -126,10 +151,19 @@ export function AddEditExerciseScreen() {
       setIncrements[field.key] = value
     }
 
-    if (exerciseId) {
-      await updateExercise(exerciseId, { ...result.data, setIncrements })
-    } else {
-      await createExercise({ ...result.data, setIncrements })
+    try {
+      if (exerciseId) {
+        await updateExercise(exerciseId, { ...result.data, setIncrements })
+      } else {
+        await createExercise({ ...result.data, setIncrements })
+      }
+    } catch (saveError) {
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : "Exercise could not be saved.",
+      )
+      return
     }
 
     bumpRefresh()
@@ -158,9 +192,9 @@ export function AddEditExerciseScreen() {
           </Label>
           <Input
             className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
-            value={form.name}
+            value={form.id}
             onChange={(event) =>
-              setForm((current) => ({ ...current, name: event.target.value }))
+              setForm((current) => ({ ...current, id: event.target.value }))
             }
           />
         </div>
@@ -179,7 +213,7 @@ export function AddEditExerciseScreen() {
               }))
             }
           >
-            {exerciseCategories.map((category) => (
+            {categoryOptions.map((category) => (
               <option key={category} value={category}>
                 {formatExerciseCategory(category)}
               </option>

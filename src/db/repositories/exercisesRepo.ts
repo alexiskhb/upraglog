@@ -5,15 +5,26 @@ import type {
   ExerciseSetDefaults,
   ExerciseUsageStats,
 } from "@/db/schema"
-import { createId } from "@/shared/model/ids"
 import {
   defaultProfileName,
   normalizeProfileName,
 } from "@/shared/model/profiles"
+import { normalizeExerciseCategory } from "@/shared/model/exercises"
+
+function normalizeExerciseId(exerciseId: string) {
+  return exerciseId.trim()
+}
 
 export async function getAllExercises() {
   const exercises = await db.exercises.toArray()
-  return exercises.sort((a, b) => a.name.localeCompare(b.name))
+  return exercises.sort((a, b) => a.id.localeCompare(b.id))
+}
+
+export async function getExerciseCategories() {
+  const categories = await db.exerciseCategories.toArray()
+  return categories
+    .map((category) => category.id)
+    .sort((a, b) => a.localeCompare(b))
 }
 
 export async function getExercise(exerciseId: string) {
@@ -21,19 +32,25 @@ export async function getExercise(exerciseId: string) {
 }
 
 export async function createExercise(input: ExerciseInput) {
-  const now = new Date().toISOString()
+  const exerciseId = normalizeExerciseId(input.id)
+  const duplicate = await db.exercises.get(exerciseId)
+
+  if (duplicate) {
+    throw new Error("Exercise already exists.")
+  }
+
   const exercise: Exercise = {
-    id: createId("exercise"),
-    name: input.name.trim(),
-    category: input.category,
+    id: exerciseId,
+    category: normalizeExerciseCategory(input.category),
     exerciseType: input.exerciseType,
     isFavorite: input.isFavorite ?? false,
     setIncrements: input.setIncrements,
-    createdAt: now,
-    updatedAt: now,
   }
 
-  await db.exercises.add(exercise)
+  await db.transaction("rw", db.exerciseCategories, db.exercises, async () => {
+    await db.exerciseCategories.put({ id: exercise.category })
+    await db.exercises.add(exercise)
+  })
   return exercise
 }
 
@@ -41,19 +58,62 @@ export async function updateExercise(
   exerciseId: string,
   input: Partial<ExerciseInput>,
 ) {
-  await db.exercises.update(exerciseId, {
-    ...input,
-    name: input.name?.trim(),
-    updatedAt: new Date().toISOString(),
-  })
+  const currentExercise = await db.exercises.get(exerciseId)
 
-  return db.exercises.get(exerciseId)
+  if (!currentExercise) {
+    return undefined
+  }
+
+  const nextExerciseId = input.id
+    ? normalizeExerciseId(input.id)
+    : currentExercise.id
+  const nextExercise: Exercise = {
+    id: nextExerciseId,
+    category: input.category
+      ? normalizeExerciseCategory(input.category)
+      : currentExercise.category,
+    exerciseType: input.exerciseType ?? currentExercise.exerciseType,
+    isFavorite: input.isFavorite ?? currentExercise.isFavorite,
+    lastSetInput: currentExercise.lastSetInput,
+    setIncrements: input.setIncrements ?? currentExercise.setIncrements,
+  }
+
+  if (nextExerciseId === exerciseId) {
+    await db.transaction("rw", db.exerciseCategories, db.exercises, async () => {
+      await db.exerciseCategories.put({ id: nextExercise.category })
+      await db.exercises.put(nextExercise)
+    })
+    return nextExercise
+  }
+
+  const duplicate = await db.exercises.get(nextExerciseId)
+
+  if (duplicate) {
+    throw new Error("Exercise already exists.")
+  }
+
+  await db.transaction(
+    "rw",
+    db.exerciseCategories,
+    db.exercises,
+    db.workoutExercises,
+    async () => {
+      await db.exerciseCategories.put({ id: nextExercise.category })
+      await db.exercises.delete(exerciseId)
+      await db.exercises.add(nextExercise)
+      await db.workoutExercises
+        .where("exerciseId")
+        .equals(exerciseId)
+        .modify({ exerciseId: nextExerciseId })
+    },
+  )
+
+  return nextExercise
 }
 
 export async function toggleExerciseFavorite(exercise: Exercise) {
   await db.exercises.update(exercise.id, {
     isFavorite: !exercise.isFavorite,
-    updatedAt: new Date().toISOString(),
   })
 }
 
@@ -63,7 +123,6 @@ export async function updateExerciseSetDefaults(
 ) {
   await db.exercises.update(exerciseId, {
     lastSetInput,
-    updatedAt: new Date().toISOString(),
   })
 }
 

@@ -1,13 +1,8 @@
-export type ExerciseCategory =
-  | "chest"
-  | "back"
-  | "legs"
-  | "shoulders"
-  | "biceps"
-  | "triceps"
-  | "abs"
-  | "cardio"
-  | "custom"
+export type ExerciseCategory = string
+
+export type ExerciseCategoryEntry = {
+  id: ExerciseCategory
+}
 
 export type ExerciseType =
   | "strength"
@@ -31,14 +26,11 @@ export type ExerciseSetIncrements = Partial<Record<SetFieldKey, number>>
 
 export type Exercise = {
   id: string
-  name: string
   category: ExerciseCategory
   exerciseType: ExerciseType
   isFavorite: boolean
   lastSetInput?: ExerciseSetDefaults
   setIncrements?: ExerciseSetIncrements
-  createdAt: string
-  updatedAt: string
 }
 
 export type Workout = {
@@ -114,7 +106,7 @@ export type SetEntryInput = {
 }
 
 export type ExerciseInput = {
-  name: string
+  id: string
   category: ExerciseCategory
   exerciseType: ExerciseType
   isFavorite?: boolean

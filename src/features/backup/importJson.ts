@@ -12,6 +12,7 @@ export async function restoreBackup(backup: BackupFile) {
   await db.transaction(
     "rw",
     [
+      db.exerciseCategories,
       db.exercises,
       db.workouts,
       db.workoutExercises,
@@ -24,10 +25,12 @@ export async function restoreBackup(backup: BackupFile) {
         db.workoutExercises.clear(),
         db.workouts.clear(),
         db.exercises.clear(),
+        db.exerciseCategories.clear(),
         db.settings.clear(),
       ])
 
-      await db.exercises.bulkAdd(backup.data.exercises)
+      await db.exerciseCategories.bulkPut(backup.data.exerciseCategories)
+      await db.exercises.bulkPut(backup.data.exercises)
       await db.workouts.bulkAdd(backup.data.workouts)
       await db.workoutExercises.bulkAdd(backup.data.workoutExercises)
       await db.sets.bulkAdd(backup.data.sets)

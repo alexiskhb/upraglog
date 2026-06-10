@@ -5,14 +5,14 @@ import {
 } from "@/shared/model/units"
 
 type ExerciseCardProps = {
-  name: string
+  title: string
   exerciseType: ExerciseType
   sets: SetEntry[]
   onOpen: () => void
 }
 
 export function ExerciseCard({
-  name,
+  title,
   exerciseType,
   sets,
   onOpen,
@@ -23,7 +23,7 @@ export function ExerciseCard({
       type="button"
       onClick={onOpen}
     >
-      <div className="truncate text-[15px] font-medium text-zinc-50">{name}</div>
+      <div className="truncate text-[15px] font-medium text-zinc-50">{title}</div>
       <div className="mt-2 h-px bg-cyan-300/50" />
       <div className="mt-3 space-y-1">
         {sets.length === 0 ? (

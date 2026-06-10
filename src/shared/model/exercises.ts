@@ -1,15 +1,15 @@
 import type { ExerciseCategory, ExerciseType } from "@/db/schema"
 
-export const exerciseCategories = [
-  "chest",
-  "back",
-  "legs",
-  "shoulders",
-  "biceps",
-  "triceps",
-  "abs",
-  "cardio",
-  "custom",
+export const defaultExerciseCategories = [
+  "Chest",
+  "Back",
+  "Legs",
+  "Shoulders",
+  "Biceps",
+  "Triceps",
+  "Abs",
+  "Cardio",
+  "Custom",
 ] as const satisfies readonly ExerciseCategory[]
 
 export const exerciseTypes = [
@@ -23,7 +23,18 @@ export const exerciseTypes = [
 ] as const satisfies readonly ExerciseType[]
 
 export function formatExerciseCategory(category: ExerciseCategory) {
-  return category.charAt(0).toUpperCase() + category.slice(1)
+  return category
+}
+
+export function normalizeExerciseCategory(category: ExerciseCategory) {
+  const trimmedCategory = category.trim()
+  const defaultCategory = defaultExerciseCategories.find(
+    (currentCategory) =>
+      currentCategory.toLocaleLowerCase() ===
+      trimmedCategory.toLocaleLowerCase(),
+  )
+
+  return defaultCategory ?? trimmedCategory
 }
 
 export function formatExerciseType(type: ExerciseType) {

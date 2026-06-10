@@ -218,7 +218,7 @@ export function TrainingScreen() {
               })
             }
           >
-            <span className="block truncate">{detail.exercise.name}</span>
+            <span className="block truncate">{detail.exercise.id}</span>
           </button>
           <WorkoutActiveTimer
             className="justify-self-end pt-1"

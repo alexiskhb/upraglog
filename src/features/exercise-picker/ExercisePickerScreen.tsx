@@ -16,6 +16,7 @@ import type {
 import {
   deleteExercise,
   getAllExercises,
+  getExerciseCategories,
   getExerciseUsageStats,
   toggleExerciseFavorite,
 } from "@/db/repositories/exercisesRepo"
@@ -45,7 +46,7 @@ import { IconButton } from "@/shared/ui/IconButton"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { useAppStore } from "@/shared/store/appStore"
 import {
-  exerciseCategories,
+  defaultExerciseCategories,
   formatExerciseCategory,
   formatExerciseType,
 } from "@/shared/model/exercises"
@@ -56,7 +57,7 @@ import { ExerciseCategoryChips } from "./ExerciseCategoryChips"
 type CategoryFilter = ExerciseCategory | "favorites"
 
 function matchesTokens(exercise: Exercise, query: string) {
-  const normalizedName = exercise.name.toLowerCase()
+  const normalizedName = exercise.id.toLowerCase()
   const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean)
   return tokens.every((token) => normalizedName.includes(token))
 }
@@ -75,6 +76,9 @@ export function ExercisePickerScreen() {
     (state) => state.setReplaceWorkoutExerciseId,
   )
   const [exercises, setExercises] = useState<Exercise[]>([])
+  const [exerciseCategories, setExerciseCategories] = useState<
+    ExerciseCategory[]
+  >([...defaultExerciseCategories])
   const [stats, setStats] = useState<Record<string, ExerciseUsageStats>>({})
   const [query, setQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<
@@ -86,11 +90,18 @@ export function ExercisePickerScreen() {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([getAllExercises(), getExerciseUsageStats(selectedProfile)]).then(
-      ([exerciseRows, usageStats]) => {
+    Promise.all([
+      getAllExercises(),
+      getExerciseUsageStats(selectedProfile),
+      getExerciseCategories(),
+    ]).then(
+      ([exerciseRows, usageStats, categoryRows]) => {
         if (!cancelled) {
           setExercises(exerciseRows)
           setStats(usageStats)
+          if (categoryRows.length > 0) {
+            setExerciseCategories(categoryRows)
+          }
         }
       },
     )
@@ -109,7 +120,7 @@ export function ExercisePickerScreen() {
     return hasFavorites
       ? ["favorites", ...exerciseCategories]
       : [...exerciseCategories]
-  }, [exercises])
+  }, [exerciseCategories, exercises])
 
   const filteredExercises = useMemo(() => {
     const categoryFiltered = exercises.filter((exercise) => {
@@ -129,7 +140,7 @@ export function ExercisePickerScreen() {
     }
 
     const fuse = new Fuse(categoryFiltered, {
-      keys: ["name"],
+      keys: ["id"],
       threshold: 0.45,
       ignoreLocation: true,
       minMatchCharLength: 2,
@@ -257,7 +268,7 @@ export function ExercisePickerScreen() {
                   onClick={() => void selectExercise(exercise)}
                 >
                   <div className="truncate text-[15px] font-medium text-zinc-50">
-                    {exercise.name}
+                    {exercise.id}
                   </div>
                   <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs text-zinc-500">
                     <span>{formatExerciseCategory(exercise.category)}</span>
