@@ -3,6 +3,7 @@ import {
   Check,
   Clock3,
   Dumbbell,
+  ListPlus,
   ListChecks,
   MoreVertical,
   Plus,
@@ -21,6 +22,7 @@ import {
 import { updateSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import { todayString } from "@/shared/model/dates"
+import { AddExercisesDialog } from "@/features/workout-navigation/AddExercisesDialog"
 import {
   defaultProfileName,
   defaultProfileNames,
@@ -39,6 +41,7 @@ const bottomBarMenuItemClassName =
 export function BottomMainBar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const [addExercisesOpen, setAddExercisesOpen] = useState(false)
   const contextualReturnHrefRef = useRef<string | undefined>(undefined)
   const profileTriggerRef = useRef<HTMLButtonElement>(null)
   const moreTriggerRef = useRef<HTMLButtonElement>(null)
@@ -177,8 +180,9 @@ export function BottomMainBar() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-[60] border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
-      <div className="grid h-16 w-full grid-cols-5 items-stretch">
+    <>
+      <nav className="fixed inset-x-0 bottom-0 z-[60] border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
+        <div className="grid h-16 w-full grid-cols-5 items-stretch">
         <DropdownMenu
           open={profileMenuOpen}
           onOpenChange={(open) => {
@@ -333,6 +337,17 @@ export function BottomMainBar() {
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
               className={bottomBarMenuItemClassName}
+              onSelect={() => {
+                setWorkoutNavOpen(false)
+                setAddExercisesOpen(true)
+              }}
+            >
+              <ListPlus className="size-5 text-cyan-300" />
+              Add Exercises
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem
+              className={bottomBarMenuItemClassName}
               onSelect={goToDay}
             >
               <Dumbbell className="size-5 text-cyan-300" />
@@ -341,6 +356,17 @@ export function BottomMainBar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </nav>
+      </nav>
+      <AddExercisesDialog
+        localDate={selectedOrToday}
+        open={addExercisesOpen}
+        profileName={selectedProfile}
+        onAdded={() => {
+          bumpRefresh()
+          navigateToSelectedDay()
+        }}
+        onOpenChange={setAddExercisesOpen}
+      />
+    </>
   )
 }
