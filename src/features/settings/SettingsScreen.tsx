@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Trash2 } from "lucide-react"
+import { useNavigate } from "@tanstack/react-router"
 import type { AppSettings } from "@/db/schema"
 import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
 import { Switch } from "@/components/ui/switch"
@@ -13,6 +14,7 @@ import {
   defaultProfileNames,
   normalizeProfileName,
 } from "@/shared/model/profiles"
+import { todayString } from "@/shared/model/dates"
 import {
   downloadTextFile,
   exportBackupJson,
@@ -22,7 +24,13 @@ import { parseBackupJson, restoreBackup } from "@/features/backup/importJson"
 
 export function SettingsScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
+  const selectedDate = useAppStore((state) => state.selectedDate)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
+  const setReplaceWorkoutExerciseId = useAppStore(
+    (state) => state.setReplaceWorkoutExerciseId,
+  )
+  const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
   const setProfileState = useAppStore((state) => state.setProfileState)
   const [settings, setSettings] = useState<AppSettings>({
     keepScreenOn: true,
@@ -137,10 +145,25 @@ export function SettingsScreen() {
     }
   }
 
+  const goHome = () => {
+    setReplaceWorkoutExerciseId(undefined)
+    setWorkoutNavOpen(false)
+    void navigate({
+      to: "/day/$date",
+      params: { date: selectedDate || todayString() },
+    })
+  }
+
   return (
     <ScreenContainer className="gap-4">
       <div className="pt-3">
-        <h1 className="text-[17px] font-semibold text-zinc-50">Settings</h1>
+        <button
+          className="min-w-0 cursor-pointer text-left text-[17px] font-semibold text-zinc-50"
+          type="button"
+          onClick={goHome}
+        >
+          Settings
+        </button>
         <div className="mt-2 h-px bg-cyan-300/50" />
       </div>
 
