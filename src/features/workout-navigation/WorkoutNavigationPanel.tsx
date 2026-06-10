@@ -71,6 +71,7 @@ function WorkoutNavRow({
       <div className="grid min-h-14 grid-cols-[1fr_2.5rem] items-center gap-2 bg-[var(--app-surface)] px-2 transition hover:bg-[#1b2026]">
         <button
           className="min-w-0 text-left"
+          style={{ touchAction: "none" }}
           type="button"
           title="Long press to move exercise"
           onClick={onOpen}

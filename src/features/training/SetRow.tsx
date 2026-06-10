@@ -46,7 +46,7 @@ export function SetRow({
     >
       <div
         className={cn(
-          "grid min-h-12 grid-cols-[2.25rem_2rem_minmax(0,1fr)_5.5rem_2.25rem] items-center gap-2 bg-[var(--app-surface)] px-1 text-sm tabular-nums text-zinc-100 transition hover:bg-[#1b2026]",
+          "grid min-h-12 grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-2 bg-[var(--app-surface)] px-1 text-sm tabular-nums text-zinc-100 transition hover:bg-[#1b2026]",
           selected &&
             "bg-cyan-400/15 text-cyan-50 shadow-[inset_3px_0_0_rgba(34,211,238,0.75)]",
         )}
@@ -66,7 +66,8 @@ export function SetRow({
           <MessageCircle className="size-4" />
         </button>
         <button
-          className="contents"
+          className="grid min-h-12 min-w-0 grid-cols-[2rem_minmax(0,1fr)_5.5rem] items-center gap-2 text-sm tabular-nums"
+          style={{ touchAction: "none" }}
           type="button"
           title="Long press to move set"
           onClick={onSelect}
