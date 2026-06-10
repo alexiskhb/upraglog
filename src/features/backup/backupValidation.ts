@@ -15,12 +15,11 @@ const exerciseCategoryEntrySchema = z.object({
 
 const exerciseTypeSchema = z.enum([
   "strength",
-  "cardio",
-  "weight_time",
-  "reps_time",
+  "weight_over_time",
+  "reps_over_time",
   "reps_only",
   "time_only",
-  "distance_time",
+  "distance_over_time",
 ])
 
 const exerciseSetDefaultsSchema = z.object({

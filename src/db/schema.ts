@@ -6,12 +6,11 @@ export type ExerciseCategoryEntry = {
 
 export type ExerciseType =
   | "strength"
-  | "cardio"
-  | "weight_time"
-  | "reps_time"
+  | "weight_over_time"
+  | "reps_over_time"
   | "reps_only"
   | "time_only"
-  | "distance_time"
+  | "distance_over_time"
 
 export type SetFieldKey = "weight" | "reps" | "distance" | "durationSeconds"
 

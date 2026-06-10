@@ -26,7 +26,7 @@ export function formatSetPrimaryValue(
   set: SetEntry,
   exerciseType: ExerciseType,
 ) {
-  if (exerciseType === "cardio" || exerciseType === "distance_time") {
+  if (exerciseType === "distance_over_time") {
     return displayNumber(set.distance)
   }
 
@@ -34,7 +34,7 @@ export function formatSetPrimaryValue(
     return displayDuration(set.durationSeconds)
   }
 
-  if (exerciseType === "reps_only" || exerciseType === "reps_time") {
+  if (exerciseType === "reps_only" || exerciseType === "reps_over_time") {
     return displayReps(set.reps)
   }
 
@@ -50,10 +50,9 @@ export function formatSetSecondaryValue(
   }
 
   if (
-    exerciseType === "cardio" ||
-    exerciseType === "distance_time" ||
-    exerciseType === "weight_time" ||
-    exerciseType === "reps_time"
+    exerciseType === "distance_over_time" ||
+    exerciseType === "weight_over_time" ||
+    exerciseType === "reps_over_time"
   ) {
     return displayDuration(set.durationSeconds)
   }

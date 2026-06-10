@@ -10,12 +10,12 @@ export type SetFieldDefinition = {
   defaultIncrement: number
   isDuration?: boolean
 }
-  
+
 export const defaultSetIncrements: Record<SetFieldKey, number> = {
   weight: 2.5,
   reps: 1,
   distance: 0.1,
-  durationSeconds: 30,
+  durationSeconds: 10,
 }
 
 const weightField: SetFieldDefinition = {
@@ -46,15 +46,15 @@ const durationField: SetFieldDefinition = {
 export function setFieldsForExerciseType(
   exerciseType: ExerciseType,
 ): SetFieldDefinition[] {
-  if (exerciseType === "cardio" || exerciseType === "distance_time") {
+  if (exerciseType === "distance_over_time") {
     return [distanceField, durationField]
   }
 
-  if (exerciseType === "weight_time") {
+  if (exerciseType === "weight_over_time") {
     return [weightField, durationField]
   }
 
-  if (exerciseType === "reps_time") {
+  if (exerciseType === "reps_over_time") {
     return [repsField, durationField]
   }
 
@@ -77,4 +77,3 @@ export function getSetIncrement(
 
   return increment && increment > 0 ? increment : defaultSetIncrements[key]
 }
-
