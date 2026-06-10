@@ -244,9 +244,6 @@ export function SettingsScreen() {
             <Label className="text-sm text-zinc-200">
               Export All Profiles
             </Label>
-            <span className="mt-1 block text-xs text-zinc-500">
-              Includes active profiles only.
-            </span>
           </span>
           <Switch
             checked={settings.exportAllProfiles}
