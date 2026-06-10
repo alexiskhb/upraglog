@@ -6,6 +6,7 @@ import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { useAppStore } from "@/shared/store/appStore"
@@ -42,11 +43,24 @@ export function SettingsScreen() {
     profiles: [...defaultProfileNames],
     selectedProfile: defaultProfileName,
     exportAllProfiles: false,
+    spreadsheetExportMonthLimit: null,
+    spreadsheetShareMessage: "",
     setCommentTemplates: [...defaultSetCommentTemplates],
   })
   const [newProfileName, setNewProfileName] = useState("")
   const [newSetCommentTemplate, setNewSetCommentTemplate] = useState("")
+  const [spreadsheetMonthLimitDraft, setSpreadsheetMonthLimitDraft] =
+    useState("")
+  const [spreadsheetShareMessageDraft, setSpreadsheetShareMessageDraft] =
+    useState("")
   const [message, setMessage] = useState<string | undefined>()
+
+  const setSpreadsheetDrafts = (appSettings: AppSettings) => {
+    setSpreadsheetMonthLimitDraft(
+      appSettings.spreadsheetExportMonthLimit?.toString() ?? "",
+    )
+    setSpreadsheetShareMessageDraft(appSettings.spreadsheetShareMessage)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -54,6 +68,7 @@ export function SettingsScreen() {
     getSettings().then((appSettings) => {
       if (!cancelled) {
         setSettings(appSettings)
+        setSpreadsheetDrafts(appSettings)
       }
     })
 
@@ -158,10 +173,72 @@ export function SettingsScreen() {
   }
 
   const exportSpreadsheet = async () => {
-    const { filename, text } = await exportTrainingLogCsv()
+    const { filename, text } = await exportTrainingLogCsv({
+      monthLimit: settings.spreadsheetExportMonthLimit,
+    })
 
     downloadTextFile(filename, text, "text/csv;charset=utf-8")
     setMessage("Spreadsheet CSV exported.")
+  }
+
+  const saveSpreadsheetMonthLimit = async () => {
+    const monthLimit = Number(spreadsheetMonthLimitDraft)
+
+    if (!Number.isFinite(monthLimit) || monthLimit < 1) {
+      setSpreadsheetMonthLimitDraft(
+        settings.spreadsheetExportMonthLimit?.toString() ?? "",
+      )
+      setMessage("Enter a month count greater than 0.")
+      return
+    }
+
+    const normalizedMonthLimit = Math.floor(monthLimit)
+
+    setSpreadsheetMonthLimitDraft(normalizedMonthLimit.toString())
+    await saveSettings({ spreadsheetExportMonthLimit: normalizedMonthLimit })
+  }
+
+  const saveSpreadsheetShareMessage = async () => {
+    if (spreadsheetShareMessageDraft === settings.spreadsheetShareMessage) {
+      return spreadsheetShareMessageDraft
+    }
+
+    await saveSettings({ spreadsheetShareMessage: spreadsheetShareMessageDraft })
+    return spreadsheetShareMessageDraft
+  }
+
+  const shareSpreadsheet = async () => {
+    if (!navigator.share) {
+      setMessage("Sharing is not available in this browser.")
+      return
+    }
+
+    const shareMessage = await saveSpreadsheetShareMessage()
+    const { filename, text } = await exportTrainingLogCsv({
+      monthLimit: settings.spreadsheetExportMonthLimit,
+    })
+    const file = new File([text], filename, { type: "text/csv;charset=utf-8" })
+    const shareData: ShareData = {
+      files: [file],
+      text: shareMessage.trim() || undefined,
+      title: "Upraglog training log",
+    }
+
+    if (navigator.canShare && !navigator.canShare({ files: [file] })) {
+      setMessage("CSV file sharing is not available in this browser.")
+      return
+    }
+
+    try {
+      await navigator.share(shareData)
+      setMessage("Spreadsheet shared.")
+    } catch (error) {
+      setMessage(
+        error instanceof DOMException && error.name === "AbortError"
+          ? "Share canceled."
+          : "Spreadsheet could not be shared.",
+      )
+    }
   }
 
   const importJson = async (file: File) => {
@@ -171,6 +248,7 @@ export function SettingsScreen() {
       await restoreBackup(backup)
       const appSettings = await getSettings()
       setSettings(appSettings)
+      setSpreadsheetDrafts(appSettings)
       setProfileState(appSettings.profiles, appSettings.selectedProfile)
       bumpRefresh()
       setMessage("Backup imported.")
@@ -253,6 +331,91 @@ export function SettingsScreen() {
 
       <section className="app-surface space-y-3 rounded-md p-3.5">
         <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
+          Spreadsheet
+        </div>
+        <div className="text-xs text-zinc-500">
+          Export training logs as CSV for spreadsheet apps.
+        </div>
+        <label className="flex items-center justify-between gap-3">
+          <span>
+            <Label className="text-sm text-zinc-200">
+              Export All Profiles
+            </Label>
+          </span>
+          <Switch
+            checked={settings.exportAllProfiles}
+            className="data-checked:bg-cyan-500"
+            onCheckedChange={(exportAllProfiles) =>
+              void saveSettings({ exportAllProfiles })
+            }
+          />
+        </label>
+        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+          <span>
+            <Label className="text-sm text-zinc-200">
+              Export All History
+            </Label>
+          </span>
+          <Switch
+            checked={settings.spreadsheetExportMonthLimit === null}
+            className="data-checked:bg-cyan-500"
+            onCheckedChange={(exportAllHistory) => {
+              const monthLimit = exportAllHistory ? null : 3
+
+              setSpreadsheetMonthLimitDraft(monthLimit?.toString() ?? "")
+              void saveSettings({ spreadsheetExportMonthLimit: monthLimit })
+            }}
+          />
+        </label>
+        <div className="space-y-2">
+          <Label className="text-xs uppercase tracking-normal text-zinc-400">
+            Last Months
+          </Label>
+          <Input
+            className="h-11 rounded-md border-white/10 bg-[var(--app-surface)] text-zinc-100 placeholder:text-zinc-600 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+            disabled={settings.spreadsheetExportMonthLimit === null}
+            inputMode="numeric"
+            min="1"
+            placeholder="All"
+            type="number"
+            value={spreadsheetMonthLimitDraft}
+            onBlur={() => void saveSpreadsheetMonthLimit()}
+            onChange={(event) =>
+              setSpreadsheetMonthLimitDraft(event.target.value)
+            }
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.currentTarget.blur()
+              }
+            }}
+          />
+        </div>
+        <details className="group rounded-md border border-white/10 bg-[var(--app-surface-muted)] px-3 py-2">
+          <summary className="flex min-h-8 cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold uppercase tracking-normal text-zinc-400 [&::-webkit-details-marker]:hidden">
+            Message
+            <ChevronDown className="size-4 text-zinc-500 transition group-open:rotate-180" />
+          </summary>
+          <Textarea
+            className="mt-2 min-h-24 rounded-md border-white/10 bg-[var(--app-surface)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+            value={spreadsheetShareMessageDraft}
+            onBlur={() => void saveSpreadsheetShareMessage()}
+            onChange={(event) =>
+              setSpreadsheetShareMessageDraft(event.target.value)
+            }
+          />
+        </details>
+        <div className="grid grid-cols-2 gap-2">
+          <ActionButton tone="secondary" onClick={exportSpreadsheet}>
+            Spreadsheet Export
+          </ActionButton>
+          <ActionButton tone="secondary" onClick={shareSpreadsheet}>
+            Share...
+          </ActionButton>
+        </div>
+      </section>
+
+      <section className="app-surface space-y-3 rounded-md p-3.5">
+        <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
           Profiles
         </div>
         <div className="space-y-2">
@@ -296,32 +459,6 @@ export function SettingsScreen() {
             Add
           </ActionButton>
         </div>
-      </section>
-
-      <section className="app-surface space-y-3 rounded-md p-3.5">
-        <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
-          Spreadsheet
-        </div>
-        <div className="text-xs text-zinc-500">
-          Export training logs as CSV for spreadsheet apps.
-        </div>
-        <label className="flex items-center justify-between gap-3">
-          <span>
-            <Label className="text-sm text-zinc-200">
-              Export All Profiles
-            </Label>
-          </span>
-          <Switch
-            checked={settings.exportAllProfiles}
-            className="data-checked:bg-cyan-500"
-            onCheckedChange={(exportAllProfiles) =>
-              void saveSettings({ exportAllProfiles })
-            }
-          />
-        </label>
-        <ActionButton tone="secondary" onClick={exportSpreadsheet}>
-          Spreadsheet Export
-        </ActionButton>
       </section>
 
       <section className="app-surface space-y-3 rounded-md p-3.5">

@@ -1,3 +1,4 @@
+import { subMonths } from "date-fns"
 import { db } from "@/db/db"
 import { getSettings } from "@/db/repositories/settingsRepo"
 import type {
@@ -6,7 +7,11 @@ import type {
   Workout,
   WorkoutExercise,
 } from "@/db/schema"
-import { formatDuration, getWorkoutDurationSeconds } from "@/shared/model/dates"
+import {
+  formatDuration,
+  getWorkoutDurationSeconds,
+  toLocalDateString,
+} from "@/shared/model/dates"
 import { formatExerciseCategory, formatExerciseType } from "@/shared/model/exercises"
 import { defaultProfileName } from "@/shared/model/profiles"
 
@@ -28,6 +33,10 @@ const csvHeaders = [
 ]
 
 type TrainingLogRow = Array<string | number | undefined>
+
+type ExportTrainingLogCsvOptions = {
+  monthLimit?: number | null
+}
 
 function csvEscape(value: string | number | undefined) {
   if (value === undefined) {
@@ -82,6 +91,14 @@ function getWorkoutProfileName(workout: Workout) {
   return workout.profileName || defaultProfileName
 }
 
+function getExportStartDate(monthLimit?: number | null) {
+  if (!monthLimit || monthLimit < 1) {
+    return undefined
+  }
+
+  return toLocalDateString(subMonths(new Date(), Math.floor(monthLimit)))
+}
+
 function byWorkoutExportOrder(a: Workout, b: Workout) {
   return (
     a.localDate.localeCompare(b.localDate) ||
@@ -125,7 +142,9 @@ function buildSetRow({
   ]
 }
 
-export async function exportTrainingLogCsv() {
+export async function exportTrainingLogCsv(
+  options: ExportTrainingLogCsvOptions = {},
+) {
   const [settings, workouts, workoutExercises, sets, exercises] = await Promise.all([
     getSettings(),
     db.workouts.toArray(),
@@ -140,6 +159,7 @@ export async function exportTrainingLogCsv() {
   const setsByWorkoutExerciseId = new Map<string, SetEntry[]>()
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
   const rows: TrainingLogRow[] = []
+  const exportStartDate = getExportStartDate(options.monthLimit)
 
   for (const workoutExercise of workoutExercises) {
     const current =
@@ -156,6 +176,10 @@ export async function exportTrainingLogCsv() {
 
   for (const workout of workouts.sort(byWorkoutExportOrder)) {
     if (!exportProfiles.has(getWorkoutProfileName(workout))) {
+      continue
+    }
+
+    if (exportStartDate && workout.localDate < exportStartDate) {
       continue
     }
 

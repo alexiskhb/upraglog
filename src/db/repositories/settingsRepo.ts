@@ -17,8 +17,22 @@ const defaultSettings: StoredAppSettings = {
   profiles: [...defaultProfileNames],
   selectedProfile: defaultProfileName,
   exportAllProfiles: false,
+  spreadsheetExportMonthLimit: null,
+  spreadsheetShareMessage: "",
   setCommentTemplates: [...defaultSetCommentTemplates],
   updatedAt: new Date().toISOString(),
+}
+
+function normalizeSpreadsheetMonthLimit(monthLimit?: number | null) {
+  if (monthLimit === null) {
+    return null
+  }
+
+  if (!monthLimit || !Number.isFinite(monthLimit) || monthLimit < 1) {
+    return null
+  }
+
+  return Math.floor(monthLimit)
 }
 
 function normalizeSettings(settings?: Partial<StoredAppSettings>): AppSettings {
@@ -37,6 +51,10 @@ function normalizeSettings(settings?: Partial<StoredAppSettings>): AppSettings {
     profiles: resolvedProfiles.profiles,
     selectedProfile: resolvedProfiles.selectedProfile,
     exportAllProfiles: settings?.exportAllProfiles ?? false,
+    spreadsheetExportMonthLimit: normalizeSpreadsheetMonthLimit(
+      settings?.spreadsheetExportMonthLimit,
+    ),
+    spreadsheetShareMessage: settings?.spreadsheetShareMessage ?? "",
     setCommentTemplates: normalizeSetCommentTemplates(
       settings?.setCommentTemplates,
     ),

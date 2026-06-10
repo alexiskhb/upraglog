@@ -248,6 +248,8 @@ async function initializeDatabaseInternal() {
           profiles: [...defaultProfileNames],
           selectedProfile: defaultProfileName,
           exportAllProfiles: false,
+          spreadsheetExportMonthLimit: null,
+          spreadsheetShareMessage: "",
           setCommentTemplates: [...defaultSetCommentTemplates],
           updatedAt: new Date().toISOString(),
         })

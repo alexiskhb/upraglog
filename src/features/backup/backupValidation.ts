@@ -93,6 +93,8 @@ const settingsSchema = z.object({
   profiles: z.array(z.string()).optional(),
   selectedProfile: z.string().optional(),
   exportAllProfiles: z.boolean().optional(),
+  spreadsheetExportMonthLimit: z.number().nullable().optional(),
+  spreadsheetShareMessage: z.string().optional(),
   setCommentTemplates: z.array(z.string()).optional(),
 }).transform((settings) => ({
   ...resolveSelectedProfile(settings.profiles, settings.selectedProfile),
@@ -103,6 +105,12 @@ const settingsSchema = z.object({
     settings.skipEmptyDaysOnSwipe ??
     false,
   exportAllProfiles: settings.exportAllProfiles ?? false,
+  spreadsheetExportMonthLimit:
+    settings.spreadsheetExportMonthLimit &&
+    settings.spreadsheetExportMonthLimit > 0
+      ? Math.floor(settings.spreadsheetExportMonthLimit)
+      : null,
+  spreadsheetShareMessage: settings.spreadsheetShareMessage ?? "",
   setCommentTemplates: normalizeSetCommentTemplates(
     settings.setCommentTemplates,
   ),
