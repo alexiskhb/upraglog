@@ -17,6 +17,7 @@ import {
   defaultExerciseCategories,
   normalizeExerciseCategory,
 } from "@/shared/model/exercises"
+import { defaultSetCommentTemplates } from "@/shared/model/setCommentTemplates"
 
 class UpraglogDatabase extends Dexie {
   exerciseCategories!: Table<ExerciseCategoryEntry, string>
@@ -247,6 +248,7 @@ async function initializeDatabaseInternal() {
           profiles: [...defaultProfileNames],
           selectedProfile: defaultProfileName,
           exportAllProfiles: false,
+          setCommentTemplates: [...defaultSetCommentTemplates],
           updatedAt: new Date().toISOString(),
         })
       }

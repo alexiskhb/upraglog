@@ -5,6 +5,10 @@ import {
   defaultProfileNames,
   resolveSelectedProfile,
 } from "@/shared/model/profiles"
+import {
+  defaultSetCommentTemplates,
+  normalizeSetCommentTemplates,
+} from "@/shared/model/setCommentTemplates"
 
 const defaultSettings: StoredAppSettings = {
   id: "app",
@@ -13,6 +17,7 @@ const defaultSettings: StoredAppSettings = {
   profiles: [...defaultProfileNames],
   selectedProfile: defaultProfileName,
   exportAllProfiles: false,
+  setCommentTemplates: [...defaultSetCommentTemplates],
   updatedAt: new Date().toISOString(),
 }
 
@@ -32,6 +37,9 @@ function normalizeSettings(settings?: Partial<StoredAppSettings>): AppSettings {
     profiles: resolvedProfiles.profiles,
     selectedProfile: resolvedProfiles.selectedProfile,
     exportAllProfiles: settings?.exportAllProfiles ?? false,
+    setCommentTemplates: normalizeSetCommentTemplates(
+      settings?.setCommentTemplates,
+    ),
   }
 }
 

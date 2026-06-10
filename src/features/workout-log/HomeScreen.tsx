@@ -20,6 +20,7 @@ import {
   defaultProfileName,
   defaultProfileNames,
 } from "@/shared/model/profiles"
+import { defaultSetCommentTemplates } from "@/shared/model/setCommentTemplates"
 import { DateNavRow } from "./DateNavRow"
 import { ExerciseCard } from "./ExerciseCard"
 
@@ -54,6 +55,7 @@ export function HomeScreen() {
     profiles: [...defaultProfileNames],
     selectedProfile: defaultProfileName,
     exportAllProfiles: false,
+    setCommentTemplates: [...defaultSetCommentTemplates],
   })
   const [workoutDates, setWorkoutDates] = useState<string[]>([])
   const [touchStartX, setTouchStartX] = useState<number | undefined>()

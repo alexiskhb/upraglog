@@ -70,6 +70,7 @@ export type AppSettings = {
   profiles: string[]
   selectedProfile: string
   exportAllProfiles: boolean
+  setCommentTemplates: string[]
 }
 
 export type StoredAppSettings = AppSettings & {

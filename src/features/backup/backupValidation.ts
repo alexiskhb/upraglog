@@ -4,6 +4,7 @@ import {
   resolveSelectedProfile,
 } from "@/shared/model/profiles"
 import { normalizeExerciseCategory } from "@/shared/model/exercises"
+import { normalizeSetCommentTemplates } from "@/shared/model/setCommentTemplates"
 
 const exerciseCategorySchema = z.string().trim().min(1)
 
@@ -92,6 +93,7 @@ const settingsSchema = z.object({
   profiles: z.array(z.string()).optional(),
   selectedProfile: z.string().optional(),
   exportAllProfiles: z.boolean().optional(),
+  setCommentTemplates: z.array(z.string()).optional(),
 }).transform((settings) => ({
   ...resolveSelectedProfile(settings.profiles, settings.selectedProfile),
   keepScreenOn:
@@ -101,6 +103,9 @@ const settingsSchema = z.object({
     settings.skipEmptyDaysOnSwipe ??
     false,
   exportAllProfiles: settings.exportAllProfiles ?? false,
+  setCommentTemplates: normalizeSetCommentTemplates(
+    settings.setCommentTemplates,
+  ),
 }))
 
 export const backupFileSchema = z.object({

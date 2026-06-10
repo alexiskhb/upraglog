@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Trash2 } from "lucide-react"
+import { ChevronDown, Trash2 } from "lucide-react"
 import { useNavigate } from "@tanstack/react-router"
 import type { AppSettings } from "@/db/schema"
 import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
@@ -14,6 +14,10 @@ import {
   defaultProfileNames,
   normalizeProfileName,
 } from "@/shared/model/profiles"
+import {
+  defaultSetCommentTemplates,
+  normalizeSetCommentTemplate,
+} from "@/shared/model/setCommentTemplates"
 import { todayString } from "@/shared/model/dates"
 import {
   downloadTextFile,
@@ -38,8 +42,10 @@ export function SettingsScreen() {
     profiles: [...defaultProfileNames],
     selectedProfile: defaultProfileName,
     exportAllProfiles: false,
+    setCommentTemplates: [...defaultSetCommentTemplates],
   })
   const [newProfileName, setNewProfileName] = useState("")
+  const [newSetCommentTemplate, setNewSetCommentTemplate] = useState("")
   const [message, setMessage] = useState<string | undefined>()
 
   useEffect(() => {
@@ -109,6 +115,40 @@ export function SettingsScreen() {
           : settings.selectedProfile,
     })
     setMessage("Profile deleted.")
+  }
+
+  const addSetCommentTemplate = async () => {
+    const template = normalizeSetCommentTemplate(newSetCommentTemplate)
+
+    if (!template) {
+      setMessage("Enter a comment template.")
+      return
+    }
+
+    const templateExists = settings.setCommentTemplates.some(
+      (currentTemplate) =>
+        currentTemplate.toLocaleLowerCase() === template.toLocaleLowerCase(),
+    )
+
+    if (templateExists) {
+      setMessage("Comment template already exists.")
+      return
+    }
+
+    await saveSettings({
+      setCommentTemplates: [...settings.setCommentTemplates, template],
+    })
+    setNewSetCommentTemplate("")
+    setMessage("Comment template added.")
+  }
+
+  const deleteSetCommentTemplate = async (template: string) => {
+    await saveSettings({
+      setCommentTemplates: settings.setCommentTemplates.filter(
+        (currentTemplate) => currentTemplate !== template,
+      ),
+    })
+    setMessage("Comment template deleted.")
   }
 
   const exportJson = async () => {
@@ -316,6 +356,58 @@ export function SettingsScreen() {
           }}
         />
       </section>
+
+      <details className="app-surface group rounded-md p-3.5">
+        <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold uppercase tracking-normal text-zinc-400 [&::-webkit-details-marker]:hidden">
+          Set Comment Templates
+          <ChevronDown className="size-4 text-zinc-500 transition group-open:rotate-180" />
+        </summary>
+        <div className="mt-3 space-y-3">
+          <div className="space-y-2">
+            {settings.setCommentTemplates.map((template) => (
+              <div
+                className="grid min-h-11 grid-cols-[1fr_2.75rem] items-center gap-2 rounded-md border border-white/10 bg-[var(--app-surface-muted)] px-3"
+                key={template}
+              >
+                <span className="min-w-0 truncate text-sm text-zinc-100">
+                  {template}
+                </span>
+                <button
+                  className="inline-flex size-9 cursor-pointer items-center justify-center justify-self-end rounded-md text-zinc-500 hover:bg-white/10 hover:text-red-300"
+                  title="Delete comment template"
+                  type="button"
+                  onClick={() => void deleteSetCommentTemplate(template)}
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-[1fr_auto] gap-2">
+            <Input
+              className="h-11 rounded-md border-white/10 bg-[var(--app-surface)] text-zinc-100 placeholder:text-zinc-600 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+              placeholder="New template"
+              value={newSetCommentTemplate}
+              onChange={(event) =>
+                setNewSetCommentTemplate(event.target.value)
+              }
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  void addSetCommentTemplate()
+                }
+              }}
+            />
+            <ActionButton
+              className="w-24 flex-none"
+              tone="secondary"
+              onClick={addSetCommentTemplate}
+            >
+              Add
+            </ActionButton>
+          </div>
+        </div>
+      </details>
+
     </ScreenContainer>
   )
 }
