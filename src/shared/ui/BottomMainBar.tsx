@@ -9,7 +9,7 @@ import {
   Settings,
   UserCircle,
 } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { type MutableRefObject, useEffect, useRef, useState } from "react"
 import { useNavigate, useRouterState } from "@tanstack/react-router"
 import {
   DropdownMenu,
@@ -29,11 +29,21 @@ import { cn } from "@/lib/utils"
 import { IconButton } from "./IconButton"
 
 const bottomBarButtonClassName = "h-full w-full rounded-none"
+const bottomBarMenuTriggerClassName =
+  "text-zinc-400 hover:bg-transparent data-[state=open]:bg-cyan-400/15 data-[state=open]:text-cyan-200 data-[state=open]:shadow-[inset_0_0_0_1px_rgba(34,211,238,0.18)]"
+const bottomBarMenuContentClassName =
+  "z-[80] rounded-md border-white/10 bg-[#1a1d22] p-2 text-base text-zinc-100 shadow-xl"
+const bottomBarMenuItemClassName =
+  "min-h-12 gap-3 rounded-md px-3 py-3 text-base focus:bg-cyan-400/15"
 
 export function BottomMainBar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const contextualReturnHrefRef = useRef<string | undefined>(undefined)
+  const profileTriggerRef = useRef<HTMLButtonElement>(null)
+  const moreTriggerRef = useRef<HTMLButtonElement>(null)
+  const profilePointerOpenRef = useRef(false)
+  const morePointerOpenRef = useRef(false)
   const navigate = useNavigate()
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -152,6 +162,20 @@ export function BottomMainBar() {
     openTaskRoute("/picker")
   }
 
+  const handlePointerCloseAutoFocus = (
+    event: Event,
+    trigger: HTMLButtonElement | null,
+    pointerOpenRef: MutableRefObject<boolean>,
+  ) => {
+    if (!pointerOpenRef.current) {
+      return
+    }
+
+    event.preventDefault()
+    trigger?.blur()
+    pointerOpenRef.current = false
+  }
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-[60] border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
       <div className="grid h-16 w-full grid-cols-5 items-stretch">
@@ -167,8 +191,18 @@ export function BottomMainBar() {
         >
           <DropdownMenuTrigger asChild>
             <IconButton
-              className={cn(bottomBarButtonClassName, "text-zinc-400")}
+              className={cn(
+                bottomBarButtonClassName,
+                bottomBarMenuTriggerClassName,
+              )}
+              ref={profileTriggerRef}
               title={`Choose profile: ${selectedProfile}`}
+              onKeyDown={() => {
+                profilePointerOpenRef.current = false
+              }}
+              onPointerDown={() => {
+                profilePointerOpenRef.current = true
+              }}
             >
               <UserCircle className="size-6" />
             </IconButton>
@@ -178,17 +212,24 @@ export function BottomMainBar() {
             side="top"
             sideOffset={12}
             collisionPadding={12}
-            className="z-[80] w-52 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
+            className={cn(bottomBarMenuContentClassName, "w-64")}
+            onCloseAutoFocus={(event) =>
+              handlePointerCloseAutoFocus(
+                event,
+                profileTriggerRef.current,
+                profilePointerOpenRef,
+              )
+            }
           >
             {profiles.map((profileName) => (
               <DropdownMenuItem
-                className="gap-2 rounded-md focus:bg-cyan-400/15"
+                className={bottomBarMenuItemClassName}
                 key={profileName}
                 onSelect={() => void selectProfile(profileName)}
               >
                 <Check
                   className={cn(
-                    "size-4 text-cyan-300",
+                    "size-5 text-cyan-300",
                     profileName !== selectedProfile && "opacity-0",
                   )}
                 />
@@ -237,8 +278,18 @@ export function BottomMainBar() {
         >
           <DropdownMenuTrigger asChild>
             <IconButton
-              className={cn(bottomBarButtonClassName, "text-zinc-400")}
+              className={cn(
+                bottomBarButtonClassName,
+                bottomBarMenuTriggerClassName,
+              )}
+              ref={moreTriggerRef}
               title="More actions"
+              onKeyDown={() => {
+                morePointerOpenRef.current = false
+              }}
+              onPointerDown={() => {
+                morePointerOpenRef.current = true
+              }}
             >
               <MoreVertical className="size-6" />
             </IconButton>
@@ -248,36 +299,43 @@ export function BottomMainBar() {
             side="top"
             sideOffset={12}
             collisionPadding={12}
-            className="z-[80] w-56 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
+            className={cn(bottomBarMenuContentClassName, "w-64")}
+            onCloseAutoFocus={(event) =>
+              handlePointerCloseAutoFocus(
+                event,
+                moreTriggerRef.current,
+                morePointerOpenRef,
+              )
+            }
           >
             <DropdownMenuItem
-              className="gap-2 rounded-md focus:bg-cyan-400/15"
+              className={bottomBarMenuItemClassName}
               onSelect={() => {
                 setReplaceWorkoutExerciseId(undefined)
                 setWorkoutNavOpen(false)
                 void navigate({ to: "/settings" })
               }}
             >
-              <Settings className="size-4 text-cyan-300" />
+              <Settings className="size-5 text-cyan-300" />
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
-              className="gap-2 rounded-md focus:bg-cyan-400/15"
+              className={bottomBarMenuItemClassName}
               onSelect={() => {
                 setWorkoutNavOpen(false)
                 openDialog("timer")
               }}
             >
-              <Clock3 className="size-4 text-cyan-300" />
+              <Clock3 className="size-5 text-cyan-300" />
               Time Workout
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
-              className="gap-2 rounded-md focus:bg-cyan-400/15"
+              className={bottomBarMenuItemClassName}
               onSelect={goToDay}
             >
-              <Dumbbell className="size-4 text-cyan-300" />
+              <Dumbbell className="size-5 text-cyan-300" />
               Home
             </DropdownMenuItem>
           </DropdownMenuContent>
