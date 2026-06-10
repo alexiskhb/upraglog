@@ -207,10 +207,9 @@ export function TrainingScreen() {
   return (
     <ScreenContainer className="gap-4">
       <div className="pt-3">
-        <div className="grid grid-cols-[4rem_minmax(0,1fr)_4rem] items-start gap-2">
-          <div />
+        <div className="grid grid-cols-[minmax(0,1fr)_4rem] items-start gap-2">
           <button
-            className="min-w-0 text-center text-[17px] font-semibold text-zinc-50"
+            className="min-w-0 text-left text-[17px] font-semibold text-zinc-50"
             type="button"
             onClick={() =>
               void navigate({
