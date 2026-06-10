@@ -359,6 +359,11 @@ export function TrainingScreen() {
                     unitSystem={settings.unitSystem}
                     onComment={() => setCommentSetId(set.id)}
                     onSelect={() => {
+                      if (set.id === selectedSetId) {
+                        setSelectedSetId(undefined)
+                        return
+                      }
+
                       setSelectedSetId(set.id)
                       setInput(inputFromSet(set))
                     }}
