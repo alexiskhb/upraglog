@@ -18,12 +18,16 @@ export type ExerciseType =
   | "time_only"
   | "distance_time"
 
+export type SetFieldKey = "weight" | "reps" | "distance" | "durationSeconds"
+
 export type ExerciseSetDefaults = {
   weight?: number | null
   reps?: number | null
   distance?: number | null
   durationSeconds?: number | null
 }
+
+export type ExerciseSetIncrements = Partial<Record<SetFieldKey, number>>
 
 export type Exercise = {
   id: string
@@ -32,6 +36,7 @@ export type Exercise = {
   exerciseType: ExerciseType
   isFavorite: boolean
   lastSetInput?: ExerciseSetDefaults
+  setIncrements?: ExerciseSetIncrements
   createdAt: string
   updatedAt: string
 }
@@ -109,4 +114,5 @@ export type ExerciseInput = {
   category: ExerciseCategory
   exerciseType: ExerciseType
   isFavorite?: boolean
+  setIncrements?: ExerciseSetIncrements
 }

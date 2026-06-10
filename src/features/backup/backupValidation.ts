@@ -29,6 +29,13 @@ const exerciseSetDefaultsSchema = z.object({
   durationSeconds: z.number().nullable().optional(),
 })
 
+const exerciseSetIncrementsSchema = z.object({
+  weight: z.number().optional(),
+  reps: z.number().optional(),
+  distance: z.number().optional(),
+  durationSeconds: z.number().optional(),
+})
+
 const exerciseSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -36,6 +43,7 @@ const exerciseSchema = z.object({
   exerciseType: exerciseTypeSchema,
   isFavorite: z.boolean(),
   lastSetInput: exerciseSetDefaultsSchema.optional(),
+  setIncrements: exerciseSetIncrementsSchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 })

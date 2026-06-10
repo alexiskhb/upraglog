@@ -24,6 +24,7 @@ export async function createExercise(input: ExerciseInput) {
     category: input.category,
     exerciseType: input.exerciseType,
     isFavorite: input.isFavorite ?? false,
+    setIncrements: input.setIncrements,
     createdAt: now,
     updatedAt: now,
   }

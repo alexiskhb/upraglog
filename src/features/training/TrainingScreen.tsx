@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import {
   closestCenter,
@@ -11,8 +11,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import type {
-  ExerciseType,
   ExerciseSetDefaults,
+  SetFieldKey,
   SetEntry,
   SetEntryInput,
 } from "@/db/schema"
@@ -25,6 +25,10 @@ import {
   updateSet,
 } from "@/db/repositories/workoutsRepo"
 import { useAppStore } from "@/shared/store/appStore"
+import {
+  getSetIncrement,
+  setFieldsForExerciseType,
+} from "@/shared/model/setFields"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
@@ -36,7 +40,7 @@ type TrainingDetail = NonNullable<
   Awaited<ReturnType<typeof getWorkoutExerciseDetail>>
 >
 
-type FieldKey = "weight" | "reps" | "distance" | "durationSeconds"
+type FieldKey = SetFieldKey
 type InputState = Record<FieldKey, number | null>
 
 const defaultInput: InputState = {
@@ -50,56 +54,7 @@ type FieldConfig = {
   key: FieldKey
   label: string
   step: number
-  unit?: string
   isDuration?: boolean
-}
-
-function fieldsForExerciseType(
-  exerciseType: ExerciseType,
-): FieldConfig[] {
-  const weightField: FieldConfig = {
-    key: "weight",
-    label: "Weight",
-    step: 2.5,
-  }
-  const repsField: FieldConfig = {
-    key: "reps",
-    label: "Reps",
-    step: 1,
-  }
-  const distanceField: FieldConfig = {
-    key: "distance",
-    label: "Distance",
-    step: 0.1,
-  }
-  const durationField: FieldConfig = {
-    key: "durationSeconds",
-    label: "Time",
-    step: 30,
-    isDuration: true,
-  }
-
-  if (exerciseType === "cardio" || exerciseType === "distance_time") {
-    return [distanceField, durationField]
-  }
-
-  if (exerciseType === "weight_time") {
-    return [weightField, durationField]
-  }
-
-  if (exerciseType === "reps_time") {
-    return [repsField, durationField]
-  }
-
-  if (exerciseType === "reps_only") {
-    return [repsField]
-  }
-
-  if (exerciseType === "time_only") {
-    return [durationField]
-  }
-
-  return [weightField, repsField]
 }
 
 function inputFromSet(set: SetEntry): InputState {
@@ -175,13 +130,12 @@ export function TrainingScreen() {
     }
   }, [loadedWorkoutExerciseId, workoutExerciseId, refreshVersion, setSelectedDate])
 
-  const fields = useMemo(
-    () =>
-      fieldsForExerciseType(
-        detail?.exercise.exerciseType ?? "strength",
-      ),
-    [detail?.exercise.exerciseType],
-  )
+  const fields = setFieldsForExerciseType(
+    detail?.exercise.exerciseType ?? "strength",
+  ).map((field) => ({
+    ...field,
+    step: getSetIncrement(detail?.exercise.setIncrements, field.key),
+  }))
   const selectedSet = detail?.sets.find((set) => set.id === selectedSetId)
   const commentSet = detail?.sets.find((set) => set.id === commentSetId)
 
@@ -289,7 +243,6 @@ export function TrainingScreen() {
             key={field.key}
             label={field.label}
             step={field.step}
-            unit={field.unit}
             value={input[field.key]}
             onChange={(value) =>
               setInput((current) => ({ ...current, [field.key]: value }))

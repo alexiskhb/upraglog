@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate, useRouterState } from "@tanstack/react-router"
 import { z } from "zod"
-import type { ExerciseCategory, ExerciseType } from "@/db/schema"
+import type {
+  ExerciseCategory,
+  ExerciseSetIncrements,
+  ExerciseType,
+  SetFieldKey,
+} from "@/db/schema"
 import {
   createExercise,
   getExercise,
@@ -18,6 +23,11 @@ import {
   formatExerciseCategory,
   formatExerciseType,
 } from "@/shared/model/exercises"
+import {
+  defaultSetIncrements,
+  getSetIncrement,
+  setFieldsForExerciseType,
+} from "@/shared/model/setFields"
 import { useAppStore } from "@/shared/store/appStore"
 
 const exerciseFormSchema = z.object({
@@ -27,13 +37,31 @@ const exerciseFormSchema = z.object({
   isFavorite: z.boolean(),
 })
 
-type ExerciseFormState = z.infer<typeof exerciseFormSchema>
+type ExerciseFormBase = z.infer<typeof exerciseFormSchema>
+type IncrementFormState = Record<SetFieldKey, string>
+type ExerciseFormState = ExerciseFormBase & {
+  setIncrements: IncrementFormState
+}
+
+const incrementKeys = Object.keys(defaultSetIncrements) as SetFieldKey[]
+
+function buildIncrementForm(
+  setIncrements?: ExerciseSetIncrements,
+): IncrementFormState {
+  return Object.fromEntries(
+    incrementKeys.map((key) => [
+      key,
+      getSetIncrement(setIncrements, key).toString(),
+    ]),
+  ) as IncrementFormState
+}
 
 const defaultForm: ExerciseFormState = {
   name: "",
   category: "custom",
   exerciseType: "strength",
   isFavorite: false,
+  setIncrements: buildIncrementForm(),
 }
 
 export function AddEditExerciseScreen() {
@@ -48,6 +76,10 @@ export function AddEditExerciseScreen() {
   }, [pathname])
   const [form, setForm] = useState<ExerciseFormState>(defaultForm)
   const [error, setError] = useState<string | undefined>()
+  const incrementFields = useMemo(
+    () => setFieldsForExerciseType(form.exerciseType),
+    [form.exerciseType],
+  )
 
   useEffect(() => {
     if (!exerciseId) {
@@ -63,6 +95,7 @@ export function AddEditExerciseScreen() {
           category: exercise.category,
           exerciseType: exercise.exerciseType,
           isFavorite: exercise.isFavorite,
+          setIncrements: buildIncrementForm(exercise.setIncrements),
         })
       }
     })
@@ -80,10 +113,23 @@ export function AddEditExerciseScreen() {
       return
     }
 
+    const setIncrements: ExerciseSetIncrements = {}
+
+    for (const field of incrementFields) {
+      const value = Number(form.setIncrements[field.key])
+
+      if (!Number.isFinite(value) || value <= 0) {
+        setError(`${field.label} increment must be greater than 0.`)
+        return
+      }
+
+      setIncrements[field.key] = value
+    }
+
     if (exerciseId) {
-      await updateExercise(exerciseId, result.data)
+      await updateExercise(exerciseId, { ...result.data, setIncrements })
     } else {
-      await createExercise(result.data)
+      await createExercise({ ...result.data, setIncrements })
     }
 
     bumpRefresh()
@@ -173,6 +219,38 @@ export function AddEditExerciseScreen() {
             }
           />
         </label>
+      </div>
+
+      <div className="app-surface space-y-4 rounded-md p-3.5">
+        <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
+          Increment Values
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {incrementFields.map((field) => (
+            <div className="space-y-2" key={field.key}>
+              <Label className="text-xs uppercase tracking-normal text-zinc-400">
+                {field.label}
+              </Label>
+              <Input
+                className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+                inputMode="decimal"
+                min="0"
+                step="any"
+                type="number"
+                value={form.setIncrements[field.key]}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    setIncrements: {
+                      ...current.setIncrements,
+                      [field.key]: event.target.value,
+                    },
+                  }))
+                }
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="flex gap-2">
