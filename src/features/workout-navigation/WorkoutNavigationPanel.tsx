@@ -205,7 +205,7 @@ export function WorkoutNavigationPanel() {
 
         <div className="min-h-0 flex-1 overflow-y-auto px-3">
           {detail.exercises.length === 0 ? (
-            <div className="rounded-md border border-white/10 bg-[var(--app-surface)] px-3 py-8 text-center text-sm text-zinc-500">
+            <div className="flex min-h-14 items-center justify-center rounded-md border border-white/10 bg-[var(--app-surface)] px-3 text-center text-sm text-zinc-500">
               No exercises in this workout
             </div>
           ) : (
