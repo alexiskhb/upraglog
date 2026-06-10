@@ -44,6 +44,7 @@ export type Exercise = {
 export type Workout = {
   id: string
   localDate: string
+  profileName: string
   startedAt?: string
   endedAt?: string
   createdAt: string
@@ -75,6 +76,9 @@ export type SetEntry = {
 export type AppSettings = {
   keepScreenOn: boolean
   skipEmptyDaysOnDayNavigation: boolean
+  profiles: string[]
+  selectedProfile: string
+  exportAllProfiles: boolean
 }
 
 export type StoredAppSettings = AppSettings & {

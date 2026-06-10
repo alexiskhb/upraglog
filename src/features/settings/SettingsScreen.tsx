@@ -1,11 +1,18 @@
 import { useEffect, useRef, useState } from "react"
+import { Trash2 } from "lucide-react"
 import type { AppSettings } from "@/db/schema"
 import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { useAppStore } from "@/shared/store/appStore"
+import {
+  defaultProfileName,
+  defaultProfileNames,
+  normalizeProfileName,
+} from "@/shared/model/profiles"
 import {
   downloadTextFile,
   exportBackupJson,
@@ -16,10 +23,15 @@ import { parseBackupJson, restoreBackup } from "@/features/backup/importJson"
 export function SettingsScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
+  const setProfileState = useAppStore((state) => state.setProfileState)
   const [settings, setSettings] = useState<AppSettings>({
     keepScreenOn: true,
     skipEmptyDaysOnDayNavigation: false,
+    profiles: [...defaultProfileNames],
+    selectedProfile: defaultProfileName,
+    exportAllProfiles: false,
   })
+  const [newProfileName, setNewProfileName] = useState("")
   const [message, setMessage] = useState<string | undefined>()
 
   useEffect(() => {
@@ -38,11 +50,57 @@ export function SettingsScreen() {
 
   const saveSettings = async (input: Partial<AppSettings>) => {
     const updated = await updateSettings(input)
-    setSettings({
-      keepScreenOn: updated.keepScreenOn,
-      skipEmptyDaysOnDayNavigation: updated.skipEmptyDaysOnDayNavigation,
-    })
+    setSettings(updated)
+    setProfileState(updated.profiles, updated.selectedProfile)
     bumpRefresh()
+    return updated
+  }
+
+  const addProfile = async () => {
+    const profileName = normalizeProfileName(newProfileName)
+
+    if (!profileName) {
+      setMessage("Enter a profile name.")
+      return
+    }
+
+    const profileExists = settings.profiles.some(
+      (currentProfileName) =>
+        currentProfileName.toLocaleLowerCase() ===
+        profileName.toLocaleLowerCase(),
+    )
+
+    if (profileExists) {
+      setMessage("Profile already exists.")
+      return
+    }
+
+    await saveSettings({
+      profiles: [...settings.profiles, profileName],
+      selectedProfile: profileName,
+    })
+    setNewProfileName("")
+    setMessage("Profile added.")
+  }
+
+  const deleteProfile = async (profileName: string) => {
+    if (settings.profiles.length <= 1) {
+      setMessage("Keep at least one profile.")
+      return
+    }
+
+    const profiles = settings.profiles.filter(
+      (currentProfileName) => currentProfileName !== profileName,
+    )
+
+    await saveSettings({
+      profiles,
+      selectedProfile:
+        settings.selectedProfile === profileName
+          ? profiles[0]
+          : settings.selectedProfile,
+    })
+    setMessage("Profile deleted.")
   }
 
   const exportJson = async () => {
@@ -63,6 +121,9 @@ export function SettingsScreen() {
       const text = await file.text()
       const backup = parseBackupJson(text)
       await restoreBackup(backup)
+      const appSettings = await getSettings()
+      setSettings(appSettings)
+      setProfileState(appSettings.profiles, appSettings.selectedProfile)
       bumpRefresh()
       setMessage("Backup imported.")
     } catch (error) {
@@ -129,8 +190,72 @@ export function SettingsScreen() {
 
       <section className="app-surface space-y-3 rounded-md p-3.5">
         <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
+          Profiles
+        </div>
+        <div className="space-y-2">
+          {settings.profiles.map((profileName) => (
+            <div
+              className="grid min-h-11 grid-cols-[1fr_2.75rem] items-center gap-2 rounded-md border border-white/10 bg-[var(--app-surface-muted)] px-3"
+              key={profileName}
+            >
+              <span className="min-w-0 truncate text-sm text-zinc-100">
+                {profileName}
+              </span>
+              <button
+                className="inline-flex size-9 cursor-pointer items-center justify-center justify-self-end rounded-md text-zinc-500 hover:bg-white/10 hover:text-red-300 disabled:pointer-events-none disabled:opacity-40"
+                disabled={settings.profiles.length <= 1}
+                title="Delete profile"
+                type="button"
+                onClick={() => void deleteProfile(profileName)}
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Input
+            className="h-11 rounded-md border-white/10 bg-[var(--app-surface)] text-zinc-100 placeholder:text-zinc-600 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+            placeholder="New profile"
+            value={newProfileName}
+            onChange={(event) => setNewProfileName(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                void addProfile()
+              }
+            }}
+          />
+          <ActionButton
+            className="w-24 flex-none"
+            tone="secondary"
+            onClick={addProfile}
+          >
+            Add
+          </ActionButton>
+        </div>
+      </section>
+
+      <section className="app-surface space-y-3 rounded-md p-3.5">
+        <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
           Spreadsheet
         </div>
+        <label className="flex items-center justify-between gap-3">
+          <span>
+            <Label className="text-sm text-zinc-200">
+              Export All Profiles
+            </Label>
+            <span className="mt-1 block text-xs text-zinc-500">
+              Includes active profiles only.
+            </span>
+          </span>
+          <Switch
+            checked={settings.exportAllProfiles}
+            className="data-checked:bg-cyan-500"
+            onCheckedChange={(exportAllProfiles) =>
+              void saveSettings({ exportAllProfiles })
+            }
+          />
+        </label>
         <ActionButton tone="secondary" onClick={exportSpreadsheet}>
           Spreadsheet Export
         </ActionButton>

@@ -1,4 +1,8 @@
 import { z } from "zod"
+import {
+  defaultProfileName,
+  resolveSelectedProfile,
+} from "@/shared/model/profiles"
 
 const exerciseCategorySchema = z.enum([
   "chest",
@@ -51,11 +55,15 @@ const exerciseSchema = z.object({
 const workoutSchema = z.object({
   id: z.string(),
   localDate: z.string(),
+  profileName: z.string().optional(),
   startedAt: z.string().optional(),
   endedAt: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
-})
+}).transform((workout) => ({
+  ...workout,
+  profileName: workout.profileName?.trim() || defaultProfileName,
+}))
 
 const workoutExerciseSchema = z.object({
   id: z.string(),
@@ -85,13 +93,18 @@ const settingsSchema = z.object({
   keepScreenOnDuringTraining: z.boolean().optional(),
   skipEmptyDaysOnDayNavigation: z.boolean().optional(),
   skipEmptyDaysOnSwipe: z.boolean().optional(),
+  profiles: z.array(z.string()).optional(),
+  selectedProfile: z.string().optional(),
+  exportAllProfiles: z.boolean().optional(),
 }).transform((settings) => ({
+  ...resolveSelectedProfile(settings.profiles, settings.selectedProfile),
   keepScreenOn:
     settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
   skipEmptyDaysOnDayNavigation:
     settings.skipEmptyDaysOnDayNavigation ??
     settings.skipEmptyDaysOnSwipe ??
     false,
+  exportAllProfiles: settings.exportAllProfiles ?? false,
 }))
 
 export const backupFileSchema = z.object({

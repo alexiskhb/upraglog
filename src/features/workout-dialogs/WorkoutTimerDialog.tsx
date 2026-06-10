@@ -36,6 +36,7 @@ function fromDateTimeInputValue(value: string) {
 
 export function WorkoutTimerDialog() {
   const selectedDate = useAppStore((state) => state.selectedDate)
+  const selectedProfile = useAppStore((state) => state.selectedProfile)
   const activeDialog = useAppStore((state) => state.activeDialog)
   const closeDialog = useAppStore((state) => state.closeDialog)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
@@ -54,7 +55,7 @@ export function WorkoutTimerDialog() {
 
     let cancelled = false
 
-    getWorkoutByDate(selectedDate).then((workout) => {
+    getWorkoutByDate(selectedDate, selectedProfile).then((workout) => {
       if (!cancelled) {
         setStartedAt(toDateTimeInputValue(workout?.startedAt))
         setEndedAt(toDateTimeInputValue(workout?.endedAt))
@@ -68,7 +69,7 @@ export function WorkoutTimerDialog() {
     return () => {
       cancelled = true
     }
-  }, [open, selectedDate])
+  }, [open, selectedDate, selectedProfile])
 
   useEffect(() => {
     if (!open || !startedAtIso || endedAtIso) {
@@ -96,7 +97,7 @@ export function WorkoutTimerDialog() {
     nextEndedAt: string | undefined,
     nextMessage = "Timer saved.",
   ) => {
-    await updateWorkoutTimer(selectedDate, {
+    await updateWorkoutTimer(selectedDate, selectedProfile, {
       startedAt: nextStartedAt,
       endedAt: nextEndedAt,
     })

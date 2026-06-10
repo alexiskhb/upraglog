@@ -1,4 +1,5 @@
 import { db } from "@/db/db"
+import { getSettings } from "@/db/repositories/settingsRepo"
 import type {
   Exercise,
   SetEntry,
@@ -7,9 +8,11 @@ import type {
 } from "@/db/schema"
 import { formatDuration, getWorkoutDurationSeconds } from "@/shared/model/dates"
 import { formatExerciseCategory, formatExerciseType } from "@/shared/model/exercises"
+import { defaultProfileName } from "@/shared/model/profiles"
 
 const csvHeaders = [
   "Workout Date",
+  "Profile",
   "Workout Started At",
   "Workout Ended At",
   "Workout Duration",
@@ -76,8 +79,15 @@ function formatWorkoutDuration(workout: Workout) {
   )
 }
 
+function getWorkoutProfileName(workout: Workout) {
+  return workout.profileName || defaultProfileName
+}
+
 function byWorkoutDate(a: Workout, b: Workout) {
-  return a.localDate.localeCompare(b.localDate)
+  return (
+    a.localDate.localeCompare(b.localDate) ||
+    getWorkoutProfileName(a).localeCompare(getWorkoutProfileName(b))
+  )
 }
 
 function byOrder<T extends { order: number }>(a: T, b: T) {
@@ -99,6 +109,7 @@ function buildSetRow({
 }): TrainingLogRow {
   return [
     workout.localDate,
+    getWorkoutProfileName(workout),
     formatStoredDateTime(workout.startedAt),
     formatStoredDateTime(workout.endedAt),
     formatWorkoutDuration(workout),
@@ -118,12 +129,16 @@ function buildSetRow({
 }
 
 export async function exportTrainingLogCsv() {
-  const [workouts, workoutExercises, sets, exercises] = await Promise.all([
+  const [settings, workouts, workoutExercises, sets, exercises] = await Promise.all([
+    getSettings(),
     db.workouts.toArray(),
     db.workoutExercises.toArray(),
     db.sets.toArray(),
     db.exercises.toArray(),
   ])
+  const exportProfiles = new Set(
+    settings.exportAllProfiles ? settings.profiles : [settings.selectedProfile],
+  )
   const workoutExercisesByWorkoutId = new Map<string, WorkoutExercise[]>()
   const setsByWorkoutExerciseId = new Map<string, SetEntry[]>()
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
@@ -143,6 +158,10 @@ export async function exportTrainingLogCsv() {
   }
 
   for (const workout of workouts.sort(byWorkoutDate)) {
+    if (!exportProfiles.has(getWorkoutProfileName(workout))) {
+      continue
+    }
+
     const workoutExerciseRows = (
       workoutExercisesByWorkoutId.get(workout.id) ?? []
     ).sort(byOrder)
@@ -150,6 +169,7 @@ export async function exportTrainingLogCsv() {
     if (workoutExerciseRows.length === 0) {
       rows.push([
         workout.localDate,
+        getWorkoutProfileName(workout),
         formatStoredDateTime(workout.startedAt),
         formatStoredDateTime(workout.endedAt),
         formatWorkoutDuration(workout),

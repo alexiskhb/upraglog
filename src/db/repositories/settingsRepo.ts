@@ -1,11 +1,38 @@
 import { db } from "@/db/db"
 import type { AppSettings, StoredAppSettings } from "@/db/schema"
+import {
+  defaultProfileName,
+  defaultProfileNames,
+  resolveSelectedProfile,
+} from "@/shared/model/profiles"
 
 const defaultSettings: StoredAppSettings = {
   id: "app",
   keepScreenOn: true,
   skipEmptyDaysOnDayNavigation: false,
+  profiles: [...defaultProfileNames],
+  selectedProfile: defaultProfileName,
+  exportAllProfiles: false,
   updatedAt: new Date().toISOString(),
+}
+
+function normalizeSettings(settings?: Partial<StoredAppSettings>): AppSettings {
+  const resolvedProfiles = resolveSelectedProfile(
+    settings?.profiles,
+    settings?.selectedProfile,
+  )
+
+  return {
+    keepScreenOn:
+      settings?.keepScreenOn ?? settings?.keepScreenOnDuringTraining ?? true,
+    skipEmptyDaysOnDayNavigation:
+      settings?.skipEmptyDaysOnDayNavigation ??
+      settings?.skipEmptyDaysOnSwipe ??
+      false,
+    profiles: resolvedProfiles.profiles,
+    selectedProfile: resolvedProfiles.selectedProfile,
+    exportAllProfiles: settings?.exportAllProfiles ?? false,
+  }
 }
 
 export async function getSettings(): Promise<AppSettings> {
@@ -13,38 +40,25 @@ export async function getSettings(): Promise<AppSettings> {
 
   if (!settings) {
     await db.settings.put(defaultSettings)
-    return defaultSettings
+    return normalizeSettings(defaultSettings)
   }
 
-  return {
-    keepScreenOn:
-      settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
-    skipEmptyDaysOnDayNavigation:
-      settings.skipEmptyDaysOnDayNavigation ??
-      settings.skipEmptyDaysOnSwipe ??
-      false,
-  }
+  return normalizeSettings(settings)
 }
 
 export async function updateSettings(input: Partial<AppSettings>) {
   const current = await db.settings.get("app")
-  const currentSettings = current
-    ? {
-        keepScreenOn:
-          current.keepScreenOn ?? current.keepScreenOnDuringTraining ?? true,
-        skipEmptyDaysOnDayNavigation:
-          current.skipEmptyDaysOnDayNavigation ??
-          current.skipEmptyDaysOnSwipe ??
-          false,
-      }
-    : defaultSettings
-  const updated: StoredAppSettings = {
+  const currentSettings = normalizeSettings(current ?? defaultSettings)
+  const nextSettings = normalizeSettings({
     ...currentSettings,
     ...input,
+  })
+  const updated: StoredAppSettings = {
+    ...nextSettings,
     id: "app",
     updatedAt: new Date().toISOString(),
   }
 
   await db.settings.put(updated)
-  return updated
+  return nextSettings
 }

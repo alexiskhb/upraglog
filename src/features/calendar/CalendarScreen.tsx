@@ -30,6 +30,7 @@ export function CalendarScreen() {
   const navigate = useNavigate()
   const selectedDate = useAppStore((state) => state.selectedDate)
   const setSelectedDate = useAppStore((state) => state.setSelectedDate)
+  const selectedProfile = useAppStore((state) => state.selectedProfile)
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const [monthDate, setMonthDate] = useState(() => parseLocalDate(selectedDate))
   const [workoutDates, setWorkoutDates] = useState<string[]>([])
@@ -39,7 +40,7 @@ export function CalendarScreen() {
   useEffect(() => {
     let cancelled = false
 
-    getWorkoutDates().then((dates) => {
+    getWorkoutDates(selectedProfile).then((dates) => {
       if (!cancelled) {
         setWorkoutDates(dates)
       }
@@ -48,7 +49,7 @@ export function CalendarScreen() {
     return () => {
       cancelled = true
     }
-  }, [refreshVersion])
+  }, [refreshVersion, selectedProfile])
 
   const workoutDateSet = useMemo(() => new Set(workoutDates), [workoutDates])
   const visibleDays = useMemo(() => {

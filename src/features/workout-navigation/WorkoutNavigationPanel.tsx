@@ -120,6 +120,7 @@ function WorkoutNavRow({
 export function WorkoutNavigationPanel() {
   const navigate = useNavigate()
   const selectedDate = useAppStore((state) => state.selectedDate)
+  const selectedProfile = useAppStore((state) => state.selectedProfile)
   const open = useAppStore((state) => state.workoutNavOpen)
   const setOpen = useAppStore((state) => state.setWorkoutNavOpen)
   const refreshVersion = useAppStore((state) => state.refreshVersion)
@@ -139,7 +140,7 @@ export function WorkoutNavigationPanel() {
 
     let cancelled = false
 
-    getWorkoutDetailByDate(selectedDate).then((workoutDetail) => {
+    getWorkoutDetailByDate(selectedDate, selectedProfile).then((workoutDetail) => {
       if (!cancelled) {
         setDetail(workoutDetail)
       }
@@ -148,7 +149,7 @@ export function WorkoutNavigationPanel() {
     return () => {
       cancelled = true
     }
-  }, [open, selectedDate, refreshVersion])
+  }, [open, selectedDate, selectedProfile, refreshVersion])
 
   const handleDragEnd = async (event: DragEndEvent) => {
     if (
@@ -199,7 +200,7 @@ export function WorkoutNavigationPanel() {
         <SheetHeader className="border-b border-white/10">
           <SheetTitle>Workout List</SheetTitle>
           <SheetDescription className="text-zinc-500">
-            {selectedDate}
+            {selectedDate} · {selectedProfile}
           </SheetDescription>
         </SheetHeader>
 

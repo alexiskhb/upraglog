@@ -8,6 +8,10 @@ import type {
   WorkoutExerciseDetail,
 } from "@/db/schema"
 import { createId } from "@/shared/model/ids"
+import {
+  defaultProfileName,
+  normalizeProfileName,
+} from "@/shared/model/profiles"
 
 function byOrder<T extends { order: number }>(a: T, b: T) {
   return a.order - b.order
@@ -45,12 +49,23 @@ async function reindexSets(workoutExerciseId: string) {
   )
 }
 
-export async function getWorkoutByDate(localDate: string) {
-  return db.workouts.where("localDate").equals(localDate).first()
+function workoutProfileName(profileName?: string) {
+  return normalizeProfileName(profileName) || defaultProfileName
 }
 
-export async function getOrCreateWorkout(localDate: string) {
-  const existing = await getWorkoutByDate(localDate)
+export async function getWorkoutByDate(localDate: string, profileName?: string) {
+  return db.workouts
+    .where("[localDate+profileName]")
+    .equals([localDate, workoutProfileName(profileName)])
+    .first()
+}
+
+export async function getOrCreateWorkout(
+  localDate: string,
+  profileName?: string,
+) {
+  const resolvedProfileName = workoutProfileName(profileName)
+  const existing = await getWorkoutByDate(localDate, resolvedProfileName)
 
   if (existing) {
     return existing
@@ -60,6 +75,7 @@ export async function getOrCreateWorkout(localDate: string) {
   const workout: Workout = {
     id: createId("workout"),
     localDate,
+    profileName: resolvedProfileName,
     createdAt: now,
     updatedAt: now,
   }
@@ -70,8 +86,9 @@ export async function getOrCreateWorkout(localDate: string) {
 
 export async function getWorkoutDetailByDate(
   localDate: string,
+  profileName?: string,
 ): Promise<WorkoutDayDetail> {
-  const workout = await getWorkoutByDate(localDate)
+  const workout = await getWorkoutByDate(localDate, profileName)
 
   if (!workout) {
     return { workout: undefined, exercises: [] }
@@ -145,8 +162,12 @@ export async function getWorkoutExerciseDetail(workoutExerciseId: string) {
   }
 }
 
-export async function addExerciseToDate(localDate: string, exerciseId: string) {
-  const workout = await getOrCreateWorkout(localDate)
+export async function addExerciseToDate(
+  localDate: string,
+  profileName: string | undefined,
+  exerciseId: string,
+) {
+  const workout = await getOrCreateWorkout(localDate, profileName)
   const existing = await db.workoutExercises
     .where("workoutId")
     .equals(workout.id)
@@ -318,8 +339,11 @@ export async function deleteWorkoutExercise(workoutExerciseId: string) {
   )
 }
 
-export async function getWorkoutDates() {
-  const workouts = await db.workouts.toArray()
+export async function getWorkoutDates(profileName?: string) {
+  const workouts = await db.workouts
+    .where("profileName")
+    .equals(workoutProfileName(profileName))
+    .toArray()
   const datesWithExerciseData: string[] = []
 
   for (const workout of workouts) {
@@ -338,9 +362,10 @@ export async function getWorkoutDates() {
 
 export async function updateWorkoutTimer(
   localDate: string,
+  profileName: string | undefined,
   input: { startedAt?: string; endedAt?: string },
 ) {
-  const workout = await getOrCreateWorkout(localDate)
+  const workout = await getOrCreateWorkout(localDate, profileName)
   const now = new Date().toISOString()
 
   await db.workouts.put({
@@ -351,8 +376,11 @@ export async function updateWorkoutTimer(
   })
 }
 
-export async function startWorkoutTimer(localDate: string) {
-  const workout = await getOrCreateWorkout(localDate)
+export async function startWorkoutTimer(
+  localDate: string,
+  profileName?: string,
+) {
+  const workout = await getOrCreateWorkout(localDate, profileName)
 
   if (workout.startedAt && !workout.endedAt) {
     return workout

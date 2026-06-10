@@ -6,6 +6,12 @@ import type {
   Workout,
   WorkoutExercise,
 } from "./schema"
+import {
+  defaultProfileName,
+  defaultProfileNames,
+  normalizeProfileList,
+  resolveSelectedProfile,
+} from "@/shared/model/profiles"
 
 class UpraglogDatabase extends Dexie {
   exercises!: Table<Exercise, string>
@@ -34,6 +40,92 @@ class UpraglogDatabase extends Dexie {
       bodyMeasurements: null,
       settings: "&id",
     })
+
+    this.version(3)
+      .stores({
+        exercises: "&id, name, category, isFavorite, updatedAt",
+        workouts: "&id, localDate, profileName, [localDate+profileName], updatedAt",
+        workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
+        sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
+        settings: "&id",
+      })
+      .upgrade(async (transaction) => {
+        const workouts = transaction.table<Workout, string>("workouts")
+        const settings = transaction.table<StoredAppSettings, string>("settings")
+
+        await workouts.toCollection().modify((workout) => {
+          workout.profileName = workout.profileName || defaultProfileName
+        })
+
+        const currentSettings = await settings.get("app")
+        const resolvedSettings = resolveSelectedProfile(
+          currentSettings?.profiles,
+          currentSettings?.selectedProfile,
+        )
+
+        await settings.put({
+          id: "app",
+          keepScreenOn:
+            currentSettings?.keepScreenOn ??
+            currentSettings?.keepScreenOnDuringTraining ??
+            true,
+          skipEmptyDaysOnDayNavigation:
+            currentSettings?.skipEmptyDaysOnDayNavigation ??
+            currentSettings?.skipEmptyDaysOnSwipe ??
+            false,
+          profiles: resolvedSettings.profiles,
+          selectedProfile: resolvedSettings.selectedProfile,
+          exportAllProfiles: currentSettings?.exportAllProfiles ?? false,
+          updatedAt: new Date().toISOString(),
+        })
+      })
+
+    this.version(4)
+      .stores({
+        exercises: "&id, name, category, isFavorite, updatedAt",
+        workouts: "&id, localDate, profileName, [localDate+profileName], updatedAt",
+        workoutExercises: "&id, workoutId, exerciseId, [workoutId+order]",
+        sets: "&id, workoutExerciseId, [workoutExerciseId+order]",
+        settings: "&id",
+      })
+      .upgrade(async (transaction) => {
+        const settings = transaction.table<StoredAppSettings, string>("settings")
+        const currentSettings = await settings.get("app")
+        const profiles = normalizeProfileList(currentSettings?.profiles)
+
+        for (const defaultProfile of defaultProfileNames) {
+          const alreadyExists = profiles.some(
+            (profileName) =>
+              profileName.toLocaleLowerCase() ===
+              defaultProfile.toLocaleLowerCase(),
+          )
+
+          if (!alreadyExists) {
+            profiles.push(defaultProfile)
+          }
+        }
+
+        const resolvedSettings = resolveSelectedProfile(
+          profiles,
+          currentSettings?.selectedProfile,
+        )
+
+        await settings.put({
+          id: "app",
+          keepScreenOn:
+            currentSettings?.keepScreenOn ??
+            currentSettings?.keepScreenOnDuringTraining ??
+            true,
+          skipEmptyDaysOnDayNavigation:
+            currentSettings?.skipEmptyDaysOnDayNavigation ??
+            currentSettings?.skipEmptyDaysOnSwipe ??
+            false,
+          profiles: resolvedSettings.profiles,
+          selectedProfile: resolvedSettings.selectedProfile,
+          exportAllProfiles: currentSettings?.exportAllProfiles ?? false,
+          updatedAt: new Date().toISOString(),
+        })
+      })
   }
 }
 
@@ -256,6 +348,9 @@ async function initializeDatabaseInternal() {
         id: "app",
         keepScreenOn: true,
         skipEmptyDaysOnDayNavigation: false,
+        profiles: [...defaultProfileNames],
+        selectedProfile: defaultProfileName,
+        exportAllProfiles: false,
         updatedAt: new Date().toISOString(),
       })
     }

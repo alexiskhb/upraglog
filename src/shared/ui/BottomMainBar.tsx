@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  Check,
   Clock3,
   Dumbbell,
   ListChecks,
@@ -17,8 +18,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { updateSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import { todayString } from "@/shared/model/dates"
+import {
+  defaultProfileName,
+  defaultProfileNames,
+} from "@/shared/model/profiles"
+import { cn } from "@/lib/utils"
 import { IconButton } from "./IconButton"
 
 export function BottomMainBar() {
@@ -33,9 +40,15 @@ export function BottomMainBar() {
     select: (state) => state.location.href,
   })
   const selectedDate = useAppStore((state) => state.selectedDate)
+  const profiles =
+    useAppStore((state) => state.profiles) ?? [...defaultProfileNames]
+  const selectedProfile =
+    useAppStore((state) => state.selectedProfile) ?? defaultProfileName
+  const setProfileState = useAppStore((state) => state.setProfileState)
   const workoutNavOpen = useAppStore((state) => state.workoutNavOpen)
   const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
   const openDialog = useAppStore((state) => state.openDialog)
+  const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const setReplaceWorkoutExerciseId = useAppStore(
     (state) => state.setReplaceWorkoutExerciseId,
   )
@@ -93,6 +106,19 @@ export function BottomMainBar() {
     navigateToSelectedDay()
   }
 
+  const selectProfile = async (profileName: string) => {
+    const updated = await updateSettings({ selectedProfile: profileName })
+
+    setProfileState(updated.profiles, updated.selectedProfile)
+    setWorkoutNavOpen(false)
+    setProfileMenuOpen(false)
+    bumpRefresh()
+
+    if (pathname.startsWith("/training")) {
+      navigateToSelectedDay()
+    }
+  }
+
   const toggleCalendar = () => {
     if (calendarActive) {
       closeTaskSurface()
@@ -138,7 +164,10 @@ export function BottomMainBar() {
           }}
         >
           <DropdownMenuTrigger asChild>
-            <IconButton className="text-zinc-400" title="Choose profile">
+            <IconButton
+              className="text-zinc-400"
+              title={`Choose profile: ${selectedProfile}`}
+            >
               <UserCircle className="size-6" />
             </IconButton>
           </DropdownMenuTrigger>
@@ -149,9 +178,21 @@ export function BottomMainBar() {
             collisionPadding={12}
             className="z-[80] w-52 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
           >
-            <DropdownMenuItem disabled className="focus:bg-transparent">
-              Default profile
-            </DropdownMenuItem>
+            {profiles.map((profileName) => (
+              <DropdownMenuItem
+                className="gap-2 rounded-md focus:bg-cyan-400/15"
+                key={profileName}
+                onSelect={() => void selectProfile(profileName)}
+              >
+                <Check
+                  className={cn(
+                    "size-4 text-cyan-300",
+                    profileName !== selectedProfile && "opacity-0",
+                  )}
+                />
+                <span className="min-w-0 truncate">{profileName}</span>
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
 

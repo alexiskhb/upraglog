@@ -16,6 +16,10 @@ import {
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
+import {
+  defaultProfileName,
+  defaultProfileNames,
+} from "@/shared/model/profiles"
 import { DateNavRow } from "./DateNavRow"
 import { ExerciseCard } from "./ExerciseCard"
 
@@ -39,6 +43,7 @@ export function HomeScreen() {
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const setSelectedDate = useAppStore((state) => state.setSelectedDate)
+  const selectedProfile = useAppStore((state) => state.selectedProfile)
   const [detail, setDetail] = useState<WorkoutDayDetail>({
     workout: undefined,
     exercises: [],
@@ -46,6 +51,9 @@ export function HomeScreen() {
   const [settings, setSettings] = useState<AppSettings>({
     keepScreenOn: true,
     skipEmptyDaysOnDayNavigation: false,
+    profiles: [...defaultProfileNames],
+    selectedProfile: defaultProfileName,
+    exportAllProfiles: false,
   })
   const [workoutDates, setWorkoutDates] = useState<string[]>([])
   const [touchStartX, setTouchStartX] = useState<number | undefined>()
@@ -72,9 +80,9 @@ export function HomeScreen() {
     let cancelled = false
 
     Promise.all([
-      getWorkoutDetailByDate(date),
+      getWorkoutDetailByDate(date, selectedProfile),
       getSettings(),
-      getWorkoutDates(),
+      getWorkoutDates(selectedProfile),
     ]).then(([workoutDetail, appSettings, nextWorkoutDates]) => {
       if (!cancelled) {
         setDetail(workoutDetail)
@@ -86,7 +94,7 @@ export function HomeScreen() {
     return () => {
       cancelled = true
     }
-  }, [date, refreshVersion])
+  }, [date, refreshVersion, selectedProfile])
 
   const navigateToDate = (nextDate: string) => {
     setDayTransitionClass(getDayTransitionClass(nextDate, date))
@@ -110,7 +118,7 @@ export function HomeScreen() {
   }
 
   const startWorkout = async () => {
-    await startWorkoutTimer(date)
+    await startWorkoutTimer(date, selectedProfile)
     bumpRefresh()
     void navigate({ to: "/picker" })
   }

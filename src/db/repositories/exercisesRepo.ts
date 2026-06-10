@@ -6,6 +6,10 @@ import type {
   ExerciseUsageStats,
 } from "@/db/schema"
 import { createId } from "@/shared/model/ids"
+import {
+  defaultProfileName,
+  normalizeProfileName,
+} from "@/shared/model/profiles"
 
 export async function getAllExercises() {
   const exercises = await db.exercises.toArray()
@@ -76,10 +80,13 @@ export async function deleteExercise(exerciseId: string) {
   await db.exercises.delete(exerciseId)
 }
 
-export async function getExerciseUsageStats() {
+export async function getExerciseUsageStats(profileName = defaultProfileName) {
   const [workoutExercises, workouts] = await Promise.all([
     db.workoutExercises.toArray(),
-    db.workouts.toArray(),
+    db.workouts
+      .where("profileName")
+      .equals(normalizeProfileName(profileName) || defaultProfileName)
+      .toArray(),
   ])
 
   const workoutDateById = new Map(

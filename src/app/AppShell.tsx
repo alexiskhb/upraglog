@@ -13,6 +13,7 @@ export function AppShell() {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState<string | undefined>()
   const refreshVersion = useAppStore((state) => state.refreshVersion)
+  const setProfileState = useAppStore((state) => state.setProfileState)
   const [settings, setSettings] = useState<AppSettings | undefined>()
 
   useScreenWakeLock(ready && Boolean(settings?.keepScreenOn))
@@ -51,13 +52,14 @@ export function AppShell() {
     getSettings().then((appSettings) => {
       if (!cancelled) {
         setSettings(appSettings)
+        setProfileState(appSettings.profiles, appSettings.selectedProfile)
       }
     })
 
     return () => {
       cancelled = true
     }
-  }, [ready, refreshVersion])
+  }, [ready, refreshVersion, setProfileState])
 
   if (error) {
     return (

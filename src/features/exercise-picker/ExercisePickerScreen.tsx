@@ -65,6 +65,7 @@ export function ExercisePickerScreen() {
   const navigate = useNavigate()
   const searchRef = useRef<HTMLInputElement>(null)
   const selectedDate = useAppStore((state) => state.selectedDate)
+  const selectedProfile = useAppStore((state) => state.selectedProfile)
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const replaceWorkoutExerciseId = useAppStore(
@@ -85,7 +86,7 @@ export function ExercisePickerScreen() {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([getAllExercises(), getExerciseUsageStats()]).then(
+    Promise.all([getAllExercises(), getExerciseUsageStats(selectedProfile)]).then(
       ([exerciseRows, usageStats]) => {
         if (!cancelled) {
           setExercises(exerciseRows)
@@ -97,7 +98,7 @@ export function ExercisePickerScreen() {
     return () => {
       cancelled = true
     }
-  }, [refreshVersion])
+  }, [refreshVersion, selectedProfile])
 
   useEffect(() => {
     searchRef.current?.focus()
@@ -158,7 +159,11 @@ export function ExercisePickerScreen() {
       return
     }
 
-    const workoutExercise = await addExerciseToDate(selectedDate, exercise.id)
+    const workoutExercise = await addExerciseToDate(
+      selectedDate,
+      selectedProfile,
+      exercise.id,
+    )
     bumpRefresh()
     void navigate({
       to: "/training/$workoutExerciseId",
