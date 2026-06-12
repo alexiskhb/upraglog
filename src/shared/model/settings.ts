@@ -10,6 +10,8 @@ import {
 } from "@/shared/model/setCommentTemplates"
 import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
 
+export const appSettingsId = "app"
+
 export const defaultAppSettings: AppSettings = {
   keepScreenOn: true,
   skipEmptyDaysOnDayNavigation: false,
@@ -41,7 +43,7 @@ export function createDefaultStoredAppSettings(
 ): StoredAppSettings {
   return {
     ...createDefaultAppSettings(),
-    id: "app",
+    id: appSettingsId,
     updatedAt,
   }
 }
@@ -65,38 +67,53 @@ export function normalizeSettings(
     settings?.profiles,
     settings?.selectedProfile,
   )
+  const spreadsheetExportMonthLimit =
+    settings?.spreadsheetExportMonthLimit === undefined
+      ? defaultAppSettings.spreadsheetExportMonthLimit
+      : settings.spreadsheetExportMonthLimit
 
   return {
     keepScreenOn:
-      settings?.keepScreenOn ?? settings?.keepScreenOnDuringTraining ?? true,
+      settings?.keepScreenOn ??
+      settings?.keepScreenOnDuringTraining ??
+      defaultAppSettings.keepScreenOn,
     skipEmptyDaysOnDayNavigation:
       settings?.skipEmptyDaysOnDayNavigation ??
       settings?.skipEmptyDaysOnSwipe ??
-      false,
+      defaultAppSettings.skipEmptyDaysOnDayNavigation,
     profiles: resolvedProfiles.profiles,
     selectedProfile: resolvedProfiles.selectedProfile,
-    exportAllProfiles: settings?.exportAllProfiles ?? false,
+    exportAllProfiles:
+      settings?.exportAllProfiles ?? defaultAppSettings.exportAllProfiles,
     spreadsheetExportMonthLimit: normalizeSpreadsheetMonthLimit(
-      settings?.spreadsheetExportMonthLimit,
+      spreadsheetExportMonthLimit,
     ),
     spreadsheetShareMessage:
       settings?.spreadsheetShareMessage?.trim() ||
-      defaultSpreadsheetShareMessage,
+      defaultAppSettings.spreadsheetShareMessage,
     spreadsheetShareIncludeMessage:
-      settings?.spreadsheetShareIncludeMessage ?? true,
+      settings?.spreadsheetShareIncludeMessage ??
+      defaultAppSettings.spreadsheetShareIncludeMessage,
     spreadsheetShareIncludeAiInstructions:
-      settings?.spreadsheetShareIncludeAiInstructions ?? true,
+      settings?.spreadsheetShareIncludeAiInstructions ??
+      defaultAppSettings.spreadsheetShareIncludeAiInstructions,
     spreadsheetShareAttachMessageAsFile:
-      settings?.spreadsheetShareAttachMessageAsFile ?? false,
-    addShareShortcutToMenu: settings?.addShareShortcutToMenu ?? false,
+      settings?.spreadsheetShareAttachMessageAsFile ??
+      defaultAppSettings.spreadsheetShareAttachMessageAsFile,
+    addShareShortcutToMenu:
+      settings?.addShareShortcutToMenu ??
+      defaultAppSettings.addShareShortcutToMenu,
     treatLongWorkoutTimerAsLatestSetFinish:
-      settings?.treatLongWorkoutTimerAsLatestSetFinish ?? false,
+      settings?.treatLongWorkoutTimerAsLatestSetFinish ??
+      defaultAppSettings.treatLongWorkoutTimerAsLatestSetFinish,
     autoSortWorkoutExercisesByFirstFinishedSet:
-      settings?.autoSortWorkoutExercisesByFirstFinishedSet ?? false,
+      settings?.autoSortWorkoutExercisesByFirstFinishedSet ??
+      defaultAppSettings.autoSortWorkoutExercisesByFirstFinishedSet,
     autoFinishWorkoutTimerWhenAllSetsFinished:
-      settings?.autoFinishWorkoutTimerWhenAllSetsFinished ?? false,
+      settings?.autoFinishWorkoutTimerWhenAllSetsFinished ??
+      defaultAppSettings.autoFinishWorkoutTimerWhenAllSetsFinished,
     setCommentTemplates: normalizeSetCommentTemplates(
-      settings?.setCommentTemplates,
+      settings?.setCommentTemplates ?? defaultAppSettings.setCommentTemplates,
     ),
   }
 }

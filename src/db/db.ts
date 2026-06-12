@@ -13,7 +13,10 @@ import {
   defaultExerciseCategories,
   normalizeExerciseCategory,
 } from "@/shared/model/exercises"
-import { createDefaultStoredAppSettings } from "@/shared/model/settings"
+import {
+  appSettingsId,
+  createDefaultStoredAppSettings,
+} from "@/shared/model/settings"
 
 class UpraglogDatabase extends Dexie {
   exerciseCategories!: Table<ExerciseCategoryEntry, string>
@@ -234,7 +237,7 @@ async function initializeDatabaseInternal() {
     db.workoutExercises,
     db.settings,
     async () => {
-      const existingSettings = await db.settings.get("app")
+      const existingSettings = await db.settings.get(appSettingsId)
 
       if (!existingSettings) {
         await db.settings.put(createDefaultStoredAppSettings())

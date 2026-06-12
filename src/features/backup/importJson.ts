@@ -1,4 +1,5 @@
 import { db } from "@/db/db"
+import { appSettingsId } from "@/shared/model/settings"
 import type { BackupFile } from "./backupTypes"
 import { backupFileSchema } from "./backupValidation"
 
@@ -35,7 +36,7 @@ export async function restoreBackup(backup: BackupFile) {
       await db.workoutExercises.bulkAdd(backup.data.workoutExercises)
       await db.sets.bulkAdd(backup.data.sets)
       await db.settings.add({
-        id: "app",
+        id: appSettingsId,
         ...backup.data.settings,
         updatedAt: now,
       })

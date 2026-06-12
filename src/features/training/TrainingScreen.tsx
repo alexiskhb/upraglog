@@ -36,7 +36,8 @@ import {
   getSetIncrement,
   setFieldsForExerciseType,
 } from "@/shared/model/setFields"
-import { getSetProgress } from "@/shared/model/workoutProgress"
+import { defaultAppSettings } from "@/shared/model/settings"
+import { getWorkoutProgress } from "@/shared/model/workoutProgress"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
@@ -127,15 +128,15 @@ export function TrainingScreen() {
   const [
     treatLongTimerAsLatestSetFinish,
     setTreatLongTimerAsLatestSetFinish,
-  ] = useState(false)
+  ] = useState(defaultAppSettings.treatLongWorkoutTimerAsLatestSetFinish)
   const [
     autoSortWorkoutExercisesByFirstFinishedSet,
     setAutoSortWorkoutExercisesByFirstFinishedSet,
-  ] = useState(false)
+  ] = useState(defaultAppSettings.autoSortWorkoutExercisesByFirstFinishedSet)
   const [
     autoFinishWorkoutTimerWhenAllSetsFinished,
     setAutoFinishWorkoutTimerWhenAllSetsFinished,
-  ] = useState(false)
+  ] = useState(defaultAppSettings.autoFinishWorkoutTimerWhenAllSetsFinished)
   const [message] = useState<string | undefined>()
   const exerciseSwipeStartRef = useRef<
     | {
@@ -199,7 +200,7 @@ export function TrainingScreen() {
   }))
   const selectedSet = detail?.sets.find((set) => set.id === selectedSetId)
   const commentSet = detail?.sets.find((set) => set.id === commentSetId)
-  const workoutProgress = getSetProgress(detail?.workoutSets ?? [])
+  const workoutProgress = getWorkoutProgress(detail?.workoutSets ?? [])
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {

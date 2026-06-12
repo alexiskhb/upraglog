@@ -1,4 +1,5 @@
 import type { SetEntry, Workout } from "@/db/schema"
+import { getSetFinishedTimestampMs } from "./workoutProgress"
 
 export const longWorkoutTimerThresholdSeconds = 3 * 60 * 60
 
@@ -16,7 +17,7 @@ export function getLatestSetFinishedAt(sets: SetEntry[] = []) {
   let latestMs = Number.NEGATIVE_INFINITY
 
   for (const set of sets) {
-    const finishedMs = timestampMs(set.finishedAt)
+    const finishedMs = getSetFinishedTimestampMs(set)
 
     if (finishedMs !== undefined && finishedMs > latestMs) {
       latest = set.finishedAt

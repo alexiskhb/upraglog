@@ -46,7 +46,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { useAppStore } from "@/shared/store/appStore"
-import { getSetProgress } from "@/shared/model/workoutProgress"
+import { getExerciseProgress } from "@/shared/model/workoutProgress"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { SwipeToDelete } from "@/shared/ui/SwipeToDelete"
 
@@ -67,7 +67,7 @@ function WorkoutNavRow({
     transform: CSS.Transform.toString(transform),
     transition,
   }
-  const progress = getSetProgress(detail.sets)
+  const progress = getExerciseProgress(detail)
 
   return (
     <SwipeToDelete

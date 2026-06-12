@@ -24,10 +24,7 @@ import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import { todayString } from "@/shared/model/dates"
 import { AddExercisesDialog } from "@/features/workout-navigation/AddExercisesDialog"
-import {
-  defaultProfileName,
-  defaultProfileNames,
-} from "@/shared/model/profiles"
+import { defaultAppSettings } from "@/shared/model/settings"
 import { shareTrainingLogCsv } from "@/features/backup/shareTrainingLogCsv"
 import { cn } from "@/lib/utils"
 import { IconButton } from "./IconButton"
@@ -44,7 +41,9 @@ export function BottomMainBar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const [addExercisesOpen, setAddExercisesOpen] = useState(false)
-  const [addShareShortcutToMenu, setAddShareShortcutToMenu] = useState(false)
+  const [addShareShortcutToMenu, setAddShareShortcutToMenu] = useState(
+    defaultAppSettings.addShareShortcutToMenu,
+  )
   const contextualReturnHrefRef = useRef<string | undefined>(undefined)
   const profileTriggerRef = useRef<HTMLButtonElement>(null)
   const moreTriggerRef = useRef<HTMLButtonElement>(null)
@@ -59,9 +58,10 @@ export function BottomMainBar() {
   })
   const selectedDate = useAppStore((state) => state.selectedDate)
   const profiles =
-    useAppStore((state) => state.profiles) ?? [...defaultProfileNames]
+    useAppStore((state) => state.profiles) ?? defaultAppSettings.profiles
   const selectedProfile =
-    useAppStore((state) => state.selectedProfile) ?? defaultProfileName
+    useAppStore((state) => state.selectedProfile) ??
+    defaultAppSettings.selectedProfile
   const setProfileState = useAppStore((state) => state.setProfileState)
   const workoutNavOpen = useAppStore((state) => state.workoutNavOpen)
   const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)

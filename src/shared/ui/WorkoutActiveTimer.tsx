@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import type { SetEntry, Workout } from "@/db/schema"
 import { formatDuration } from "@/shared/model/dates"
+import { defaultAppSettings } from "@/shared/model/settings"
 import { getEffectiveWorkoutEndedAt } from "@/shared/model/workoutTimer"
 import { useAppStore } from "@/shared/store/appStore"
 import { cn } from "@/lib/utils"
@@ -16,7 +17,8 @@ type WorkoutActiveTimerProps = {
 export function WorkoutActiveTimer({
   workout,
   sets = [],
-  treatLongTimerAsLatestSetFinish = false,
+  treatLongTimerAsLatestSetFinish =
+    defaultAppSettings.treatLongWorkoutTimerAsLatestSetFinish,
   size = "compact",
   className,
 }: WorkoutActiveTimerProps) {

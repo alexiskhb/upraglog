@@ -1,9 +1,6 @@
 import { create } from "zustand"
 import { todayString } from "@/shared/model/dates"
-import {
-  defaultProfileName,
-  defaultProfileNames,
-} from "@/shared/model/profiles"
+import { createDefaultAppSettings } from "@/shared/model/settings"
 
 export type AppDialog = "timer" | undefined
 
@@ -27,10 +24,12 @@ type AppState = {
   bumpRefresh: () => void
 }
 
+const initialAppSettings = createDefaultAppSettings()
+
 export const useAppStore = create<AppState>((set) => ({
   selectedDate: todayString(),
-  profiles: [...defaultProfileNames],
-  selectedProfile: defaultProfileName,
+  profiles: [...initialAppSettings.profiles],
+  selectedProfile: initialAppSettings.selectedProfile,
   workoutNavOpen: false,
   activeDialog: undefined,
   replaceWorkoutExerciseId: undefined,

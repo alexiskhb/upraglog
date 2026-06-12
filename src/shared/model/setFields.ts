@@ -14,6 +14,13 @@ export type SetFieldDefinition = {
   isDuration?: boolean
 }
 
+const setValueFieldKeys = [
+  "weight",
+  "reps",
+  "distance",
+  "durationSeconds",
+] as const satisfies readonly SetFieldKey[]
+
 export const defaultSetIncrements: Record<SetFieldKey, number> = {
   weight: 2.5,
   reps: 1,
@@ -83,23 +90,10 @@ export function filterSetInputForExerciseType(
   const allowedFields = new Set(setFieldKeysForExerciseType(exerciseType))
   const nextInput: SetEntryInput = {}
 
-  if (allowedFields.has("weight") && input.weight !== undefined) {
-    nextInput.weight = input.weight
-  }
-
-  if (allowedFields.has("reps") && input.reps !== undefined) {
-    nextInput.reps = input.reps
-  }
-
-  if (allowedFields.has("distance") && input.distance !== undefined) {
-    nextInput.distance = input.distance
-  }
-
-  if (
-    allowedFields.has("durationSeconds") &&
-    input.durationSeconds !== undefined
-  ) {
-    nextInput.durationSeconds = input.durationSeconds
+  for (const key of setValueFieldKeys) {
+    if (allowedFields.has(key) && input[key] !== undefined) {
+      nextInput[key] = input[key]
+    }
   }
 
   if (input.comment !== undefined) {
@@ -107,6 +101,25 @@ export function filterSetInputForExerciseType(
   }
 
   return nextInput
+}
+
+export function setInputFromSetEntryForExerciseType(
+  exerciseType: ExerciseType,
+  set: Pick<SetEntry, SetFieldKey | "comment">,
+): SetEntryInput {
+  const input: SetEntryInput = {}
+
+  for (const key of setValueFieldKeys) {
+    if (set[key] !== undefined) {
+      input[key] = set[key]
+    }
+  }
+
+  if (set.comment !== undefined) {
+    input.comment = set.comment
+  }
+
+  return filterSetInputForExerciseType(exerciseType, input)
 }
 
 export function filterExerciseSetDefaultsForExerciseType(
@@ -130,11 +143,12 @@ export function normalizeSetEntryForExerciseType<T extends SetEntry>(
   set: T,
 ): T {
   const { weight, reps, distance, durationSeconds, ...rest } = set
-  const setInput = filterSetInputForExerciseType(exerciseType, {
+  const setInput = setInputFromSetEntryForExerciseType(exerciseType, {
     weight,
     reps,
     distance,
     durationSeconds,
+    comment: rest.comment,
   })
 
   return {
