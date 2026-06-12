@@ -18,6 +18,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
@@ -38,16 +41,13 @@ const bottomBarMenuItemClassName =
   "min-h-12 gap-3 rounded-md px-3 py-3 text-base focus:bg-cyan-400/15"
 
 export function BottomMainBar() {
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const [addExercisesOpen, setAddExercisesOpen] = useState(false)
   const [addShareShortcutToMenu, setAddShareShortcutToMenu] = useState(
     defaultAppSettings.addShareShortcutToMenu,
   )
   const contextualReturnHrefRef = useRef<string | undefined>(undefined)
-  const profileTriggerRef = useRef<HTMLButtonElement>(null)
   const moreTriggerRef = useRef<HTMLButtonElement>(null)
-  const profilePointerOpenRef = useRef(false)
   const morePointerOpenRef = useRef(false)
   const navigate = useNavigate()
   const pathname = useRouterState({
@@ -74,6 +74,8 @@ export function BottomMainBar() {
   )
   const selectedOrToday = selectedDate || todayString()
   const calendarActive = pathname.startsWith("/calendar")
+  const dayActive =
+    pathname.startsWith("/day") || pathname.startsWith("/training")
   const pickerActive =
     pathname.startsWith("/picker") || pathname.startsWith("/exercise/")
   const contextualRouteActive = calendarActive || pickerActive
@@ -108,7 +110,6 @@ export function BottomMainBar() {
   const closeTaskSurface = () => {
     setReplaceWorkoutExerciseId(undefined)
     closeTaskUi()
-    setProfileMenuOpen(false)
     setMoreMenuOpen(false)
 
     const returnHref = contextualReturnHrefRef.current
@@ -125,7 +126,6 @@ export function BottomMainBar() {
   const openTaskRoute = (to: "/calendar" | "/picker") => {
     setReplaceWorkoutExerciseId(undefined)
     closeTaskUi()
-    setProfileMenuOpen(false)
     setMoreMenuOpen(false)
     contextualReturnHrefRef.current ??= currentHref
     void navigate({ to })
@@ -135,7 +135,6 @@ export function BottomMainBar() {
     contextualReturnHrefRef.current = undefined
     setReplaceWorkoutExerciseId(undefined)
     closeTaskUi()
-    setProfileMenuOpen(false)
     setMoreMenuOpen(false)
     navigateToSelectedDay()
   }
@@ -146,7 +145,7 @@ export function BottomMainBar() {
     setProfileState(updated.profiles, updated.selectedProfile)
     setReplaceWorkoutExerciseId(undefined)
     closeTaskUi()
-    setProfileMenuOpen(false)
+    setMoreMenuOpen(false)
     bumpRefresh()
 
     if (pathname.startsWith("/training")) {
@@ -165,7 +164,6 @@ export function BottomMainBar() {
 
   const toggleWorkoutList = () => {
     setReplaceWorkoutExerciseId(undefined)
-    setProfileMenuOpen(false)
     setMoreMenuOpen(false)
 
     if (workoutNavOpen) {
@@ -188,7 +186,6 @@ export function BottomMainBar() {
 
   const shareSpreadsheet = async () => {
     closeTaskUi()
-    setProfileMenuOpen(false)
     setMoreMenuOpen(false)
 
     try {
@@ -216,68 +213,17 @@ export function BottomMainBar() {
     <>
       <nav className="fixed inset-x-0 bottom-0 z-[60] border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
         <div className="grid h-16 w-full grid-cols-5 items-stretch">
-        <DropdownMenu
-          open={profileMenuOpen}
-          onOpenChange={(open) => {
-            setProfileMenuOpen(open)
-            if (open) {
-              setMoreMenuOpen(false)
-              closeTaskUi()
-            }
-          }}
+        <IconButton
+          active={dayActive && !workoutNavOpen && !moreMenuOpen}
+          className={bottomBarButtonClassName}
+          title="Home"
+          onClick={goToDay}
         >
-          <DropdownMenuTrigger asChild>
-            <IconButton
-              className={cn(
-                bottomBarButtonClassName,
-                bottomBarMenuTriggerClassName,
-              )}
-              ref={profileTriggerRef}
-              title={`Choose profile: ${selectedProfile}`}
-              onKeyDown={() => {
-                profilePointerOpenRef.current = false
-              }}
-              onPointerDown={() => {
-                profilePointerOpenRef.current = true
-              }}
-            >
-              <UserCircle className="size-6" />
-            </IconButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="start"
-            side="top"
-            sideOffset={12}
-            collisionPadding={12}
-            className={cn(bottomBarMenuContentClassName, "w-64")}
-            onCloseAutoFocus={(event) =>
-              handlePointerCloseAutoFocus(
-                event,
-                profileTriggerRef.current,
-                profilePointerOpenRef,
-              )
-            }
-          >
-            {profiles.map((profileName) => (
-              <DropdownMenuItem
-                className={bottomBarMenuItemClassName}
-                key={profileName}
-                onSelect={() => void selectProfile(profileName)}
-              >
-                <Check
-                  className={cn(
-                    "size-5 text-cyan-300",
-                    profileName !== selectedProfile && "opacity-0",
-                  )}
-                />
-                <span className="min-w-0 truncate">{profileName}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          <House className="size-6" />
+        </IconButton>
 
         <IconButton
-          active={calendarActive && !profileMenuOpen && !moreMenuOpen}
+          active={calendarActive && !moreMenuOpen}
           className={bottomBarButtonClassName}
           title="Calendar"
           onClick={toggleCalendar}
@@ -286,7 +232,7 @@ export function BottomMainBar() {
         </IconButton>
 
         <IconButton
-          active={workoutNavOpen && !profileMenuOpen && !moreMenuOpen}
+          active={workoutNavOpen && !moreMenuOpen}
           className={bottomBarButtonClassName}
           title="Workout list"
           onClick={toggleWorkoutList}
@@ -295,7 +241,7 @@ export function BottomMainBar() {
         </IconButton>
 
         <IconButton
-          active={pickerActive && !profileMenuOpen && !moreMenuOpen}
+          active={pickerActive && !moreMenuOpen}
           className={bottomBarButtonClassName}
           title="Add exercise"
           onClick={toggleExercisePicker}
@@ -308,7 +254,6 @@ export function BottomMainBar() {
           onOpenChange={(open) => {
             setMoreMenuOpen(open)
             if (open) {
-              setProfileMenuOpen(false)
               closeTaskUi()
             }
           }}
@@ -391,13 +336,33 @@ export function BottomMainBar() {
               Add Exercises
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem
-              className={bottomBarMenuItemClassName}
-              onSelect={goToDay}
-            >
-              <House className="size-5 text-cyan-300" />
-              Home
-            </DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className={bottomBarMenuItemClassName}>
+                <UserCircle className="size-5 text-cyan-300" />
+                <span className="min-w-0 truncate">
+                  Profile: {selectedProfile}
+                </span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent
+                className={cn(bottomBarMenuContentClassName, "w-64")}
+              >
+                {profiles.map((profileName) => (
+                  <DropdownMenuItem
+                    className={bottomBarMenuItemClassName}
+                    key={profileName}
+                    onSelect={() => void selectProfile(profileName)}
+                  >
+                    <Check
+                      className={cn(
+                        "size-5 text-cyan-300",
+                        profileName !== selectedProfile && "opacity-0",
+                      )}
+                    />
+                    <span className="min-w-0 truncate">{profileName}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
