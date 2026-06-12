@@ -98,6 +98,7 @@ const settingsSchema = z.object({
   spreadsheetShareMessage: z.string().optional(),
   spreadsheetShareIncludeMessage: z.boolean().optional(),
   spreadsheetShareIncludeAiInstructions: z.boolean().optional(),
+  addShareShortcutToMenu: z.boolean().optional(),
   treatLongWorkoutTimerAsLatestSetFinish: z.boolean().optional(),
   setCommentTemplates: z.array(z.string()).optional(),
 }).transform((settings) => ({
@@ -118,6 +119,7 @@ const settingsSchema = z.object({
   spreadsheetShareIncludeMessage: settings.spreadsheetShareIncludeMessage ?? true,
   spreadsheetShareIncludeAiInstructions:
     settings.spreadsheetShareIncludeAiInstructions ?? true,
+  addShareShortcutToMenu: settings.addShareShortcutToMenu ?? false,
   treatLongWorkoutTimerAsLatestSetFinish:
     settings.treatLongWorkoutTimerAsLatestSetFinish ?? false,
   setCommentTemplates: normalizeSetCommentTemplates(

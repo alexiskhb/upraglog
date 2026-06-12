@@ -60,6 +60,7 @@ export function HomeScreen() {
     spreadsheetShareMessage: "",
     spreadsheetShareIncludeMessage: true,
     spreadsheetShareIncludeAiInstructions: true,
+    addShareShortcutToMenu: false,
     treatLongWorkoutTimerAsLatestSetFinish: false,
     setCommentTemplates: [...defaultSetCommentTemplates],
   })

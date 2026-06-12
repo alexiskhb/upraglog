@@ -7,6 +7,7 @@ import {
   ListChecks,
   MoreVertical,
   Plus,
+  Share2,
   Settings,
   UserCircle,
 } from "lucide-react"
@@ -19,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { updateSettings } from "@/db/repositories/settingsRepo"
+import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import { todayString } from "@/shared/model/dates"
 import { AddExercisesDialog } from "@/features/workout-navigation/AddExercisesDialog"
@@ -27,6 +28,7 @@ import {
   defaultProfileName,
   defaultProfileNames,
 } from "@/shared/model/profiles"
+import { shareTrainingLogCsv } from "@/features/backup/shareTrainingLogCsv"
 import { cn } from "@/lib/utils"
 import { IconButton } from "./IconButton"
 
@@ -42,6 +44,7 @@ export function BottomMainBar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
   const [addExercisesOpen, setAddExercisesOpen] = useState(false)
+  const [addShareShortcutToMenu, setAddShareShortcutToMenu] = useState(false)
   const contextualReturnHrefRef = useRef<string | undefined>(undefined)
   const profileTriggerRef = useRef<HTMLButtonElement>(null)
   const moreTriggerRef = useRef<HTMLButtonElement>(null)
@@ -63,6 +66,7 @@ export function BottomMainBar() {
   const workoutNavOpen = useAppStore((state) => state.workoutNavOpen)
   const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
   const openDialog = useAppStore((state) => state.openDialog)
+  const refreshVersion = useAppStore((state) => state.refreshVersion)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const setReplaceWorkoutExerciseId = useAppStore(
     (state) => state.setReplaceWorkoutExerciseId,
@@ -78,6 +82,20 @@ export function BottomMainBar() {
       contextualReturnHrefRef.current = undefined
     }
   }, [contextualRouteActive, currentHref, workoutNavOpen])
+
+  useEffect(() => {
+    let cancelled = false
+
+    getSettings().then((settings) => {
+      if (!cancelled) {
+        setAddShareShortcutToMenu(settings.addShareShortcutToMenu)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [refreshVersion])
 
   const navigateToSelectedDay = () => {
     void navigate({
@@ -163,6 +181,18 @@ export function BottomMainBar() {
     }
 
     openTaskRoute("/picker")
+  }
+
+  const shareSpreadsheet = async () => {
+    setWorkoutNavOpen(false)
+    setProfileMenuOpen(false)
+    setMoreMenuOpen(false)
+
+    try {
+      await shareTrainingLogCsv()
+    } catch {
+      window.alert("Spreadsheet could not be shared.")
+    }
   }
 
   const handlePointerCloseAutoFocus = (
@@ -323,6 +353,18 @@ export function BottomMainBar() {
               <Settings className="size-5 text-cyan-300" />
               Settings
             </DropdownMenuItem>
+            {addShareShortcutToMenu && (
+              <>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem
+                  className={bottomBarMenuItemClassName}
+                  onSelect={() => void shareSpreadsheet()}
+                >
+                  <Share2 className="size-5 text-cyan-300" />
+                  Share...
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
               className={bottomBarMenuItemClassName}

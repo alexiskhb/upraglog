@@ -24,9 +24,32 @@ import {
   downloadTextFile,
   exportBackupJson,
 } from "@/features/backup/exportJson"
-import { buildTrainingLogShareInstructions } from "@/features/backup/shareTrainingLogMessage"
 import { exportTrainingLogCsv } from "@/features/backup/exportTrainingLogCsv"
+import {
+  shareTrainingLogCsv,
+  type ShareTrainingLogCsvResult,
+} from "@/features/backup/shareTrainingLogCsv"
 import { parseBackupJson, restoreBackup } from "@/features/backup/importJson"
+
+function formatShareResultMessage(result: ShareTrainingLogCsvResult) {
+  if (result.status === "shared") {
+    return "Spreadsheet shared."
+  }
+
+  if (result.status === "canceled") {
+    return "Share canceled."
+  }
+
+  if (result.reason === "share-unavailable") {
+    return "Sharing is not available in this browser, so the CSV was downloaded."
+  }
+
+  if (result.reason === "files-not-shareable") {
+    return "CSV file sharing is not available in this browser, so the CSV was downloaded."
+  }
+
+  return "Sharing failed, so the CSV was downloaded."
+}
 
 export function SettingsScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -48,6 +71,7 @@ export function SettingsScreen() {
     spreadsheetShareMessage: "",
     spreadsheetShareIncludeMessage: true,
     spreadsheetShareIncludeAiInstructions: true,
+    addShareShortcutToMenu: false,
     treatLongWorkoutTimerAsLatestSetFinish: false,
     setCommentTemplates: [...defaultSetCommentTemplates],
   })
@@ -212,40 +236,20 @@ export function SettingsScreen() {
   }
 
   const shareSpreadsheet = async () => {
-    if (!navigator.share) {
-      setMessage("Sharing is not available in this browser.")
-      return
-    }
-
-    const shareMessage = await saveSpreadsheetShareMessage()
-    const { filename, text } = await exportTrainingLogCsv({
-      monthLimit: settings.spreadsheetExportMonthLimit,
-    })
-    const file = new File([text], filename, { type: "text/csv;charset=utf-8" })
-    const shareTextParts = [
-      settings.spreadsheetShareIncludeMessage ? shareMessage.trim() : "",
-      settings.spreadsheetShareIncludeAiInstructions
-        ? await buildTrainingLogShareInstructions()
-        : "",
-    ].filter(Boolean)
-    const shareData: ShareData = {
-      files: [file],
-      text: shareTextParts.join("\n\n") || undefined,
-      title: "Upraglog training log",
-    }
-
-    if (navigator.canShare && !navigator.canShare({ files: [file] })) {
-      setMessage("CSV file sharing is not available in this browser.")
-      return
-    }
-
     try {
-      await navigator.share(shareData)
-      setMessage("Spreadsheet shared.")
+      const shareMessage = await saveSpreadsheetShareMessage()
+      const result = await shareTrainingLogCsv({
+        monthLimit: settings.spreadsheetExportMonthLimit,
+        shareMessage,
+        includeMessage: settings.spreadsheetShareIncludeMessage,
+        includeAiInstructions: settings.spreadsheetShareIncludeAiInstructions,
+      })
+
+      setMessage(formatShareResultMessage(result))
     } catch (error) {
       setMessage(
-        error instanceof DOMException && error.name === "AbortError"
-          ? "Share canceled."
+        error instanceof Error
+          ? error.message
           : "Spreadsheet could not be shared.",
       )
     }
@@ -465,6 +469,21 @@ export function SettingsScreen() {
             }
           />
         </details>
+        <label className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-white/10 bg-[var(--app-surface-muted)] px-3">
+          <span className="text-sm text-zinc-200">
+            Add shortcut to sandwich menu
+          </span>
+          <input
+            checked={settings.addShareShortcutToMenu}
+            className="size-5 accent-cyan-500"
+            type="checkbox"
+            onChange={(event) =>
+              void saveSettings({
+                addShareShortcutToMenu: event.target.checked,
+              })
+            }
+          />
+        </label>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportSpreadsheet}>
             Spreadsheet Export

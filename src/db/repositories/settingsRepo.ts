@@ -21,6 +21,7 @@ const defaultSettings: StoredAppSettings = {
   spreadsheetShareMessage: "",
   spreadsheetShareIncludeMessage: true,
   spreadsheetShareIncludeAiInstructions: true,
+  addShareShortcutToMenu: false,
   treatLongWorkoutTimerAsLatestSetFinish: false,
   setCommentTemplates: [...defaultSetCommentTemplates],
   updatedAt: new Date().toISOString(),
@@ -62,6 +63,7 @@ function normalizeSettings(settings?: Partial<StoredAppSettings>): AppSettings {
       settings?.spreadsheetShareIncludeMessage ?? true,
     spreadsheetShareIncludeAiInstructions:
       settings?.spreadsheetShareIncludeAiInstructions ?? true,
+    addShareShortcutToMenu: settings?.addShareShortcutToMenu ?? false,
     treatLongWorkoutTimerAsLatestSetFinish:
       settings?.treatLongWorkoutTimerAsLatestSetFinish ?? false,
     setCommentTemplates: normalizeSetCommentTemplates(
