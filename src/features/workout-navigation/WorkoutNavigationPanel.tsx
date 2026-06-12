@@ -17,7 +17,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { MoreVertical, Plus, Repeat2, Trash2 } from "lucide-react"
+import {
+  GripVertical,
+  MoreVertical,
+  Plus,
+  Repeat2,
+  Trash2,
+} from "lucide-react"
 import type { WorkoutDayDetail, WorkoutExerciseDetail } from "@/db/schema"
 import {
   deleteWorkoutExercise,
@@ -40,6 +46,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { useAppStore } from "@/shared/store/appStore"
+import { getSetProgress } from "@/shared/model/workoutProgress"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { SwipeToDelete } from "@/shared/ui/SwipeToDelete"
 
@@ -60,6 +67,7 @@ function WorkoutNavRow({
     transform: CSS.Transform.toString(transform),
     transition,
   }
+  const progress = getSetProgress(detail.sets)
 
   return (
     <SwipeToDelete
@@ -68,27 +76,47 @@ function WorkoutNavRow({
       style={style}
       onDelete={onDelete}
     >
-      <div className="grid min-h-14 grid-cols-[1fr_2.5rem] items-center gap-2 bg-[var(--app-surface)] px-2 transition hover:bg-[#1b2026]">
+      <div className="grid min-h-14 grid-cols-[0.25rem_2rem_minmax(0,1fr)_2.5rem] bg-[var(--app-surface)] transition hover:bg-[#1b2026]">
+        <div
+          aria-label={`${progress.finishedSets} of ${progress.totalSets} sets finished`}
+          aria-valuemax={Math.max(progress.totalSets, 1)}
+          aria-valuemin={0}
+          aria-valuenow={progress.finishedSets}
+          className="relative h-full min-h-14 w-1 self-stretch overflow-hidden bg-white/10"
+          role="progressbar"
+          title={`${progress.finishedSets} of ${progress.totalSets} sets finished`}
+        >
+          <div
+            className="absolute inset-x-0 bottom-0 bg-cyan-400"
+            style={{ height: `${progress.percentComplete}%` }}
+          />
+        </div>
         <button
-          className="min-w-0 text-left"
-          style={{ touchAction: "none" }}
+          className="inline-flex min-h-14 cursor-grab touch-none items-center justify-center text-zinc-500 active:cursor-grabbing"
           type="button"
           title="Long press to move exercise"
-          onClick={onOpen}
           {...attributes}
           {...listeners}
+        >
+          <GripVertical className="size-4" />
+        </button>
+        <button
+          className="flex min-h-14 min-w-0 flex-col justify-center px-2 text-left"
+          type="button"
+          title="Open exercise"
+          onClick={onOpen}
         >
           <div className="truncate text-sm font-medium text-zinc-50">
             {detail.exercise.id}
           </div>
           <div className="text-xs text-zinc-500">
-            {detail.sets.length} {detail.sets.length === 1 ? "set" : "sets"}
+            {progress.finishedSets}/{progress.totalSets} sets
           </div>
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-400 hover:bg-white/10"
+              className="my-auto mr-1 inline-flex size-9 cursor-pointer items-center justify-center rounded-md text-zinc-400 hover:bg-white/10"
               type="button"
               title="Workout exercise actions"
             >
@@ -211,7 +239,7 @@ export function WorkoutNavigationPanel() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        className="max-h-[calc(86dvh-4rem)] rounded-t-md border-white/10 bg-[#111418] text-zinc-100 shadow-[0_-24px_60px_rgba(0,0,0,0.5)] data-[side=bottom]:bottom-16 sm:mx-auto sm:max-w-2xl"
+        className="gap-0 overflow-hidden rounded-t-md border-white/10 bg-[#111418] text-zinc-100 shadow-[0_-24px_60px_rgba(0,0,0,0.5)] data-[side=bottom]:bottom-16 data-[side=bottom]:h-[calc(86dvh-4rem)] data-[side=bottom]:max-h-[calc(86dvh-4rem)] sm:mx-auto sm:max-w-2xl"
         side="bottom"
         onCloseAutoFocus={(event) => {
           if (!skipCloseAutoFocusRef.current) {
@@ -222,14 +250,14 @@ export function WorkoutNavigationPanel() {
           skipCloseAutoFocusRef.current = false
         }}
       >
-        <SheetHeader className="border-b border-white/10">
+        <SheetHeader className="shrink-0 border-b border-white/10">
           <SheetTitle>Workout List</SheetTitle>
           <SheetDescription className="text-zinc-500">
             {selectedDate} · {selectedProfile}
           </SheetDescription>
         </SheetHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3">
           {detail.exercises.length === 0 ? (
             <div className="flex min-h-14 items-center justify-center rounded-md border border-white/10 bg-[var(--app-surface)] px-3 text-center text-sm text-zinc-500">
               No exercises in this workout
@@ -278,7 +306,7 @@ export function WorkoutNavigationPanel() {
           )}
         </div>
 
-        <SheetFooter className="border-t border-white/10">
+        <SheetFooter className="shrink-0 border-t border-white/10">
           <div className="flex gap-2">
             <ActionButton
               tone="save"

@@ -22,11 +22,15 @@ export function AppShell() {
   useScreenWakeLock(ready && Boolean(settings?.keepScreenOn))
 
   useEffect(() => {
+    const store = useAppStore.getState()
+    if (store.workoutNavOpen) {
+      store.setWorkoutNavOpen(false)
+    }
+
     if (pathname.startsWith("/picker") || pathname.startsWith("/exercise/")) {
       return
     }
 
-    const store = useAppStore.getState()
     if (store.replaceWorkoutExerciseId) {
       store.setReplaceWorkoutExerciseId(undefined)
     }
