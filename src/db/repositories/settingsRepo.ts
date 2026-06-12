@@ -9,6 +9,7 @@ import {
   defaultSetCommentTemplates,
   normalizeSetCommentTemplates,
 } from "@/shared/model/setCommentTemplates"
+import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
 
 const defaultSettings: StoredAppSettings = {
   id: "app",
@@ -18,7 +19,7 @@ const defaultSettings: StoredAppSettings = {
   selectedProfile: defaultProfileName,
   exportAllProfiles: false,
   spreadsheetExportMonthLimit: null,
-  spreadsheetShareMessage: "",
+  spreadsheetShareMessage: defaultSpreadsheetShareMessage,
   spreadsheetShareIncludeMessage: true,
   spreadsheetShareIncludeAiInstructions: true,
   addShareShortcutToMenu: false,
@@ -58,7 +59,9 @@ function normalizeSettings(settings?: Partial<StoredAppSettings>): AppSettings {
     spreadsheetExportMonthLimit: normalizeSpreadsheetMonthLimit(
       settings?.spreadsheetExportMonthLimit,
     ),
-    spreadsheetShareMessage: settings?.spreadsheetShareMessage ?? "",
+    spreadsheetShareMessage:
+      settings?.spreadsheetShareMessage?.trim() ||
+      defaultSpreadsheetShareMessage,
     spreadsheetShareIncludeMessage:
       settings?.spreadsheetShareIncludeMessage ?? true,
     spreadsheetShareIncludeAiInstructions:

@@ -19,6 +19,7 @@ import {
   defaultSetCommentTemplates,
   normalizeSetCommentTemplate,
 } from "@/shared/model/setCommentTemplates"
+import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
 import { todayString } from "@/shared/model/dates"
 import {
   downloadTextFile,
@@ -68,7 +69,7 @@ export function SettingsScreen() {
     selectedProfile: defaultProfileName,
     exportAllProfiles: false,
     spreadsheetExportMonthLimit: null,
-    spreadsheetShareMessage: "",
+    spreadsheetShareMessage: defaultSpreadsheetShareMessage,
     spreadsheetShareIncludeMessage: true,
     spreadsheetShareIncludeAiInstructions: true,
     addShareShortcutToMenu: false,

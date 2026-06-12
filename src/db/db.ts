@@ -18,6 +18,7 @@ import {
   normalizeExerciseCategory,
 } from "@/shared/model/exercises"
 import { defaultSetCommentTemplates } from "@/shared/model/setCommentTemplates"
+import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
 
 class UpraglogDatabase extends Dexie {
   exerciseCategories!: Table<ExerciseCategoryEntry, string>
@@ -249,7 +250,7 @@ async function initializeDatabaseInternal() {
           selectedProfile: defaultProfileName,
           exportAllProfiles: false,
           spreadsheetExportMonthLimit: null,
-          spreadsheetShareMessage: "",
+          spreadsheetShareMessage: defaultSpreadsheetShareMessage,
           spreadsheetShareIncludeMessage: true,
           spreadsheetShareIncludeAiInstructions: true,
           addShareShortcutToMenu: false,

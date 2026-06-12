@@ -21,6 +21,7 @@ import {
   defaultProfileNames,
 } from "@/shared/model/profiles"
 import { defaultSetCommentTemplates } from "@/shared/model/setCommentTemplates"
+import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
 import { isWorkoutTimerActive } from "@/shared/model/workoutTimer"
 import { DateNavRow } from "./DateNavRow"
 import { ExerciseCard } from "./ExerciseCard"
@@ -57,7 +58,7 @@ export function HomeScreen() {
     selectedProfile: defaultProfileName,
     exportAllProfiles: false,
     spreadsheetExportMonthLimit: null,
-    spreadsheetShareMessage: "",
+    spreadsheetShareMessage: defaultSpreadsheetShareMessage,
     spreadsheetShareIncludeMessage: true,
     spreadsheetShareIncludeAiInstructions: true,
     addShareShortcutToMenu: false,

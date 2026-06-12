@@ -5,6 +5,7 @@ import {
 } from "@/shared/model/profiles"
 import { normalizeExerciseCategory } from "@/shared/model/exercises"
 import { normalizeSetCommentTemplates } from "@/shared/model/setCommentTemplates"
+import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
 
 const exerciseCategorySchema = z.string().trim().min(1)
 
@@ -115,7 +116,8 @@ const settingsSchema = z.object({
     settings.spreadsheetExportMonthLimit > 0
       ? Math.floor(settings.spreadsheetExportMonthLimit)
       : null,
-  spreadsheetShareMessage: settings.spreadsheetShareMessage ?? "",
+  spreadsheetShareMessage:
+    settings.spreadsheetShareMessage?.trim() || defaultSpreadsheetShareMessage,
   spreadsheetShareIncludeMessage: settings.spreadsheetShareIncludeMessage ?? true,
   spreadsheetShareIncludeAiInstructions:
     settings.spreadsheetShareIncludeAiInstructions ?? true,
