@@ -49,7 +49,7 @@ export async function buildTrainingLogShareInstructions() {
     "Set Finished: Yes when the set checkbox was checked, otherwise No.",
     "Set Finished At: local timestamp for when the set checkbox was checked.",
     "",
-    "If the user asks for a workout routine, answer with exactly one fenced code block containing a CSV table and no extra prose. The first column must be Exercise ID. Use this exact header:",
+    "If the user asks for a workout routine, you may include brief comments first, then end your response with exactly one fenced csv code block containing the routine table. The first column must be Exercise ID. Use this exact header:",
     routineCsvColumns.join(","),
     "Use only exercise ids from the list above. Leave cells empty when a parameter is null, N/A, or does not apply to that exercise.",
   ].join("\n")
