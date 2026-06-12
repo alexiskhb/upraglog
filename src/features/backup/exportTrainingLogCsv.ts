@@ -14,7 +14,6 @@ import {
 } from "@/shared/model/dates"
 import { formatExerciseCategory, formatExerciseType } from "@/shared/model/exercises"
 import { defaultProfileName } from "@/shared/model/profiles"
-import { getEffectiveWorkoutEndedAt } from "@/shared/model/workoutTimer"
 
 const csvHeaders = [
   "Workout Date",
@@ -185,7 +184,6 @@ export async function exportTrainingLogCsv(
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
   const rows: TrainingLogRow[] = []
   const exportStartDate = getExportStartDate(options.monthLimit)
-  const nowMs = Date.now()
 
   for (const workoutExercise of workoutExercises) {
     const current =
@@ -212,17 +210,7 @@ export async function exportTrainingLogCsv(
     const workoutExerciseRows = (
       workoutExercisesByWorkoutId.get(workout.id) ?? []
     ).sort(byOrder)
-    const workoutSets = workoutExerciseRows.flatMap(
-      (workoutExercise) =>
-        setsByWorkoutExerciseId.get(workoutExercise.id) ?? [],
-    )
-    const endedAt = getEffectiveWorkoutEndedAt({
-      workout,
-      sets: workoutSets,
-      treatLongTimerAsLatestSetFinish:
-        settings.treatLongWorkoutTimerAsLatestSetFinish,
-      nowMs,
-    })
+    const endedAt = workout.endedAt
 
     if (workoutExerciseRows.length === 0) {
       continue

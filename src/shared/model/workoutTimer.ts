@@ -1,8 +1,6 @@
 import type { SetEntry, Workout } from "@/db/schema"
 import { getSetFinishedTimestampMs } from "./workoutProgress"
 
-export const longWorkoutTimerThresholdSeconds = 3 * 60 * 60
-
 function timestampMs(iso?: string) {
   if (!iso) {
     return undefined
@@ -28,38 +26,20 @@ export function getLatestSetFinishedAt(sets: SetEntry[] = []) {
   return latest
 }
 
-export function getEffectiveWorkoutEndedAt({
+export function getLatestSetFinishedAtAfterWorkoutStart({
   workout,
-  sets = [],
-  treatLongTimerAsLatestSetFinish,
-  nowMs = Date.now(),
+  sets,
 }: {
   workout?: Workout
-  sets?: SetEntry[]
-  treatLongTimerAsLatestSetFinish: boolean
-  nowMs?: number
+  sets: SetEntry[]
 }) {
   if (!workout?.startedAt) {
-    return undefined
-  }
-
-  if (workout.endedAt) {
-    return workout.endedAt
-  }
-
-  if (!treatLongTimerAsLatestSetFinish) {
     return undefined
   }
 
   const startedMs = timestampMs(workout.startedAt)
 
   if (startedMs === undefined) {
-    return undefined
-  }
-
-  const elapsedSeconds = Math.floor((nowMs - startedMs) / 1000)
-
-  if (elapsedSeconds <= longWorkoutTimerThresholdSeconds) {
     return undefined
   }
 
@@ -79,24 +59,10 @@ export function getEffectiveWorkoutEndedAt({
 
 export function isWorkoutTimerActive({
   workout,
-  sets = [],
-  treatLongTimerAsLatestSetFinish,
-  nowMs = Date.now(),
 }: {
   workout?: Workout
-  sets?: SetEntry[]
-  treatLongTimerAsLatestSetFinish: boolean
-  nowMs?: number
 }) {
-  return Boolean(
-    workout?.startedAt &&
-      !getEffectiveWorkoutEndedAt({
-        workout,
-        sets,
-        treatLongTimerAsLatestSetFinish,
-        nowMs,
-      }),
-  )
+  return Boolean(workout?.startedAt && !workout.endedAt)
 }
 
 export function getAutoFinishedWorkoutEndedAt({
@@ -114,5 +80,5 @@ export function getAutoFinishedWorkoutEndedAt({
     return undefined
   }
 
-  return getLatestSetFinishedAt(sets)
+  return getLatestSetFinishedAtAfterWorkoutStart({ workout, sets })
 }

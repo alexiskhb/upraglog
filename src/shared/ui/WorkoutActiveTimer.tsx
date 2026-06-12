@@ -1,36 +1,23 @@
 import { useEffect, useState } from "react"
-import type { SetEntry, Workout } from "@/db/schema"
+import type { Workout } from "@/db/schema"
 import { formatDuration } from "@/shared/model/dates"
-import { defaultAppSettings } from "@/shared/model/settings"
-import { getEffectiveWorkoutEndedAt } from "@/shared/model/workoutTimer"
 import { useAppStore } from "@/shared/store/appStore"
 import { cn } from "@/lib/utils"
 
 type WorkoutActiveTimerProps = {
   workout?: Workout
-  sets?: SetEntry[]
-  treatLongTimerAsLatestSetFinish?: boolean
   size?: "compact" | "large"
   className?: string
 }
 
 export function WorkoutActiveTimer({
   workout,
-  sets = [],
-  treatLongTimerAsLatestSetFinish =
-    defaultAppSettings.treatLongWorkoutTimerAsLatestSetFinish,
   size = "compact",
   className,
 }: WorkoutActiveTimerProps) {
   const openDialog = useAppStore((state) => state.openDialog)
   const [nowMs, setNowMs] = useState(() => Date.now())
-  const effectiveEndedAt = getEffectiveWorkoutEndedAt({
-    workout,
-    sets,
-    treatLongTimerAsLatestSetFinish,
-    nowMs,
-  })
-  const active = Boolean(workout?.startedAt && !effectiveEndedAt)
+  const active = Boolean(workout?.startedAt && !workout.endedAt)
 
   useEffect(() => {
     if (!active) {
@@ -42,7 +29,7 @@ export function WorkoutActiveTimer({
     }, 1000)
 
     return () => window.clearInterval(interval)
-  }, [active, workout?.startedAt, treatLongTimerAsLatestSetFinish])
+  }, [active, workout?.startedAt])
 
   if (!active) {
     return null

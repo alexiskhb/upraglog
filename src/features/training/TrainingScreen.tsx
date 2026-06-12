@@ -126,10 +126,6 @@ export function TrainingScreen() {
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()
   const [commentSetId, setCommentSetId] = useState<string | undefined>()
   const [
-    treatLongTimerAsLatestSetFinish,
-    setTreatLongTimerAsLatestSetFinish,
-  ] = useState(defaultAppSettings.treatLongWorkoutTimerAsLatestSetFinish)
-  const [
     autoSortWorkoutExercisesByFirstFinishedSet,
     setAutoSortWorkoutExercisesByFirstFinishedSet,
   ] = useState(defaultAppSettings.autoSortWorkoutExercisesByFirstFinishedSet)
@@ -160,9 +156,6 @@ export function TrainingScreen() {
       }
 
       setDetail(nextDetail)
-      setTreatLongTimerAsLatestSetFinish(
-        appSettings.treatLongWorkoutTimerAsLatestSetFinish,
-      )
       setAutoSortWorkoutExercisesByFirstFinishedSet(
         appSettings.autoSortWorkoutExercisesByFirstFinishedSet,
       )
@@ -412,9 +405,7 @@ export function TrainingScreen() {
           </button>
           <WorkoutActiveTimer
             className="justify-self-end"
-            sets={detail.workoutSets}
             size="large"
-            treatLongTimerAsLatestSetFinish={treatLongTimerAsLatestSetFinish}
             workout={detail.workout}
           />
         </div>

@@ -130,12 +130,8 @@ export function HomeScreen() {
 
     setTouchStartX(undefined)
   }
-  const workoutSets = detail.exercises.flatMap((entry) => entry.sets)
   const workoutActive = isWorkoutTimerActive({
     workout: detail.workout,
-    sets: workoutSets,
-    treatLongTimerAsLatestSetFinish:
-      settings.treatLongWorkoutTimerAsLatestSetFinish,
   })
 
   return (
@@ -157,10 +153,6 @@ export function HomeScreen() {
       <div className="flex items-center justify-between gap-3 px-1 text-xs uppercase tracking-normal text-zinc-500">
         <span className="min-w-0 truncate">{formatLongDate(date)}</span>
         <WorkoutActiveTimer
-          sets={workoutSets}
-          treatLongTimerAsLatestSetFinish={
-            settings.treatLongWorkoutTimerAsLatestSetFinish
-          }
           workout={detail.workout}
         />
       </div>

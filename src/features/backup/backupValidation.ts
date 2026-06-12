@@ -97,7 +97,6 @@ const settingsSchema = z.object({
   spreadsheetShareIncludeAiInstructions: z.boolean().optional(),
   spreadsheetShareAttachMessageAsFile: z.boolean().optional(),
   addShareShortcutToMenu: z.boolean().optional(),
-  treatLongWorkoutTimerAsLatestSetFinish: z.boolean().optional(),
   autoSortWorkoutExercisesByFirstFinishedSet: z.boolean().optional(),
   autoFinishWorkoutTimerWhenAllSetsFinished: z.boolean().optional(),
   setCommentTemplates: z.array(z.string()).optional(),

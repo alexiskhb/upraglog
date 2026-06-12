@@ -3,7 +3,6 @@ import {
   getWorkoutDetailByDate,
   updateWorkoutTimer,
 } from "@/db/repositories/workoutsRepo"
-import { getSettings } from "@/db/repositories/settingsRepo"
 import {
   Dialog,
   DialogContent,
@@ -15,7 +14,7 @@ import { Label } from "@/components/ui/label"
 import { useAppStore } from "@/shared/store/appStore"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { formatDuration, getWorkoutDurationSeconds } from "@/shared/model/dates"
-import { getEffectiveWorkoutEndedAt } from "@/shared/model/workoutTimer"
+import { getLatestSetFinishedAtAfterWorkoutStart } from "@/shared/model/workoutTimer"
 
 function toDateTimeInputValue(iso?: string) {
   if (!iso) {
@@ -36,6 +35,17 @@ function fromDateTimeInputValue(value: string) {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
 }
 
+function isTimestampAtOrAfter(value: string | undefined, min: string | undefined) {
+  if (!value || !min) {
+    return false
+  }
+
+  const valueMs = new Date(value).getTime()
+  const minMs = new Date(min).getTime()
+
+  return Number.isFinite(valueMs) && Number.isFinite(minMs) && valueMs >= minMs
+}
+
 export function WorkoutTimerDialog() {
   const selectedDate = useAppStore((state) => state.selectedDate)
   const selectedProfile = useAppStore((state) => state.selectedProfile)
@@ -47,6 +57,9 @@ export function WorkoutTimerDialog() {
   const [endedAt, setEndedAt] = useState("")
   const [startedAtIso, setStartedAtIso] = useState<string | undefined>()
   const [endedAtIso, setEndedAtIso] = useState<string | undefined>()
+  const [latestFinishedAtIso, setLatestFinishedAtIso] = useState<
+    string | undefined
+  >()
   const [nowMs, setNowMs] = useState(() => Date.now())
   const [message, setMessage] = useState<string | undefined>()
 
@@ -57,24 +70,21 @@ export function WorkoutTimerDialog() {
 
     let cancelled = false
 
-    Promise.all([
-      getWorkoutDetailByDate(selectedDate, selectedProfile),
-      getSettings(),
-    ]).then(([detail, settings]) => {
+    getWorkoutDetailByDate(selectedDate, selectedProfile).then((detail) => {
       if (!cancelled) {
         const workout = detail.workout
         const workoutSets = detail.exercises.flatMap((entry) => entry.sets)
-        const effectiveEndedAt = getEffectiveWorkoutEndedAt({
-          workout,
-          sets: workoutSets,
-          treatLongTimerAsLatestSetFinish:
-            settings.treatLongWorkoutTimerAsLatestSetFinish,
-        })
+        const latestFinishedAt =
+          getLatestSetFinishedAtAfterWorkoutStart({
+            workout,
+            sets: workoutSets,
+          })
 
         setStartedAt(toDateTimeInputValue(workout?.startedAt))
-        setEndedAt(toDateTimeInputValue(effectiveEndedAt))
+        setEndedAt(toDateTimeInputValue(workout?.endedAt))
         setStartedAtIso(workout?.startedAt)
-        setEndedAtIso(effectiveEndedAt)
+        setEndedAtIso(workout?.endedAt)
+        setLatestFinishedAtIso(latestFinishedAt)
         setNowMs(Date.now())
         setMessage(undefined)
       }
@@ -98,6 +108,10 @@ export function WorkoutTimerDialog() {
   }, [endedAtIso, open, startedAtIso])
 
   const active = Boolean(startedAtIso && !endedAtIso)
+  const canStopAtLatestFinishedSet = isTimestampAtOrAfter(
+    latestFinishedAtIso,
+    startedAtIso,
+  )
   const durationSeconds =
     active && startedAtIso
       ? Math.max(
@@ -134,6 +148,7 @@ export function WorkoutTimerDialog() {
     setNowMs(now.getTime())
     setStartedAt(toDateTimeInputValue(nowIso))
     setEndedAt("")
+    setLatestFinishedAtIso(undefined)
     await saveTimerIso(nowIso, undefined, "Workout started.")
   }
 
@@ -147,10 +162,25 @@ export function WorkoutTimerDialog() {
     await saveTimerIso(nextStartedAt, nowIso, "Workout stopped.")
   }
 
+  const stopTimerAtLatestFinishedSet = async () => {
+    if (!canStopAtLatestFinishedSet || !startedAtIso || !latestFinishedAtIso) {
+      setMessage("No finished set after workout start.")
+      return
+    }
+
+    setEndedAt(toDateTimeInputValue(latestFinishedAtIso))
+    await saveTimerIso(
+      startedAtIso,
+      latestFinishedAtIso,
+      "Workout stopped at latest finished set.",
+    )
+  }
+
   const clearTimer = async () => {
     setNowMs(Date.now())
     setStartedAt("")
     setEndedAt("")
+    setLatestFinishedAtIso(undefined)
     await saveTimerIso(undefined, undefined, "Timer cleared.")
   }
 
@@ -188,6 +218,14 @@ export function WorkoutTimerDialog() {
           </ActionButton>
           <ActionButton tone="delete" onClick={stopTimer}>
             Stop Workout
+          </ActionButton>
+          <ActionButton
+            className="col-span-2"
+            disabled={!canStopAtLatestFinishedSet}
+            tone="secondary"
+            onClick={stopTimerAtLatestFinishedSet}
+          >
+            Stop as of Latest Finished Set
           </ActionButton>
         </div>
 

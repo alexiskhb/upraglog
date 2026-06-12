@@ -24,7 +24,6 @@ export const defaultAppSettings: AppSettings = {
   spreadsheetShareIncludeAiInstructions: true,
   spreadsheetShareAttachMessageAsFile: false,
   addShareShortcutToMenu: false,
-  treatLongWorkoutTimerAsLatestSetFinish: false,
   autoSortWorkoutExercisesByFirstFinishedSet: false,
   autoFinishWorkoutTimerWhenAllSetsFinished: false,
   setCommentTemplates: [...defaultSetCommentTemplates],
@@ -103,9 +102,6 @@ export function normalizeSettings(
     addShareShortcutToMenu:
       settings?.addShareShortcutToMenu ??
       defaultAppSettings.addShareShortcutToMenu,
-    treatLongWorkoutTimerAsLatestSetFinish:
-      settings?.treatLongWorkoutTimerAsLatestSetFinish ??
-      defaultAppSettings.treatLongWorkoutTimerAsLatestSetFinish,
     autoSortWorkoutExercisesByFirstFinishedSet:
       settings?.autoSortWorkoutExercisesByFirstFinishedSet ??
       defaultAppSettings.autoSortWorkoutExercisesByFirstFinishedSet,

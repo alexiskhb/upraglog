@@ -77,7 +77,6 @@ export type AppSettings = {
   spreadsheetShareIncludeAiInstructions: boolean
   spreadsheetShareAttachMessageAsFile: boolean
   addShareShortcutToMenu: boolean
-  treatLongWorkoutTimerAsLatestSetFinish: boolean
   autoSortWorkoutExercisesByFirstFinishedSet: boolean
   autoFinishWorkoutTimerWhenAllSetsFinished: boolean
   setCommentTemplates: string[]
