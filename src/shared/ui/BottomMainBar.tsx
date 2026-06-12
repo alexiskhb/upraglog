@@ -2,7 +2,7 @@ import {
   CalendarDays,
   Check,
   Clock3,
-  Dumbbell,
+  House,
   ListPlus,
   ListChecks,
   MoreVertical,
@@ -395,7 +395,7 @@ export function BottomMainBar() {
               className={bottomBarMenuItemClassName}
               onSelect={goToDay}
             >
-              <Dumbbell className="size-5 text-cyan-300" />
+              <House className="size-5 text-cyan-300" />
               Home
             </DropdownMenuItem>
           </DropdownMenuContent>
