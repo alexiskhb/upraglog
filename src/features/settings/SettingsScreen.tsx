@@ -503,7 +503,7 @@ export function SettingsScreen() {
         </details>
         <label className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-white/10 bg-[var(--app-surface-muted)] px-3">
           <span className="text-sm text-zinc-200">
-            Add shortcut to sandwich menu
+            Add Share... shortcut to main menu
           </span>
           <input
             checked={settings.addShareShortcutToMenu}
@@ -518,7 +518,7 @@ export function SettingsScreen() {
         </label>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportSpreadsheet}>
-            Spreadsheet Export
+            Download Spreadsheet
           </ActionButton>
           <ActionButton tone="secondary" onClick={shareSpreadsheet}>
             Share...

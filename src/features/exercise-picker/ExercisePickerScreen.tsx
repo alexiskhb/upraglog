@@ -56,16 +56,29 @@ import { ExerciseCategoryChips } from "./ExerciseCategoryChips"
 
 type CategoryFilter = ExerciseCategory | "favorites"
 
+function queryTokens(query: string) {
+  return query.toLowerCase().trim().split(/\s+/).filter(Boolean)
+}
+
+function categorySearchText(category: CategoryFilter) {
+  return category === "favorites"
+    ? "favorites"
+    : formatExerciseCategory(category).toLowerCase()
+}
+
 function exerciseSearchText(exercise: Exercise) {
   return `${exercise.id} ${formatExerciseCategory(
     exercise.category,
   )}`.toLowerCase()
 }
 
+function matchesSearchText(searchText: string, query: string) {
+  const tokens = queryTokens(query)
+  return tokens.every((token) => searchText.includes(token))
+}
+
 function matchesTokens(exercise: Exercise, query: string) {
-  const normalizedSearchText = exerciseSearchText(exercise)
-  const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean)
-  return tokens.every((token) => normalizedSearchText.includes(token))
+  return matchesSearchText(exerciseSearchText(exercise), query)
 }
 
 export function ExercisePickerScreen() {
@@ -138,10 +151,18 @@ export function ExercisePickerScreen() {
 
   const categories = useMemo<CategoryFilter[]>(() => {
     const hasFavorites = exercises.some((exercise) => exercise.isFavorite)
-    return hasFavorites
+    const categoryOptions = hasFavorites
       ? ["favorites", ...exerciseCategories]
       : [...exerciseCategories]
-  }, [exerciseCategories, exercises])
+
+    if (!query.trim()) {
+      return categoryOptions
+    }
+
+    return categoryOptions.filter((category) =>
+      matchesSearchText(categorySearchText(category), query),
+    )
+  }, [exerciseCategories, exercises, query])
 
   const filteredExercises = useMemo(() => {
     const categoryFiltered = exercises.filter((exercise) => {

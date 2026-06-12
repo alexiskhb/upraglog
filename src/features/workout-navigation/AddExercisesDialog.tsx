@@ -59,7 +59,7 @@ export function AddExercisesDialog({
         </DialogHeader>
         <Textarea
           className="h-[42dvh] min-h-36 resize-none overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 [field-sizing:fixed] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
-          placeholder="Paste CSV or an AI response..."
+          placeholder="Use Share to send your history to an AI assistant, then paste its response here."
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
