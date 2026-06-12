@@ -1,6 +1,7 @@
 import {
   CalendarDays,
   Check,
+  ChevronDown,
   Clock3,
   House,
   ListPlus,
@@ -18,9 +19,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
@@ -42,6 +40,7 @@ const bottomBarMenuItemClassName =
 
 export function BottomMainBar() {
   const [moreMenuOpen, setMoreMenuOpen] = useState(false)
+  const [profileSectionOpen, setProfileSectionOpen] = useState(false)
   const [addExercisesOpen, setAddExercisesOpen] = useState(false)
   const [addShareShortcutToMenu, setAddShareShortcutToMenu] = useState(
     defaultAppSettings.addShareShortcutToMenu,
@@ -253,6 +252,9 @@ export function BottomMainBar() {
           open={moreMenuOpen}
           onOpenChange={(open) => {
             setMoreMenuOpen(open)
+            if (!open) {
+              setProfileSectionOpen(false)
+            }
             if (open) {
               closeTaskUi()
             }
@@ -336,16 +338,30 @@ export function BottomMainBar() {
               Add Exercises
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className={bottomBarMenuItemClassName}>
-                <UserCircle className="size-5 text-cyan-300" />
-                <span className="min-w-0 truncate">
-                  Profile: {selectedProfile}
-                </span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent
-                className={cn(bottomBarMenuContentClassName, "w-64")}
-              >
+            <DropdownMenuItem
+              aria-expanded={profileSectionOpen}
+              className={cn(
+                bottomBarMenuItemClassName,
+                profileSectionOpen && "bg-cyan-400/15 text-cyan-100",
+              )}
+              onSelect={(event) => {
+                event.preventDefault()
+                setProfileSectionOpen((open) => !open)
+              }}
+            >
+              <UserCircle className="size-5 text-cyan-300" />
+              <span className="min-w-0 truncate">
+                Profile: {selectedProfile}
+              </span>
+              <ChevronDown
+                className={cn(
+                  "ml-auto size-4 text-zinc-500 transition",
+                  profileSectionOpen && "rotate-180 text-cyan-300",
+                )}
+              />
+            </DropdownMenuItem>
+            {profileSectionOpen && (
+              <div className="mt-1 rounded-md border border-white/10 bg-black/10 p-1">
                 {profiles.map((profileName) => (
                   <DropdownMenuItem
                     className={bottomBarMenuItemClassName}
@@ -361,8 +377,8 @@ export function BottomMainBar() {
                     <span className="min-w-0 truncate">{profileName}</span>
                   </DropdownMenuItem>
                 ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
+              </div>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
