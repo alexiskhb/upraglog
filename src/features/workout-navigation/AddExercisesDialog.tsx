@@ -53,17 +53,17 @@ export function AddExercisesDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:max-w-lg">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Add Exercises</DialogTitle>
         </DialogHeader>
         <Textarea
-          className="min-h-[42dvh] rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+          className="h-[42dvh] min-h-36 resize-none overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 [field-sizing:fixed] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
           placeholder="Paste CSV or an AI response..."
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
-        <div className="flex gap-2">
+        <div className="flex shrink-0 gap-2">
           <ActionButton disabled={adding} tone="save" onClick={addExercises}>
             Add
           </ActionButton>
