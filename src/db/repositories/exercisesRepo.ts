@@ -10,6 +10,7 @@ import {
   normalizeProfileName,
 } from "@/shared/model/profiles"
 import { normalizeExerciseCategory } from "@/shared/model/exercises"
+import { filterExerciseSetDefaultsForExerciseType } from "@/shared/model/setFields"
 
 function normalizeExerciseId(exerciseId: string) {
   return exerciseId.trim()
@@ -74,9 +75,14 @@ export async function updateExercise(
       : currentExercise.category,
     exerciseType: input.exerciseType ?? currentExercise.exerciseType,
     isFavorite: input.isFavorite ?? currentExercise.isFavorite,
-    lastSetInput: currentExercise.lastSetInput,
     setIncrements: input.setIncrements ?? currentExercise.setIncrements,
   }
+  nextExercise.lastSetInput = currentExercise.lastSetInput
+    ? filterExerciseSetDefaultsForExerciseType(
+        nextExercise.exerciseType,
+        currentExercise.lastSetInput,
+      )
+    : undefined
 
   if (nextExerciseId === exerciseId) {
     await db.transaction("rw", db.exerciseCategories, db.exercises, async () => {
@@ -121,8 +127,17 @@ export async function updateExerciseSetDefaults(
   exerciseId: string,
   lastSetInput: ExerciseSetDefaults,
 ) {
+  const exercise = await db.exercises.get(exerciseId)
+
+  if (!exercise) {
+    return
+  }
+
   await db.exercises.update(exerciseId, {
-    lastSetInput,
+    lastSetInput: filterExerciseSetDefaultsForExerciseType(
+      exercise.exerciseType,
+      lastSetInput,
+    ),
   })
 }
 

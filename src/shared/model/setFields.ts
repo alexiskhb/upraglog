@@ -1,6 +1,9 @@
 import type {
+  ExerciseSetDefaults,
   ExerciseSetIncrements,
   ExerciseType,
+  SetEntry,
+  SetEntryInput,
   SetFieldKey,
 } from "@/db/schema"
 
@@ -67,6 +70,77 @@ export function setFieldsForExerciseType(
   }
 
   return [weightField, repsField]
+}
+
+export function setFieldKeysForExerciseType(exerciseType: ExerciseType) {
+  return setFieldsForExerciseType(exerciseType).map((field) => field.key)
+}
+
+export function filterSetInputForExerciseType(
+  exerciseType: ExerciseType,
+  input: SetEntryInput,
+): SetEntryInput {
+  const allowedFields = new Set(setFieldKeysForExerciseType(exerciseType))
+  const nextInput: SetEntryInput = {}
+
+  if (allowedFields.has("weight") && input.weight !== undefined) {
+    nextInput.weight = input.weight
+  }
+
+  if (allowedFields.has("reps") && input.reps !== undefined) {
+    nextInput.reps = input.reps
+  }
+
+  if (allowedFields.has("distance") && input.distance !== undefined) {
+    nextInput.distance = input.distance
+  }
+
+  if (
+    allowedFields.has("durationSeconds") &&
+    input.durationSeconds !== undefined
+  ) {
+    nextInput.durationSeconds = input.durationSeconds
+  }
+
+  if (input.comment !== undefined) {
+    nextInput.comment = input.comment
+  }
+
+  return nextInput
+}
+
+export function filterExerciseSetDefaultsForExerciseType(
+  exerciseType: ExerciseType,
+  input: ExerciseSetDefaults,
+): ExerciseSetDefaults {
+  const setInput = filterSetInputForExerciseType(exerciseType, input)
+
+  return {
+    ...(setInput.weight !== undefined ? { weight: setInput.weight } : {}),
+    ...(setInput.reps !== undefined ? { reps: setInput.reps } : {}),
+    ...(setInput.distance !== undefined ? { distance: setInput.distance } : {}),
+    ...(setInput.durationSeconds !== undefined
+      ? { durationSeconds: setInput.durationSeconds }
+      : {}),
+  }
+}
+
+export function normalizeSetEntryForExerciseType<T extends SetEntry>(
+  exerciseType: ExerciseType,
+  set: T,
+): T {
+  const { weight, reps, distance, durationSeconds, ...rest } = set
+  const setInput = filterSetInputForExerciseType(exerciseType, {
+    weight,
+    reps,
+    distance,
+    durationSeconds,
+  })
+
+  return {
+    ...rest,
+    ...setInput,
+  } as T
 }
 
 export function getSetIncrement(

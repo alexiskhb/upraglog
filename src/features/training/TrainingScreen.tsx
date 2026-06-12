@@ -121,9 +121,7 @@ export function TrainingScreen() {
   const setSelectedDate = useAppStore((state) => state.setSelectedDate)
   const [detail, setDetail] = useState<TrainingDetail | undefined>()
   const [input, setInput] = useState<InputState>(defaultInput)
-  const [loadedWorkoutExerciseId, setLoadedWorkoutExerciseId] = useState<
-    string | undefined
-  >()
+  const [loadedInputKey, setLoadedInputKey] = useState<string | undefined>()
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()
   const [commentSetId, setCommentSetId] = useState<string | undefined>()
   const [
@@ -160,10 +158,16 @@ export function TrainingScreen() {
       if (nextDetail) {
         setSelectedDate(nextDetail.workout.localDate)
 
-        if (nextDetail.workoutExercise.id !== loadedWorkoutExerciseId) {
+        const inputKey = [
+          nextDetail.workoutExercise.id,
+          nextDetail.exercise.id,
+          nextDetail.exercise.exerciseType,
+        ].join(":")
+
+        if (inputKey !== loadedInputKey) {
           setInput(inputFromExerciseSetDefaults(nextDetail.exercise.lastSetInput))
           setSelectedSetId(undefined)
-          setLoadedWorkoutExerciseId(nextDetail.workoutExercise.id)
+          setLoadedInputKey(inputKey)
         }
       }
     })
@@ -171,7 +175,7 @@ export function TrainingScreen() {
     return () => {
       cancelled = true
     }
-  }, [loadedWorkoutExerciseId, workoutExerciseId, refreshVersion, setSelectedDate])
+  }, [loadedInputKey, workoutExerciseId, refreshVersion, setSelectedDate])
 
   const fields = setFieldsForExerciseType(
     detail?.exercise.exerciseType ?? "strength",

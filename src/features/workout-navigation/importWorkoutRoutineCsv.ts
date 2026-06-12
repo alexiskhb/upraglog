@@ -1,10 +1,11 @@
 import { db } from "@/db/db"
 import type { Exercise, SetEntryInput, SetFieldKey } from "@/db/schema"
+import { updateExerciseSetDefaults } from "@/db/repositories/exercisesRepo"
 import {
   addExerciseToDate,
   addSetToWorkoutExercise,
 } from "@/db/repositories/workoutsRepo"
-import { setFieldsForExerciseType } from "@/shared/model/setFields"
+import { filterSetInputForExerciseType } from "@/shared/model/setFields"
 
 type ImportWorkoutRoutineCsvInput = {
   localDate: string
@@ -208,34 +209,6 @@ function exerciseExists(exercise: Exercise | undefined): exercise is Exercise {
   return exercise !== undefined
 }
 
-function filterSetInputForExercise(exercise: Exercise, setInput: SetEntryInput) {
-  const allowedFields = new Set(
-    setFieldsForExerciseType(exercise.exerciseType).map((field) => field.key),
-  )
-  const nextSetInput: SetEntryInput = {}
-
-  if (allowedFields.has("weight") && setInput.weight !== undefined) {
-    nextSetInput.weight = setInput.weight
-  }
-
-  if (allowedFields.has("reps") && setInput.reps !== undefined) {
-    nextSetInput.reps = setInput.reps
-  }
-
-  if (allowedFields.has("distance") && setInput.distance !== undefined) {
-    nextSetInput.distance = setInput.distance
-  }
-
-  if (
-    allowedFields.has("durationSeconds") &&
-    setInput.durationSeconds !== undefined
-  ) {
-    nextSetInput.durationSeconds = setInput.durationSeconds
-  }
-
-  return nextSetInput
-}
-
 function hasSetValues(setInput: SetEntryInput) {
   return Object.values(setInput).some((value) => value !== undefined)
 }
@@ -268,10 +241,17 @@ export async function importWorkoutRoutineCsvToDate({
         profileName,
         exercise.id,
       )
-      const setInput = filterSetInputForExercise(exercise, routineRow.setInput)
+      const setInput = filterSetInputForExerciseType(
+        exercise.exerciseType,
+        routineRow.setInput,
+      )
 
       if (hasSetValues(setInput)) {
-        await addSetToWorkoutExercise(workoutExercise.id, setInput)
+        const set = await addSetToWorkoutExercise(workoutExercise.id, setInput)
+
+        if (set) {
+          await updateExerciseSetDefaults(exercise.id, setInput)
+        }
       }
     }
   } catch {

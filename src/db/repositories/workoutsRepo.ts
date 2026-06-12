@@ -12,6 +12,10 @@ import {
   defaultProfileName,
   normalizeProfileName,
 } from "@/shared/model/profiles"
+import {
+  filterSetInputForExerciseType,
+  normalizeSetEntryForExerciseType,
+} from "@/shared/model/setFields"
 
 function byOrder<T extends { order: number }>(a: T, b: T) {
   return a.order - b.order
@@ -222,26 +226,68 @@ export async function replaceWorkoutExercise(
   workoutExerciseId: string,
   exerciseId: string,
 ) {
-  await db.workoutExercises.update(workoutExerciseId, {
-    exerciseId,
-    updatedAt: new Date().toISOString(),
-  })
+  const [workoutExercise, exercise, sets] = await Promise.all([
+    db.workoutExercises.get(workoutExerciseId),
+    db.exercises.get(exerciseId),
+    db.sets.where("workoutExerciseId").equals(workoutExerciseId).toArray(),
+  ])
+
+  if (!workoutExercise || !exercise) {
+    return
+  }
+
+  const now = new Date().toISOString()
+  const normalizedSets = sets.map((set) =>
+    normalizeSetEntryForExerciseType(exercise.exerciseType, {
+      ...set,
+      updatedAt: now,
+    }),
+  )
+
+  await db.transaction(
+    "rw",
+    db.workoutExercises,
+    db.sets,
+    db.workouts,
+    async () => {
+      await db.workoutExercises.update(workoutExerciseId, {
+        exerciseId,
+        updatedAt: now,
+      })
+      // Keep set rows, comments, and finish state, but drop values that the
+      // replacement exercise type cannot use so old data cannot leak into UI/export.
+      await Promise.all(normalizedSets.map((set) => db.sets.put(set)))
+      await db.workouts.update(workoutExercise.workoutId, { updatedAt: now })
+    },
+  )
 }
 
 export async function addSetToWorkoutExercise(
   workoutExerciseId: string,
   input: SetEntryInput,
 ) {
-  const currentSets = await db.sets
-    .where("workoutExerciseId")
-    .equals(workoutExerciseId)
-    .toArray()
+  const workoutExercise = await db.workoutExercises.get(workoutExerciseId)
+
+  if (!workoutExercise) {
+    return undefined
+  }
+
+  const [exercise, currentSets] = await Promise.all([
+    db.exercises.get(workoutExercise.exerciseId),
+    db.sets.where("workoutExerciseId").equals(workoutExerciseId).toArray(),
+  ])
+
+  if (!exercise) {
+    return undefined
+  }
+
   const now = new Date().toISOString()
+  const setInput = filterSetInputForExerciseType(exercise.exerciseType, input)
   const set: SetEntry = {
     id: createId("set"),
     workoutExerciseId,
     order: currentSets.length,
-    ...input,
+    ...setInput,
     createdAt: now,
     updatedAt: now,
   }
@@ -258,10 +304,27 @@ export async function updateSet(setId: string, input: SetEntryInput) {
     return
   }
 
-  await db.sets.update(setId, {
-    ...input,
-    updatedAt: new Date().toISOString(),
+  const workoutExercise = await db.workoutExercises.get(set.workoutExerciseId)
+
+  if (!workoutExercise) {
+    return
+  }
+
+  const exercise = await db.exercises.get(workoutExercise.exerciseId)
+
+  if (!exercise) {
+    return
+  }
+
+  const now = new Date().toISOString()
+  const setInput = filterSetInputForExerciseType(exercise.exerciseType, input)
+  const nextSet = normalizeSetEntryForExerciseType(exercise.exerciseType, {
+    ...set,
+    ...setInput,
+    updatedAt: now,
   })
+
+  await db.sets.put(nextSet)
   await touchWorkoutFromWorkoutExercise(set.workoutExerciseId)
 }
 
