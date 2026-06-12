@@ -3,6 +3,7 @@ import { ChevronDown, Trash2 } from "lucide-react"
 import { useNavigate } from "@tanstack/react-router"
 import type { AppSettings } from "@/db/schema"
 import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
+import { autoSortWorkoutExercisesByFirstFinishedSetForAllWorkouts } from "@/db/repositories/workoutsRepo"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -10,16 +11,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { useAppStore } from "@/shared/store/appStore"
+import { normalizeProfileName } from "@/shared/model/profiles"
 import {
-  defaultProfileName,
-  defaultProfileNames,
-  normalizeProfileName,
-} from "@/shared/model/profiles"
-import {
-  defaultSetCommentTemplates,
   normalizeSetCommentTemplate,
 } from "@/shared/model/setCommentTemplates"
-import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
+import { createDefaultAppSettings } from "@/shared/model/settings"
 import { appVersion } from "@/shared/model/appVersion"
 import { todayString } from "@/shared/model/dates"
 import {
@@ -63,21 +59,9 @@ export function SettingsScreen() {
   )
   const closeTaskUi = useAppStore((state) => state.closeTaskUi)
   const setProfileState = useAppStore((state) => state.setProfileState)
-  const [settings, setSettings] = useState<AppSettings>({
-    keepScreenOn: true,
-    skipEmptyDaysOnDayNavigation: false,
-    profiles: [...defaultProfileNames],
-    selectedProfile: defaultProfileName,
-    exportAllProfiles: false,
-    spreadsheetExportMonthLimit: null,
-    spreadsheetShareMessage: defaultSpreadsheetShareMessage,
-    spreadsheetShareIncludeMessage: true,
-    spreadsheetShareIncludeAiInstructions: true,
-    spreadsheetShareAttachMessageAsFile: false,
-    addShareShortcutToMenu: false,
-    treatLongWorkoutTimerAsLatestSetFinish: false,
-    setCommentTemplates: [...defaultSetCommentTemplates],
-  })
+  const [settings, setSettings] = useState<AppSettings>(() =>
+    createDefaultAppSettings(),
+  )
   const [newProfileName, setNewProfileName] = useState("")
   const [newSetCommentTemplate, setNewSetCommentTemplate] = useState("")
   const [spreadsheetMonthLimitDraft, setSpreadsheetMonthLimitDraft] =
@@ -114,6 +98,17 @@ export function SettingsScreen() {
     setProfileState(updated.profiles, updated.selectedProfile)
     bumpRefresh()
     return updated
+  }
+
+  const saveAutoSortWorkoutExercises = async (
+    autoSortWorkoutExercisesByFirstFinishedSet: boolean,
+  ) => {
+    await saveSettings({ autoSortWorkoutExercisesByFirstFinishedSet })
+
+    if (autoSortWorkoutExercisesByFirstFinishedSet) {
+      await autoSortWorkoutExercisesByFirstFinishedSetForAllWorkouts()
+      bumpRefresh()
+    }
   }
 
   const addProfile = async () => {
@@ -342,6 +337,46 @@ export function SettingsScreen() {
             className="data-checked:bg-cyan-500"
             onCheckedChange={(skipEmptyDaysOnDayNavigation) =>
               void saveSettings({ skipEmptyDaysOnDayNavigation })
+            }
+          />
+        </label>
+
+        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+          <span className="min-w-0">
+            <Label className="text-sm text-zinc-200">
+              Auto-Sort Workout List
+            </Label>
+            <span className="mt-1 block text-xs text-zinc-500">
+              Finished exercises move by first checked set; unfinished exercises
+              stay after them.
+            </span>
+          </span>
+          <Switch
+            checked={settings.autoSortWorkoutExercisesByFirstFinishedSet}
+            className="data-checked:bg-cyan-500"
+            onCheckedChange={(autoSortWorkoutExercisesByFirstFinishedSet) =>
+              void saveAutoSortWorkoutExercises(
+                autoSortWorkoutExercisesByFirstFinishedSet,
+              )
+            }
+          />
+        </label>
+
+        <label className="flex items-center justify-between gap-3 border-t border-white/10 pt-3">
+          <span className="min-w-0">
+            <Label className="text-sm text-zinc-200">
+              Auto-Finish Workout Timer
+            </Label>
+            <span className="mt-1 block text-xs text-zinc-500">
+              Stops an active timer when every logged set in the workout is
+              checked.
+            </span>
+          </span>
+          <Switch
+            checked={settings.autoFinishWorkoutTimerWhenAllSetsFinished}
+            className="data-checked:bg-cyan-500"
+            onCheckedChange={(autoFinishWorkoutTimerWhenAllSetsFinished) =>
+              void saveSettings({ autoFinishWorkoutTimerWhenAllSetsFinished })
             }
           />
         </label>

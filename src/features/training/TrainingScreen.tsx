@@ -128,6 +128,14 @@ export function TrainingScreen() {
     treatLongTimerAsLatestSetFinish,
     setTreatLongTimerAsLatestSetFinish,
   ] = useState(false)
+  const [
+    autoSortWorkoutExercisesByFirstFinishedSet,
+    setAutoSortWorkoutExercisesByFirstFinishedSet,
+  ] = useState(false)
+  const [
+    autoFinishWorkoutTimerWhenAllSetsFinished,
+    setAutoFinishWorkoutTimerWhenAllSetsFinished,
+  ] = useState(false)
   const [message] = useState<string | undefined>()
   const exerciseSwipeStartRef = useRef<
     | {
@@ -153,6 +161,12 @@ export function TrainingScreen() {
       setDetail(nextDetail)
       setTreatLongTimerAsLatestSetFinish(
         appSettings.treatLongWorkoutTimerAsLatestSetFinish,
+      )
+      setAutoSortWorkoutExercisesByFirstFinishedSet(
+        appSettings.autoSortWorkoutExercisesByFirstFinishedSet,
+      )
+      setAutoFinishWorkoutTimerWhenAllSetsFinished(
+        appSettings.autoFinishWorkoutTimerWhenAllSetsFinished,
       )
 
       if (nextDetail) {
@@ -264,7 +278,10 @@ export function TrainingScreen() {
   }
 
   const updateSetFinishedRow = async (setId: string, finished: boolean) => {
-    await updateSetFinished(setId, finished)
+    await updateSetFinished(setId, finished, {
+      autoSortWorkoutExercises: autoSortWorkoutExercisesByFirstFinishedSet,
+      autoFinishWorkoutTimer: autoFinishWorkoutTimerWhenAllSetsFinished,
+    })
     await refreshDetail()
   }
 

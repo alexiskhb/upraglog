@@ -16,6 +16,8 @@ import {
   filterSetInputForExerciseType,
   normalizeSetEntryForExerciseType,
 } from "@/shared/model/setFields"
+import { getAutoFinishedWorkoutEndedAt } from "@/shared/model/workoutTimer"
+import { sortWorkoutExercisesByFirstFinishedSet } from "@/shared/model/workoutOrder"
 
 function byOrder<T extends { order: number }>(a: T, b: T) {
   return a.order - b.order
@@ -55,6 +57,87 @@ async function reindexSets(workoutExerciseId: string) {
 
 function workoutProfileName(profileName?: string) {
   return normalizeProfileName(profileName) || defaultProfileName
+}
+
+function groupSetsByWorkoutExerciseId(sets: SetEntry[]) {
+  const setsByWorkoutExerciseId = new Map<string, SetEntry[]>()
+
+  for (const set of sets) {
+    const current = setsByWorkoutExerciseId.get(set.workoutExerciseId) ?? []
+    current.push(set)
+    setsByWorkoutExerciseId.set(set.workoutExerciseId, current)
+  }
+
+  return setsByWorkoutExerciseId
+}
+
+async function getWorkoutSets(workoutExerciseRows: WorkoutExercise[]) {
+  if (workoutExerciseRows.length === 0) {
+    return []
+  }
+
+  return db.sets
+    .where("workoutExerciseId")
+    .anyOf(workoutExerciseRows.map((entry) => entry.id))
+    .toArray()
+}
+
+async function applyWorkoutExerciseAutoSort(workoutId: string, now: string) {
+  const workoutExercises = await db.workoutExercises
+    .where("workoutId")
+    .equals(workoutId)
+    .sortBy("order")
+
+  if (workoutExercises.length <= 1) {
+    return false
+  }
+
+  const setsByWorkoutExerciseId = groupSetsByWorkoutExerciseId(
+    await getWorkoutSets(workoutExercises),
+  )
+  const sortedWorkoutExercises = sortWorkoutExercisesByFirstFinishedSet(
+    workoutExercises,
+    setsByWorkoutExerciseId,
+  )
+  const orderChanged = sortedWorkoutExercises.some(
+    (row, index) => row.id !== workoutExercises[index].id || row.order !== index,
+  )
+
+  if (!orderChanged) {
+    return false
+  }
+
+  await Promise.all(
+    sortedWorkoutExercises.map((row, index) =>
+      db.workoutExercises.update(row.id, {
+        order: index,
+        updatedAt: now,
+      }),
+    ),
+  )
+
+  return true
+}
+
+export async function autoSortWorkoutExercisesByFirstFinishedSetForAllWorkouts() {
+  const workouts = await db.workouts.toArray()
+  const now = new Date().toISOString()
+
+  await db.transaction(
+    "rw",
+    db.workouts,
+    db.workoutExercises,
+    db.sets,
+    async () => {
+      for (const workout of workouts) {
+        const orderChanged = await applyWorkoutExerciseAutoSort(workout.id, now)
+
+        if (orderChanged) {
+          await db.workouts.update(workout.id, { updatedAt: now })
+        }
+      }
+    },
+  )
 }
 
 export async function getWorkoutByDate(localDate: string, profileName?: string) {
@@ -112,13 +195,7 @@ export async function getWorkoutDetailByDate(
     .where("workoutExerciseId")
     .anyOf(workoutExercises.map((entry) => entry.id))
     .toArray()
-  const setsByWorkoutExerciseId = new Map<string, SetEntry[]>()
-
-  for (const set of sets) {
-    const current = setsByWorkoutExerciseId.get(set.workoutExerciseId) ?? []
-    current.push(set)
-    setsByWorkoutExerciseId.set(set.workoutExerciseId, current)
-  }
+  const setsByWorkoutExerciseId = groupSetsByWorkoutExerciseId(sets)
 
   const details: WorkoutExerciseDetail[] = []
 
@@ -342,20 +419,65 @@ export async function updateSetComment(setId: string, comment: string) {
   await touchWorkoutFromWorkoutExercise(set.workoutExerciseId)
 }
 
-export async function updateSetFinished(setId: string, finished: boolean) {
+export async function updateSetFinished(
+  setId: string,
+  finished: boolean,
+  options: {
+    autoSortWorkoutExercises?: boolean
+    autoFinishWorkoutTimer?: boolean
+  } = {},
+) {
   const set = await db.sets.get(setId)
 
   if (!set) {
     return
   }
 
+  const workoutExercise = await db.workoutExercises.get(set.workoutExerciseId)
+
+  if (!workoutExercise) {
+    return
+  }
+
   const now = new Date().toISOString()
 
-  await db.sets.update(setId, {
-    finishedAt: finished ? now : undefined,
-    updatedAt: now,
-  })
-  await touchWorkoutFromWorkoutExercise(set.workoutExerciseId)
+  await db.transaction(
+    "rw",
+    db.sets,
+    db.workoutExercises,
+    db.workouts,
+    async () => {
+      await db.sets.update(setId, {
+        finishedAt: finished ? now : undefined,
+        updatedAt: now,
+      })
+
+      const workout = await db.workouts.get(workoutExercise.workoutId)
+      const workoutPatch: Partial<Workout> = { updatedAt: now }
+
+      if (finished && options.autoFinishWorkoutTimer && workout) {
+        const workoutExercises = await db.workoutExercises
+          .where("workoutId")
+          .equals(workout.id)
+          .toArray()
+        const workoutSets = await getWorkoutSets(workoutExercises)
+        const endedAt = getAutoFinishedWorkoutEndedAt({
+          workout,
+          sets: workoutSets,
+        })
+
+        if (endedAt) {
+          workoutPatch.endedAt = endedAt
+        }
+      }
+
+      if (options.autoSortWorkoutExercises) {
+        await applyWorkoutExerciseAutoSort(workoutExercise.workoutId, now)
+      }
+
+      await db.workouts.update(workoutExercise.workoutId, workoutPatch)
+    },
+  )
 }
 
 export async function deleteSet(setId: string) {

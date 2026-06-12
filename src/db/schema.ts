@@ -78,6 +78,8 @@ export type AppSettings = {
   spreadsheetShareAttachMessageAsFile: boolean
   addShareShortcutToMenu: boolean
   treatLongWorkoutTimerAsLatestSetFinish: boolean
+  autoSortWorkoutExercisesByFirstFinishedSet: boolean
+  autoFinishWorkoutTimerWhenAllSetsFinished: boolean
   setCommentTemplates: string[]
 }
 

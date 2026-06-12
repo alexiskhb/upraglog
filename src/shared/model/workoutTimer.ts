@@ -97,3 +97,21 @@ export function isWorkoutTimerActive({
       }),
   )
 }
+
+export function getAutoFinishedWorkoutEndedAt({
+  workout,
+  sets,
+}: {
+  workout?: Workout
+  sets: SetEntry[]
+}) {
+  if (!workout?.startedAt || workout.endedAt || sets.length === 0) {
+    return undefined
+  }
+
+  if (sets.some((set) => !set.finishedAt)) {
+    return undefined
+  }
+
+  return getLatestSetFinishedAt(sets)
+}

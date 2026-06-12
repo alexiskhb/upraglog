@@ -1,11 +1,7 @@
 import { z } from "zod"
-import {
-  defaultProfileName,
-  resolveSelectedProfile,
-} from "@/shared/model/profiles"
+import { defaultProfileName } from "@/shared/model/profiles"
 import { normalizeExerciseCategory } from "@/shared/model/exercises"
-import { normalizeSetCommentTemplates } from "@/shared/model/setCommentTemplates"
-import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
+import { normalizeSettings } from "@/shared/model/settings"
 
 const exerciseCategorySchema = z.string().trim().min(1)
 
@@ -102,35 +98,10 @@ const settingsSchema = z.object({
   spreadsheetShareAttachMessageAsFile: z.boolean().optional(),
   addShareShortcutToMenu: z.boolean().optional(),
   treatLongWorkoutTimerAsLatestSetFinish: z.boolean().optional(),
+  autoSortWorkoutExercisesByFirstFinishedSet: z.boolean().optional(),
+  autoFinishWorkoutTimerWhenAllSetsFinished: z.boolean().optional(),
   setCommentTemplates: z.array(z.string()).optional(),
-}).transform((settings) => ({
-  ...resolveSelectedProfile(settings.profiles, settings.selectedProfile),
-  keepScreenOn:
-    settings.keepScreenOn ?? settings.keepScreenOnDuringTraining ?? true,
-  skipEmptyDaysOnDayNavigation:
-    settings.skipEmptyDaysOnDayNavigation ??
-    settings.skipEmptyDaysOnSwipe ??
-    false,
-  exportAllProfiles: settings.exportAllProfiles ?? false,
-  spreadsheetExportMonthLimit:
-    settings.spreadsheetExportMonthLimit &&
-    settings.spreadsheetExportMonthLimit > 0
-      ? Math.floor(settings.spreadsheetExportMonthLimit)
-      : null,
-  spreadsheetShareMessage:
-    settings.spreadsheetShareMessage?.trim() || defaultSpreadsheetShareMessage,
-  spreadsheetShareIncludeMessage: settings.spreadsheetShareIncludeMessage ?? true,
-  spreadsheetShareIncludeAiInstructions:
-    settings.spreadsheetShareIncludeAiInstructions ?? true,
-  spreadsheetShareAttachMessageAsFile:
-    settings.spreadsheetShareAttachMessageAsFile ?? false,
-  addShareShortcutToMenu: settings.addShareShortcutToMenu ?? false,
-  treatLongWorkoutTimerAsLatestSetFinish:
-    settings.treatLongWorkoutTimerAsLatestSetFinish ?? false,
-  setCommentTemplates: normalizeSetCommentTemplates(
-    settings.setCommentTemplates,
-  ),
-}))
+}).transform((settings) => normalizeSettings(settings))
 
 export const backupFileSchema = z.object({
   app: z.literal("upraglog"),

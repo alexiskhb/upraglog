@@ -10,15 +10,10 @@ import type {
   WorkoutExercise,
 } from "./schema"
 import {
-  defaultProfileName,
-  defaultProfileNames,
-} from "@/shared/model/profiles"
-import {
   defaultExerciseCategories,
   normalizeExerciseCategory,
 } from "@/shared/model/exercises"
-import { defaultSetCommentTemplates } from "@/shared/model/setCommentTemplates"
-import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
+import { createDefaultStoredAppSettings } from "@/shared/model/settings"
 
 class UpraglogDatabase extends Dexie {
   exerciseCategories!: Table<ExerciseCategoryEntry, string>
@@ -242,23 +237,7 @@ async function initializeDatabaseInternal() {
       const existingSettings = await db.settings.get("app")
 
       if (!existingSettings) {
-        await db.settings.put({
-          id: "app",
-          keepScreenOn: true,
-          skipEmptyDaysOnDayNavigation: false,
-          profiles: [...defaultProfileNames],
-          selectedProfile: defaultProfileName,
-          exportAllProfiles: false,
-          spreadsheetExportMonthLimit: null,
-          spreadsheetShareMessage: defaultSpreadsheetShareMessage,
-          spreadsheetShareIncludeMessage: true,
-          spreadsheetShareIncludeAiInstructions: true,
-          spreadsheetShareAttachMessageAsFile: false,
-          addShareShortcutToMenu: false,
-          treatLongWorkoutTimerAsLatestSetFinish: false,
-          setCommentTemplates: [...defaultSetCommentTemplates],
-          updatedAt: new Date().toISOString(),
-        })
+        await db.settings.put(createDefaultStoredAppSettings())
       }
 
       const existingCategories = await db.exerciseCategories.count()

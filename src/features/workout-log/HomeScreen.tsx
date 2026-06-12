@@ -16,12 +16,7 @@ import {
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
-import {
-  defaultProfileName,
-  defaultProfileNames,
-} from "@/shared/model/profiles"
-import { defaultSetCommentTemplates } from "@/shared/model/setCommentTemplates"
-import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
+import { createDefaultAppSettings } from "@/shared/model/settings"
 import { isWorkoutTimerActive } from "@/shared/model/workoutTimer"
 import { DateNavRow } from "./DateNavRow"
 import { ExerciseCard } from "./ExerciseCard"
@@ -51,21 +46,9 @@ export function HomeScreen() {
     workout: undefined,
     exercises: [],
   })
-  const [settings, setSettings] = useState<AppSettings>({
-    keepScreenOn: true,
-    skipEmptyDaysOnDayNavigation: false,
-    profiles: [...defaultProfileNames],
-    selectedProfile: defaultProfileName,
-    exportAllProfiles: false,
-    spreadsheetExportMonthLimit: null,
-    spreadsheetShareMessage: defaultSpreadsheetShareMessage,
-    spreadsheetShareIncludeMessage: true,
-    spreadsheetShareIncludeAiInstructions: true,
-    spreadsheetShareAttachMessageAsFile: false,
-    addShareShortcutToMenu: false,
-    treatLongWorkoutTimerAsLatestSetFinish: false,
-    setCommentTemplates: [...defaultSetCommentTemplates],
-  })
+  const [settings, setSettings] = useState<AppSettings>(() =>
+    createDefaultAppSettings(),
+  )
   const [workoutDates, setWorkoutDates] = useState<string[]>([])
   const [touchStartX, setTouchStartX] = useState<number | undefined>()
   const [dayTransitionClass, setDayTransitionClass] = useState("")
