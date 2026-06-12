@@ -293,52 +293,6 @@ export function BottomMainBar() {
             }
           >
             <DropdownMenuItem
-              className={bottomBarMenuItemClassName}
-              onSelect={() => {
-                setReplaceWorkoutExerciseId(undefined)
-                closeTaskUi()
-                void navigate({ to: "/settings" })
-              }}
-            >
-              <Settings className="size-5 text-cyan-300" />
-              Settings
-            </DropdownMenuItem>
-            {addShareShortcutToMenu && (
-              <>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuItem
-                  className={bottomBarMenuItemClassName}
-                  onSelect={() => void shareSpreadsheet()}
-                >
-                  <Share2 className="size-5 text-cyan-300" />
-                  Share...
-                </DropdownMenuItem>
-              </>
-            )}
-            <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem
-              className={bottomBarMenuItemClassName}
-              onSelect={() => {
-                closeTaskUi()
-                openDialog("timer")
-              }}
-            >
-              <Clock3 className="size-5 text-cyan-300" />
-              Time Workout
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem
-              className={bottomBarMenuItemClassName}
-              onSelect={() => {
-                closeTaskUi()
-                setAddExercisesOpen(true)
-              }}
-            >
-              <ListPlus className="size-5 text-cyan-300" />
-              Add Exercises
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-white/10" />
-            <DropdownMenuItem
               aria-expanded={profileSectionOpen}
               className={cn(
                 bottomBarMenuItemClassName,
@@ -379,6 +333,52 @@ export function BottomMainBar() {
                 ))}
               </div>
             )}
+            {addShareShortcutToMenu && (
+              <>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem
+                  className={bottomBarMenuItemClassName}
+                  onSelect={() => void shareSpreadsheet()}
+                >
+                  <Share2 className="size-5 text-cyan-300" />
+                  Share...
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem
+              className={bottomBarMenuItemClassName}
+              onSelect={() => {
+                closeTaskUi()
+                setAddExercisesOpen(true)
+              }}
+            >
+              <ListPlus className="size-5 text-cyan-300" />
+              Add Exercises
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem
+              className={bottomBarMenuItemClassName}
+              onSelect={() => {
+                closeTaskUi()
+                openDialog("timer")
+              }}
+            >
+              <Clock3 className="size-5 text-cyan-300" />
+              Time Workout
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem
+              className={bottomBarMenuItemClassName}
+              onSelect={() => {
+                setReplaceWorkoutExerciseId(undefined)
+                closeTaskUi()
+                void navigate({ to: "/settings" })
+              }}
+            >
+              <Settings className="size-5 text-cyan-300" />
+              Settings
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -13,19 +13,19 @@ import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
 export const appSettingsId = "app"
 
 export const defaultAppSettings: AppSettings = {
-  keepScreenOn: true,
-  skipEmptyDaysOnDayNavigation: false,
+  keepScreenOn: false,
+  skipEmptyDaysOnDayNavigation: true,
   profiles: [...defaultProfileNames],
   selectedProfile: defaultProfileName,
-  exportAllProfiles: false,
+  exportAllProfiles: true,
   spreadsheetExportMonthLimit: null,
   spreadsheetShareMessage: defaultSpreadsheetShareMessage,
   spreadsheetShareIncludeMessage: true,
   spreadsheetShareIncludeAiInstructions: true,
-  spreadsheetShareAttachMessageAsFile: false,
-  addShareShortcutToMenu: false,
-  autoSortWorkoutExercisesByFirstFinishedSet: false,
-  autoFinishWorkoutTimerWhenAllSetsFinished: false,
+  spreadsheetShareAttachMessageAsFile: true,
+  addShareShortcutToMenu: true,
+  autoSortWorkoutExercisesByFirstFinishedSet: true,
+  autoFinishWorkoutTimerWhenAllSetsFinished: true,
   setCommentTemplates: [...defaultSetCommentTemplates],
 }
 

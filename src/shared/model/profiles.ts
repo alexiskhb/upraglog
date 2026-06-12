@@ -1,5 +1,5 @@
 export const defaultProfileName = "Default"
-export const defaultProfileNames = [defaultProfileName, "Cardio"]
+export const defaultProfileNames = [defaultProfileName]
 
 export function normalizeProfileName(profileName?: string) {
   return profileName?.trim() ?? ""
