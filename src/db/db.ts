@@ -253,6 +253,7 @@ async function initializeDatabaseInternal() {
           spreadsheetShareMessage: defaultSpreadsheetShareMessage,
           spreadsheetShareIncludeMessage: true,
           spreadsheetShareIncludeAiInstructions: true,
+          spreadsheetShareAttachMessageAsFile: false,
           addShareShortcutToMenu: false,
           treatLongWorkoutTimerAsLatestSetFinish: false,
           setCommentTemplates: [...defaultSetCommentTemplates],

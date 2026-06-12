@@ -72,6 +72,7 @@ export function SettingsScreen() {
     spreadsheetShareMessage: defaultSpreadsheetShareMessage,
     spreadsheetShareIncludeMessage: true,
     spreadsheetShareIncludeAiInstructions: true,
+    spreadsheetShareAttachMessageAsFile: false,
     addShareShortcutToMenu: false,
     treatLongWorkoutTimerAsLatestSetFinish: false,
     setCommentTemplates: [...defaultSetCommentTemplates],
@@ -244,6 +245,7 @@ export function SettingsScreen() {
         shareMessage,
         includeMessage: settings.spreadsheetShareIncludeMessage,
         includeAiInstructions: settings.spreadsheetShareIncludeAiInstructions,
+        attachMessageAsFile: settings.spreadsheetShareAttachMessageAsFile,
       })
 
       setMessage(formatShareResultMessage(result))
@@ -456,6 +458,21 @@ export function SettingsScreen() {
               onChange={(event) =>
                 void saveSettings({
                   spreadsheetShareIncludeMessage: event.target.checked,
+                })
+              }
+            />
+          </label>
+          <label className="mt-3 flex min-h-10 items-center justify-between gap-3 rounded-md border border-white/10 bg-[var(--app-surface)] px-3">
+            <span className="text-sm text-zinc-200">
+              Attach message as TXT file
+            </span>
+            <input
+              checked={settings.spreadsheetShareAttachMessageAsFile}
+              className="size-5 accent-cyan-500"
+              type="checkbox"
+              onChange={(event) =>
+                void saveSettings({
+                  spreadsheetShareAttachMessageAsFile: event.target.checked,
                 })
               }
             />

@@ -8,6 +8,7 @@ type ShareTrainingLogCsvOptions = {
   shareMessage?: string
   includeMessage?: boolean
   includeAiInstructions?: boolean
+  attachMessageAsFile?: boolean
 }
 
 type DownloadReason =
@@ -41,6 +42,13 @@ function downloadCsv(filename: string, text: string, reason: DownloadReason) {
   return { status: "downloaded", reason } satisfies ShareTrainingLogCsvResult
 }
 
+function shareCandidates(candidates: Array<ShareData | undefined>) {
+  return candidates.filter(
+    (candidate): candidate is ShareData =>
+      candidate !== undefined && canShareData(candidate),
+  )
+}
+
 export async function shareTrainingLogCsv(
   options: ShareTrainingLogCsvOptions = {},
 ): Promise<ShareTrainingLogCsvResult> {
@@ -54,6 +62,9 @@ export async function shareTrainingLogCsv(
   const includeAiInstructions =
     options.includeAiInstructions ??
     settings.spreadsheetShareIncludeAiInstructions
+  const attachMessageAsFile =
+    options.attachMessageAsFile ??
+    settings.spreadsheetShareAttachMessageAsFile
   const shareMessage = options.shareMessage ?? settings.spreadsheetShareMessage
   const { filename, text } = await exportTrainingLogCsv({ monthLimit })
   const file = new File([text], filename, { type: "text/csv" })
@@ -61,49 +72,54 @@ export async function shareTrainingLogCsv(
     includeMessage ? shareMessage.trim() : "",
     includeAiInstructions ? await buildTrainingLogShareInstructions() : "",
   ].filter(Boolean)
+  const shareText = shareTextParts.join("\n\n")
+  const shareMessageFile = attachMessageAsFile && shareText
+    ? new File([shareText], "upraglog-share-message.txt", {
+        type: "text/plain",
+      })
+    : undefined
   const title = "Upraglog training log"
+  const textFileOnlyShareData: ShareData | undefined = shareMessageFile
+    ? {
+        files: [file, shareMessageFile],
+        title,
+      }
+    : undefined
   const fileShareData: ShareData = {
     files: [file],
     title,
   }
-  const fullShareData: ShareData = {
-    ...fileShareData,
-    text: shareTextParts.join("\n\n") || undefined,
-  }
+  const fullShareData: ShareData | undefined = shareText
+    ? {
+        ...fileShareData,
+        text: shareText,
+      }
+    : undefined
 
   if (typeof navigator.share !== "function") {
     return downloadCsv(filename, text, "share-unavailable")
   }
 
-  const shareData = canShareData(fullShareData)
-    ? fullShareData
-    : canShareData(fileShareData)
-      ? fileShareData
-      : undefined
+  const shareDataCandidates = shareCandidates(
+    attachMessageAsFile
+      ? [textFileOnlyShareData, fullShareData, fileShareData]
+      : [fullShareData, fileShareData],
+  )
 
-  if (!shareData) {
+  if (shareDataCandidates.length === 0) {
     return downloadCsv(filename, text, "files-not-shareable")
   }
 
-  try {
-    await navigator.share(shareData)
-    return { status: "shared" }
-  } catch (error) {
-    if (isAbortError(error)) {
-      return { status: "canceled" }
-    }
-
-    if (shareData !== fileShareData && canShareData(fileShareData)) {
-      try {
-        await navigator.share(fileShareData)
-        return { status: "shared" }
-      } catch (fileOnlyError) {
-        if (isAbortError(fileOnlyError)) {
-          return { status: "canceled" }
-        }
+  for (const shareData of shareDataCandidates) {
+    try {
+      await navigator.share(shareData)
+      return { status: "shared" }
+    } catch (error) {
+      if (isAbortError(error)) {
+        return { status: "canceled" }
       }
     }
-
-    return downloadCsv(filename, text, "share-failed")
   }
+
+  return downloadCsv(filename, text, "share-failed")
 }
