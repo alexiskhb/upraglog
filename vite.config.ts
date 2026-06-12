@@ -1,4 +1,4 @@
-import { copyFileSync, writeFileSync } from "node:fs"
+import { copyFileSync, readFileSync, writeFileSync } from "node:fs"
 import path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
@@ -33,9 +33,15 @@ function githubPagesFallback(): Plugin {
 }
 
 const basePath = normalizeBasePath(process.env.VITE_BASE_PATH ?? "/")
+const packageJson = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf8"),
+) as { version?: string }
 
 export default defineConfig({
   base: basePath,
+  define: {
+    __APP_VERSION__: JSON.stringify(packageJson.version ?? "0.0.0"),
+  },
   plugins: [
     react(),
     tailwindcss(),

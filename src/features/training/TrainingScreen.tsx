@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState, type PointerEvent } from "react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import {
   closestCenter,
@@ -36,6 +36,7 @@ import {
   getSetIncrement,
   setFieldsForExerciseType,
 } from "@/shared/model/setFields"
+import { getSetProgress } from "@/shared/model/workoutProgress"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
@@ -63,6 +64,11 @@ type FieldConfig = {
   step: number
   isDuration?: boolean
 }
+
+type ExerciseDirection = -1 | 1
+
+const horizontalSwipeIntentPx = 18
+const horizontalSwipeCommitPx = 72
 
 function inputFromSet(set: SetEntry): InputState {
   return {
@@ -94,6 +100,17 @@ function setInputFromFields(fields: FieldConfig[], input: InputState) {
   return setInput
 }
 
+function isTrainingSwipeBlocked(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    Boolean(
+      target.closest(
+        "button,input,textarea,select,a,[role='button'],[data-training-swipe-block='true']",
+      ),
+    )
+  )
+}
+
 export function TrainingScreen() {
   const { workoutExerciseId } = useParams({
     from: "/training/$workoutExerciseId",
@@ -114,6 +131,15 @@ export function TrainingScreen() {
     setTreatLongTimerAsLatestSetFinish,
   ] = useState(false)
   const [message] = useState<string | undefined>()
+  const exerciseSwipeStartRef = useRef<
+    | {
+        x: number
+        y: number
+        pointerId: number
+        swiping: boolean
+      }
+    | undefined
+  >(undefined)
 
   useEffect(() => {
     let cancelled = false
@@ -155,6 +181,7 @@ export function TrainingScreen() {
   }))
   const selectedSet = detail?.sets.find((set) => set.id === selectedSetId)
   const commentSet = detail?.sets.find((set) => set.id === commentSetId)
+  const workoutProgress = getSetProgress(detail?.workoutSets ?? [])
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -175,6 +202,35 @@ export function TrainingScreen() {
 
   const clearSelection = () => {
     setSelectedSetId(undefined)
+  }
+
+  const resolveAdjacentWorkoutExerciseId = (direction: ExerciseDirection) => {
+    if (!detail) {
+      return undefined
+    }
+
+    const currentIndex = detail.workoutExerciseIds.indexOf(
+      detail.workoutExercise.id,
+    )
+
+    if (currentIndex < 0) {
+      return undefined
+    }
+
+    return detail.workoutExerciseIds[currentIndex + direction]
+  }
+
+  const navigateAdjacentExercise = (direction: ExerciseDirection) => {
+    const nextWorkoutExerciseId = resolveAdjacentWorkoutExerciseId(direction)
+
+    if (!nextWorkoutExerciseId) {
+      return
+    }
+
+    void navigate({
+      to: "/training/$workoutExerciseId",
+      params: { workoutExerciseId: nextWorkoutExerciseId },
+    })
   }
 
   const saveSet = async () => {
@@ -229,6 +285,78 @@ export function TrainingScreen() {
     bumpRefresh()
   }
 
+  const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
+    if (
+      event.button !== 0 ||
+      event.pointerType === "mouse" ||
+      isTrainingSwipeBlocked(event.target)
+    ) {
+      return
+    }
+
+    exerciseSwipeStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      pointerId: event.pointerId,
+      swiping: false,
+    }
+  }
+
+  const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
+    const swipeStart = exerciseSwipeStartRef.current
+
+    if (!swipeStart || swipeStart.pointerId !== event.pointerId) {
+      return
+    }
+
+    const deltaX = event.clientX - swipeStart.x
+    const deltaY = event.clientY - swipeStart.y
+
+    if (
+      !swipeStart.swiping &&
+      Math.abs(deltaY) > 10 &&
+      Math.abs(deltaY) > Math.abs(deltaX)
+    ) {
+      exerciseSwipeStartRef.current = undefined
+      return
+    }
+
+    if (
+      !swipeStart.swiping &&
+      (Math.abs(deltaX) < horizontalSwipeIntentPx ||
+        Math.abs(deltaX) < Math.abs(deltaY) * 1.35)
+    ) {
+      return
+    }
+
+    swipeStart.swiping = true
+    event.preventDefault()
+  }
+
+  const handlePointerEnd = (event: PointerEvent<HTMLElement>) => {
+    const swipeStart = exerciseSwipeStartRef.current
+    exerciseSwipeStartRef.current = undefined
+
+    if (!swipeStart || swipeStart.pointerId !== event.pointerId) {
+      return
+    }
+
+    const deltaX = event.clientX - swipeStart.x
+    const deltaY = event.clientY - swipeStart.y
+
+    if (
+      swipeStart.swiping &&
+      Math.abs(deltaX) >= horizontalSwipeCommitPx &&
+      Math.abs(deltaX) > Math.abs(deltaY) * 1.35
+    ) {
+      navigateAdjacentExercise(deltaX > 0 ? -1 : 1)
+    }
+  }
+
+  const handlePointerCancel = () => {
+    exerciseSwipeStartRef.current = undefined
+  }
+
   if (!detail) {
     return (
       <ScreenContainer className="justify-center text-center text-sm text-zinc-400">
@@ -238,9 +366,16 @@ export function TrainingScreen() {
   }
 
   return (
-    <ScreenContainer className="gap-4">
+    <ScreenContainer
+      className="gap-4"
+      style={{ touchAction: "pan-y" }}
+      onPointerCancel={handlePointerCancel}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+    >
       <div className="pt-3">
-        <div className="grid grid-cols-[minmax(0,1fr)_4rem] items-start gap-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
           <button
             className="min-w-0 text-left text-[17px] font-semibold text-zinc-50"
             type="button"
@@ -254,13 +389,27 @@ export function TrainingScreen() {
             <span className="block truncate">{detail.exercise.id}</span>
           </button>
           <WorkoutActiveTimer
-            className="justify-self-end pt-1"
+            className="justify-self-end"
             sets={detail.workoutSets}
+            size="large"
             treatLongTimerAsLatestSetFinish={treatLongTimerAsLatestSetFinish}
             workout={detail.workout}
           />
         </div>
-        <div className="mt-2 h-px bg-cyan-300/50" />
+        <div
+          aria-label={`${workoutProgress.finishedSets} of ${workoutProgress.totalSets} workout sets finished`}
+          aria-valuemax={Math.max(workoutProgress.totalSets, 1)}
+          aria-valuemin={0}
+          aria-valuenow={workoutProgress.finishedSets}
+          className="-mx-4 mt-3 h-1 overflow-hidden bg-white/10 sm:-mx-5"
+          role="progressbar"
+          title={`${workoutProgress.finishedSets} of ${workoutProgress.totalSets} workout sets finished`}
+        >
+          <div
+            className="h-full bg-cyan-400 transition-[width] duration-200"
+            style={{ width: `${workoutProgress.percentComplete}%` }}
+          />
+        </div>
       </div>
 
       <div className="space-y-4 py-2">
@@ -290,7 +439,7 @@ export function TrainingScreen() {
         </div>
       )}
 
-      <section className="mt-1">
+      <section className="mt-1" data-training-swipe-block="true">
         <div className="mb-2 text-xs font-semibold uppercase tracking-normal text-zinc-500">
           Set list
         </div>

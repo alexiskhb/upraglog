@@ -158,12 +158,13 @@ export async function getWorkoutExerciseDetail(workoutExerciseId: string) {
     .where("workoutId")
     .equals(workout.id)
     .toArray()
+  const orderedWorkoutExercises = workoutExercises.sort(byOrder)
   const workoutSets =
-    workoutExercises.length === 0
+    orderedWorkoutExercises.length === 0
       ? []
       : await db.sets
           .where("workoutExerciseId")
-          .anyOf(workoutExercises.map((entry) => entry.id))
+          .anyOf(orderedWorkoutExercises.map((entry) => entry.id))
           .toArray()
 
   return {
@@ -172,6 +173,7 @@ export async function getWorkoutExerciseDetail(workoutExerciseId: string) {
     exercise,
     sets: sets.sort(byOrder),
     workoutSets,
+    workoutExerciseIds: orderedWorkoutExercises.map((entry) => entry.id),
   }
 }
 

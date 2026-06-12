@@ -9,6 +9,7 @@ type WorkoutActiveTimerProps = {
   workout?: Workout
   sets?: SetEntry[]
   treatLongTimerAsLatestSetFinish?: boolean
+  size?: "compact" | "large"
   className?: string
 }
 
@@ -16,6 +17,7 @@ export function WorkoutActiveTimer({
   workout,
   sets = [],
   treatLongTimerAsLatestSetFinish = false,
+  size = "compact",
   className,
 }: WorkoutActiveTimerProps) {
   const openDialog = useAppStore((state) => state.openDialog)
@@ -52,7 +54,10 @@ export function WorkoutActiveTimer({
   return (
     <button
       className={cn(
-        "shrink-0 cursor-pointer rounded-sm px-1 py-0.5 font-mono text-xs font-semibold tabular-nums text-cyan-300 transition hover:bg-cyan-400/10 hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
+        "shrink-0 cursor-pointer rounded-sm font-mono font-semibold tabular-nums text-cyan-300 transition hover:bg-cyan-400/10 hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
+        size === "large"
+          ? "px-1.5 py-0.5 text-3xl leading-9"
+          : "px-1 py-0.5 text-xs leading-none",
         className,
       )}
       title="Workout timer"

@@ -20,6 +20,7 @@ import {
   normalizeSetCommentTemplate,
 } from "@/shared/model/setCommentTemplates"
 import { defaultSpreadsheetShareMessage } from "@/shared/model/spreadsheetShare"
+import { appVersion } from "@/shared/model/appVersion"
 import { todayString } from "@/shared/model/dates"
 import {
   downloadTextFile,
@@ -643,6 +644,14 @@ export function SettingsScreen() {
         </div>
       </details>
 
+      <section className="app-surface rounded-md p-3.5">
+        <div className="flex min-h-10 items-center justify-between gap-3">
+          <span className="text-sm text-zinc-200">Version</span>
+          <span className="font-mono text-xs tabular-nums text-zinc-500">
+            {appVersion}
+          </span>
+        </div>
+      </section>
     </ScreenContainer>
   )
 }
