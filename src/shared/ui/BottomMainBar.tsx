@@ -65,6 +65,7 @@ export function BottomMainBar() {
   const setProfileState = useAppStore((state) => state.setProfileState)
   const workoutNavOpen = useAppStore((state) => state.workoutNavOpen)
   const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
+  const closeTaskUi = useAppStore((state) => state.closeTaskUi)
   const openDialog = useAppStore((state) => state.openDialog)
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
@@ -106,7 +107,7 @@ export function BottomMainBar() {
 
   const closeTaskSurface = () => {
     setReplaceWorkoutExerciseId(undefined)
-    setWorkoutNavOpen(false)
+    closeTaskUi()
     setProfileMenuOpen(false)
     setMoreMenuOpen(false)
 
@@ -123,7 +124,7 @@ export function BottomMainBar() {
 
   const openTaskRoute = (to: "/calendar" | "/picker") => {
     setReplaceWorkoutExerciseId(undefined)
-    setWorkoutNavOpen(false)
+    closeTaskUi()
     setProfileMenuOpen(false)
     setMoreMenuOpen(false)
     contextualReturnHrefRef.current ??= currentHref
@@ -133,7 +134,7 @@ export function BottomMainBar() {
   const goToDay = () => {
     contextualReturnHrefRef.current = undefined
     setReplaceWorkoutExerciseId(undefined)
-    setWorkoutNavOpen(false)
+    closeTaskUi()
     setProfileMenuOpen(false)
     setMoreMenuOpen(false)
     navigateToSelectedDay()
@@ -143,7 +144,8 @@ export function BottomMainBar() {
     const updated = await updateSettings({ selectedProfile: profileName })
 
     setProfileState(updated.profiles, updated.selectedProfile)
-    setWorkoutNavOpen(false)
+    setReplaceWorkoutExerciseId(undefined)
+    closeTaskUi()
     setProfileMenuOpen(false)
     bumpRefresh()
 
@@ -167,10 +169,11 @@ export function BottomMainBar() {
     setMoreMenuOpen(false)
 
     if (workoutNavOpen) {
-      setWorkoutNavOpen(false)
+      closeTaskUi()
       return
     }
 
+    closeTaskUi()
     setWorkoutNavOpen(true)
   }
 
@@ -184,7 +187,7 @@ export function BottomMainBar() {
   }
 
   const shareSpreadsheet = async () => {
-    setWorkoutNavOpen(false)
+    closeTaskUi()
     setProfileMenuOpen(false)
     setMoreMenuOpen(false)
 
@@ -219,7 +222,7 @@ export function BottomMainBar() {
             setProfileMenuOpen(open)
             if (open) {
               setMoreMenuOpen(false)
-              setWorkoutNavOpen(false)
+              closeTaskUi()
             }
           }}
         >
@@ -306,7 +309,7 @@ export function BottomMainBar() {
             setMoreMenuOpen(open)
             if (open) {
               setProfileMenuOpen(false)
-              setWorkoutNavOpen(false)
+              closeTaskUi()
             }
           }}
         >
@@ -346,7 +349,7 @@ export function BottomMainBar() {
               className={bottomBarMenuItemClassName}
               onSelect={() => {
                 setReplaceWorkoutExerciseId(undefined)
-                setWorkoutNavOpen(false)
+                closeTaskUi()
                 void navigate({ to: "/settings" })
               }}
             >
@@ -369,7 +372,7 @@ export function BottomMainBar() {
             <DropdownMenuItem
               className={bottomBarMenuItemClassName}
               onSelect={() => {
-                setWorkoutNavOpen(false)
+                closeTaskUi()
                 openDialog("timer")
               }}
             >
@@ -380,7 +383,7 @@ export function BottomMainBar() {
             <DropdownMenuItem
               className={bottomBarMenuItemClassName}
               onSelect={() => {
-                setWorkoutNavOpen(false)
+                closeTaskUi()
                 setAddExercisesOpen(true)
               }}
             >

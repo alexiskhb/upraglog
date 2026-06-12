@@ -56,10 +56,16 @@ import { ExerciseCategoryChips } from "./ExerciseCategoryChips"
 
 type CategoryFilter = ExerciseCategory | "favorites"
 
+function exerciseSearchText(exercise: Exercise) {
+  return `${exercise.id} ${formatExerciseCategory(
+    exercise.category,
+  )}`.toLowerCase()
+}
+
 function matchesTokens(exercise: Exercise, query: string) {
-  const normalizedName = exercise.id.toLowerCase()
+  const normalizedSearchText = exerciseSearchText(exercise)
   const tokens = query.toLowerCase().trim().split(/\s+/).filter(Boolean)
-  return tokens.every((token) => normalizedName.includes(token))
+  return tokens.every((token) => normalizedSearchText.includes(token))
 }
 
 export function ExercisePickerScreen() {
@@ -112,8 +118,23 @@ export function ExercisePickerScreen() {
   }, [refreshVersion, selectedProfile])
 
   useEffect(() => {
-    searchRef.current?.focus()
-  }, [])
+    const focusSearchInput = () => {
+      searchRef.current?.focus({ preventScroll: true })
+    }
+    const timeouts = [80, 220, 420].map((delay) =>
+      window.setTimeout(focusSearchInput, delay),
+    )
+    const animationFrame = window.requestAnimationFrame(focusSearchInput)
+
+    focusSearchInput()
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+      for (const timeout of timeouts) {
+        window.clearTimeout(timeout)
+      }
+    }
+  }, [replaceWorkoutExerciseId])
 
   const categories = useMemo<CategoryFilter[]>(() => {
     const hasFavorites = exercises.some((exercise) => exercise.isFavorite)
@@ -140,7 +161,7 @@ export function ExercisePickerScreen() {
     }
 
     const fuse = new Fuse(categoryFiltered, {
-      keys: ["id"],
+      keys: ["id", "category"],
       threshold: 0.45,
       ignoreLocation: true,
       minMatchCharLength: 2,

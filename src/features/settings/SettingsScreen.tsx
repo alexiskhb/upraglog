@@ -60,7 +60,7 @@ export function SettingsScreen() {
   const setReplaceWorkoutExerciseId = useAppStore(
     (state) => state.setReplaceWorkoutExerciseId,
   )
-  const setWorkoutNavOpen = useAppStore((state) => state.setWorkoutNavOpen)
+  const closeTaskUi = useAppStore((state) => state.closeTaskUi)
   const setProfileState = useAppStore((state) => state.setProfileState)
   const [settings, setSettings] = useState<AppSettings>({
     keepScreenOn: true,
@@ -282,7 +282,7 @@ export function SettingsScreen() {
 
   const goHome = () => {
     setReplaceWorkoutExerciseId(undefined)
-    setWorkoutNavOpen(false)
+    closeTaskUi()
     void navigate({
       to: "/day/$date",
       params: { date: selectedDate || todayString() },

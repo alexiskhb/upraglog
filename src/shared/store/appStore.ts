@@ -20,6 +20,7 @@ type AppState = {
   setSelectedProfile: (profile: string) => void
   setProfileState: (profiles: string[], selectedProfile: string) => void
   setWorkoutNavOpen: (open: boolean) => void
+  closeTaskUi: () => void
   openDialog: (dialog: Exclude<AppDialog, undefined>) => void
   closeDialog: () => void
   setReplaceWorkoutExerciseId: (id: string | undefined) => void
@@ -40,6 +41,7 @@ export const useAppStore = create<AppState>((set) => ({
   setProfileState: (profiles, selectedProfile) =>
     set({ profiles, selectedProfile }),
   setWorkoutNavOpen: (workoutNavOpen) => set({ workoutNavOpen }),
+  closeTaskUi: () => set({ workoutNavOpen: false, activeDialog: undefined }),
   openDialog: (activeDialog) => set({ activeDialog }),
   closeDialog: () => set({ activeDialog: undefined }),
   setReplaceWorkoutExerciseId: (replaceWorkoutExerciseId) =>

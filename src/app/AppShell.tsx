@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Outlet } from "@tanstack/react-router"
+import { Outlet, useRouterState } from "@tanstack/react-router"
 import { initializeDatabase } from "@/db/db"
 import type { AppSettings } from "@/db/schema"
 import { getSettings } from "@/db/repositories/settingsRepo"
@@ -14,9 +14,23 @@ export function AppShell() {
   const [error, setError] = useState<string | undefined>()
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const setProfileState = useAppStore((state) => state.setProfileState)
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  })
   const [settings, setSettings] = useState<AppSettings | undefined>()
 
   useScreenWakeLock(ready && Boolean(settings?.keepScreenOn))
+
+  useEffect(() => {
+    if (pathname.startsWith("/picker") || pathname.startsWith("/exercise/")) {
+      return
+    }
+
+    const store = useAppStore.getState()
+    if (store.replaceWorkoutExerciseId) {
+      store.setReplaceWorkoutExerciseId(undefined)
+    }
+  }, [pathname])
 
   useEffect(() => {
     let cancelled = false

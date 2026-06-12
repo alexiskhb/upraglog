@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "@tanstack/react-router"
 import {
   closestCenter,
@@ -127,11 +127,13 @@ export function WorkoutNavigationPanel() {
   const selectedProfile = useAppStore((state) => state.selectedProfile)
   const open = useAppStore((state) => state.workoutNavOpen)
   const setOpen = useAppStore((state) => state.setWorkoutNavOpen)
+  const closeTaskUi = useAppStore((state) => state.closeTaskUi)
   const refreshVersion = useAppStore((state) => state.refreshVersion)
   const bumpRefresh = useAppStore((state) => state.bumpRefresh)
   const setReplaceWorkoutExerciseId = useAppStore(
     (state) => state.setReplaceWorkoutExerciseId,
   )
+  const skipCloseAutoFocusRef = useRef(false)
   const [detail, setDetail] = useState<WorkoutDayDetail>({
     workout: undefined,
     exercises: [],
@@ -211,6 +213,14 @@ export function WorkoutNavigationPanel() {
       <SheetContent
         className="max-h-[calc(86dvh-4rem)] rounded-t-md border-white/10 bg-[#111418] text-zinc-100 shadow-[0_-24px_60px_rgba(0,0,0,0.5)] data-[side=bottom]:bottom-16 sm:mx-auto sm:max-w-2xl"
         side="bottom"
+        onCloseAutoFocus={(event) => {
+          if (!skipCloseAutoFocusRef.current) {
+            return
+          }
+
+          event.preventDefault()
+          skipCloseAutoFocusRef.current = false
+        }}
       >
         <SheetHeader className="border-b border-white/10">
           <SheetTitle>Workout List</SheetTitle>
@@ -245,7 +255,8 @@ export function WorkoutNavigationPanel() {
                         void deleteWorkoutExerciseRow(entry.workoutExercise.id)
                       }
                       onOpen={() => {
-                        setOpen(false)
+                        setReplaceWorkoutExerciseId(undefined)
+                        closeTaskUi()
                         void navigate({
                           to: "/training/$workoutExerciseId",
                           params: {
@@ -254,8 +265,9 @@ export function WorkoutNavigationPanel() {
                         })
                       }}
                       onReplace={() => {
+                        skipCloseAutoFocusRef.current = true
                         setReplaceWorkoutExerciseId(entry.workoutExercise.id)
-                        setOpen(false)
+                        closeTaskUi()
                         void navigate({ to: "/picker" })
                       }}
                     />
@@ -271,8 +283,9 @@ export function WorkoutNavigationPanel() {
             <ActionButton
               tone="save"
               onClick={() => {
+                skipCloseAutoFocusRef.current = true
                 setReplaceWorkoutExerciseId(undefined)
-                setOpen(false)
+                closeTaskUi()
                 void navigate({ to: "/picker" })
               }}
             >
