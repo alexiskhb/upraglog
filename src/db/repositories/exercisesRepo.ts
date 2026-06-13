@@ -170,6 +170,11 @@ export async function getExerciseUsageStats(profileName = defaultProfileName) {
 
   for (const workoutExercise of workoutExercises) {
     const localDate = workoutDateById.get(workoutExercise.workoutId)
+
+    if (!localDate) {
+      continue
+    }
+
     const current = stats[workoutExercise.exerciseId] ?? {
       workoutCount: 0,
       lastUsedDate: undefined,

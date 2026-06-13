@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import Fuse from "fuse.js"
 import { useNavigate } from "@tanstack/react-router"
 import {
+  ArrowDownAZ,
   MoreVertical,
   Pencil,
   Plus,
@@ -38,6 +39,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -55,6 +58,13 @@ import { cn } from "@/lib/utils"
 import { ExerciseCategoryChips } from "./ExerciseCategoryChips"
 
 type CategoryFilter = ExerciseCategory | "favorites"
+type ExerciseSortOption = "name" | "frequency" | "recency"
+
+const exerciseSortLabels: Record<ExerciseSortOption, string> = {
+  name: "Name",
+  frequency: "Frequency",
+  recency: "Recency",
+}
 
 function queryTokens(query: string) {
   return query.toLowerCase().trim().split(/\s+/).filter(Boolean)
@@ -81,6 +91,53 @@ function matchesTokens(exercise: Exercise, query: string) {
   return matchesSearchText(exerciseSearchText(exercise), query)
 }
 
+function compareByName(a: Exercise, b: Exercise) {
+  return a.id.localeCompare(b.id)
+}
+
+function sortExercises(
+  exercises: Exercise[],
+  stats: Record<string, ExerciseUsageStats>,
+  sortOption: ExerciseSortOption,
+) {
+  return [...exercises].sort((a, b) => {
+    const aStats = stats[a.id]
+    const bStats = stats[b.id]
+
+    if (sortOption === "frequency") {
+      const countDifference =
+        (bStats?.workoutCount ?? 0) - (aStats?.workoutCount ?? 0)
+
+      if (countDifference !== 0) {
+        return countDifference
+      }
+
+      const recencyDifference = (bStats?.lastUsedDate ?? "").localeCompare(
+        aStats?.lastUsedDate ?? "",
+      )
+
+      return recencyDifference || compareByName(a, b)
+    }
+
+    if (sortOption === "recency") {
+      const recencyDifference = (bStats?.lastUsedDate ?? "").localeCompare(
+        aStats?.lastUsedDate ?? "",
+      )
+
+      if (recencyDifference !== 0) {
+        return recencyDifference
+      }
+
+      const countDifference =
+        (bStats?.workoutCount ?? 0) - (aStats?.workoutCount ?? 0)
+
+      return countDifference || compareByName(a, b)
+    }
+
+    return compareByName(a, b)
+  })
+}
+
 export function ExercisePickerScreen() {
   const navigate = useNavigate()
   const searchRef = useRef<HTMLInputElement>(null)
@@ -100,6 +157,7 @@ export function ExercisePickerScreen() {
   >([...defaultExerciseCategories])
   const [stats, setStats] = useState<Record<string, ExerciseUsageStats>>({})
   const [query, setQuery] = useState("")
+  const [sortOption, setSortOption] = useState<ExerciseSortOption>("name")
   const [categoryFilter, setCategoryFilter] = useState<
     CategoryFilter | undefined
   >()
@@ -178,7 +236,7 @@ export function ExercisePickerScreen() {
     })
 
     if (!query.trim()) {
-      return categoryFiltered
+      return sortExercises(categoryFiltered, stats, sortOption)
     }
 
     const fuse = new Fuse(categoryFiltered, {
@@ -197,8 +255,8 @@ export function ExercisePickerScreen() {
       unique.set(exercise.id, exercise)
     }
 
-    return [...unique.values()]
-  }, [categoryFilter, exercises, query])
+    return sortExercises([...unique.values()], stats, sortOption)
+  }, [categoryFilter, exercises, query, sortOption, stats])
 
   const selectExercise = async (exercise: Exercise) => {
     if (replaceWorkoutExerciseId) {
@@ -252,6 +310,43 @@ export function ExercisePickerScreen() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <IconButton title={`Sort: ${exerciseSortLabels[sortOption]}`}>
+              <ArrowDownAZ className="size-5" />
+            </IconButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-44 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
+          >
+            <DropdownMenuRadioGroup
+              value={sortOption}
+              onValueChange={(value) =>
+                setSortOption(value as ExerciseSortOption)
+              }
+            >
+              <DropdownMenuRadioItem
+                className="rounded-md focus:bg-cyan-400/15"
+                value="name"
+              >
+                Name
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                className="rounded-md focus:bg-cyan-400/15"
+                value="frequency"
+              >
+                Frequency
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                className="rounded-md focus:bg-cyan-400/15"
+                value="recency"
+              >
+                Recency
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <IconButton
           className="bg-cyan-400 text-slate-950 hover:bg-cyan-300"
           title="Create exercise"
