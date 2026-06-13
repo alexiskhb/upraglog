@@ -35,15 +35,25 @@ function fromDateTimeInputValue(value: string) {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
 }
 
+function getTimestampMs(value: string | undefined) {
+  if (!value) {
+    return undefined
+  }
+
+  const valueMs = new Date(value).getTime()
+
+  return Number.isFinite(valueMs) ? valueMs : undefined
+}
+
 function isTimestampAtOrAfter(value: string | undefined, min: string | undefined) {
   if (!value || !min) {
     return false
   }
 
-  const valueMs = new Date(value).getTime()
-  const minMs = new Date(min).getTime()
+  const valueMs = getTimestampMs(value)
+  const minMs = getTimestampMs(min)
 
-  return Number.isFinite(valueMs) && Number.isFinite(minMs) && valueMs >= minMs
+  return valueMs !== undefined && minMs !== undefined && valueMs >= minMs
 }
 
 export function WorkoutTimerDialog() {
@@ -108,6 +118,12 @@ export function WorkoutTimerDialog() {
   }, [endedAtIso, open, startedAtIso])
 
   const active = Boolean(startedAtIso && !endedAtIso)
+  const startedAtMs = getTimestampMs(startedAtIso)
+  const endedAtMs = getTimestampMs(endedAtIso)
+  const canContinueTimer =
+    startedAtMs !== undefined &&
+    endedAtMs !== undefined &&
+    endedAtMs >= startedAtMs
   const canStopAtLatestFinishedSet = isTimestampAtOrAfter(
     latestFinishedAtIso,
     startedAtIso,
@@ -135,13 +151,6 @@ export function WorkoutTimerDialog() {
     setMessage(nextMessage)
   }
 
-  const saveTimer = async (nextStartedAt = startedAt, nextEndedAt = endedAt) => {
-    await saveTimerIso(
-      fromDateTimeInputValue(nextStartedAt),
-      fromDateTimeInputValue(nextEndedAt),
-    )
-  }
-
   const startTimer = async () => {
     const now = new Date()
     const nowIso = now.toISOString()
@@ -150,6 +159,27 @@ export function WorkoutTimerDialog() {
     setEndedAt("")
     setLatestFinishedAtIso(undefined)
     await saveTimerIso(nowIso, undefined, "Workout started.")
+  }
+
+  const continueTimer = async () => {
+    if (!canContinueTimer || startedAtMs === undefined || endedAtMs === undefined) {
+      setMessage("Set a valid stopped timer before continuing.")
+      return
+    }
+
+    const now = new Date()
+    const elapsedMs = endedAtMs - startedAtMs
+    const nextStartedAt = new Date(now.getTime() - elapsedMs).toISOString()
+
+    setNowMs(now.getTime())
+    setStartedAt(toDateTimeInputValue(nextStartedAt))
+    setEndedAt("")
+    setLatestFinishedAtIso(
+      isTimestampAtOrAfter(latestFinishedAtIso, nextStartedAt)
+        ? latestFinishedAtIso
+        : undefined,
+    )
+    await saveTimerIso(nextStartedAt, undefined, "Workout continued.")
   }
 
   const stopTimer = async () => {
@@ -220,12 +250,18 @@ export function WorkoutTimerDialog() {
             Stop Workout
           </ActionButton>
           <ActionButton
-            className="col-span-2"
+            disabled={!canContinueTimer}
+            tone="save"
+            onClick={continueTimer}
+          >
+            Continue Workout
+          </ActionButton>
+          <ActionButton
             disabled={!canStopAtLatestFinishedSet}
-            tone="secondary"
+            tone="delete"
             onClick={stopTimerAtLatestFinishedSet}
           >
-            Stop as of Latest Finished Set
+            Stop as of Latest Set
           </ActionButton>
         </div>
 
@@ -264,10 +300,10 @@ export function WorkoutTimerDialog() {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <ActionButton tone="secondary" onClick={() => saveTimer()}>
-            Update Timer
-          </ActionButton>
-          <ActionButton tone="neutral" onClick={clearTimer}>
+          <ActionButton
+            className="col-span-2"
+            tone="neutral"
+            onClick={clearTimer}>
             Clear Timer
           </ActionButton>
         </div>

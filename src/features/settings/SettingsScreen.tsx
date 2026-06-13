@@ -476,6 +476,15 @@ export function SettingsScreen() {
               }
             />
           </label>
+          <Textarea
+            className="mt-2 min-h-24 rounded-md border-white/10 bg-[var(--app-surface)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+            disabled={!settings.spreadsheetShareIncludeMessage}
+            value={spreadsheetShareMessageDraft}
+            onBlur={() => void saveSpreadsheetShareMessage()}
+            onChange={(event) =>
+              setSpreadsheetShareMessageDraft(event.target.value)
+            }
+          />
           <label className="mt-3 flex min-h-10 items-center justify-between gap-3 rounded-md border border-white/10 bg-[var(--app-surface)] px-3">
             <span className="text-sm text-zinc-200">
               Attach message as TXT file
@@ -491,31 +500,7 @@ export function SettingsScreen() {
               }
             />
           </label>
-          <Textarea
-            className="mt-2 min-h-24 rounded-md border-white/10 bg-[var(--app-surface)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
-            disabled={!settings.spreadsheetShareIncludeMessage}
-            value={spreadsheetShareMessageDraft}
-            onBlur={() => void saveSpreadsheetShareMessage()}
-            onChange={(event) =>
-              setSpreadsheetShareMessageDraft(event.target.value)
-            }
-          />
         </details>
-        <label className="flex min-h-10 items-center justify-between gap-3 rounded-md border border-white/10 bg-[var(--app-surface-muted)] px-3">
-          <span className="text-sm text-zinc-200">
-            Add Share... shortcut to main menu
-          </span>
-          <input
-            checked={settings.addShareShortcutToMenu}
-            className="size-5 accent-cyan-500"
-            type="checkbox"
-            onChange={(event) =>
-              void saveSettings({
-                addShareShortcutToMenu: event.target.checked,
-              })
-            }
-          />
-        </label>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportSpreadsheet}>
             Download Spreadsheet
