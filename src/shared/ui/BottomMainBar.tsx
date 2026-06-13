@@ -3,6 +3,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  ClipboardCopy,
   House,
   ListPlus,
   ListChecks,
@@ -25,6 +26,7 @@ import { getSettings, updateSettings } from "@/db/repositories/settingsRepo"
 import { useAppStore } from "@/shared/store/appStore"
 import { todayString } from "@/shared/model/dates"
 import { AddExercisesDialog } from "@/features/workout-navigation/AddExercisesDialog"
+import { exportWorkoutRoutineCsvByDate } from "@/features/workout-navigation/exportWorkoutRoutineCsv"
 import { defaultAppSettings } from "@/shared/model/settings"
 import { shareTrainingLogCsv } from "@/features/backup/shareTrainingLogCsv"
 import { cn } from "@/lib/utils"
@@ -194,6 +196,48 @@ export function BottomMainBar() {
     }
   }
 
+  const copyTextToClipboard = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text)
+        return
+      } catch {
+        // Fall through to the textarea fallback for browsers with picky clipboard permissions.
+      }
+    }
+
+    const textarea = document.createElement("textarea")
+    textarea.value = text
+    textarea.setAttribute("readonly", "")
+    textarea.style.position = "fixed"
+    textarea.style.left = "-9999px"
+    document.body.append(textarea)
+    textarea.select()
+
+    const copied = document.execCommand("copy")
+    textarea.remove()
+
+    if (!copied) {
+      throw new Error("Clipboard copy failed.")
+    }
+  }
+
+  const copyWorkout = async () => {
+    closeTaskUi()
+    setMoreMenuOpen(false)
+
+    try {
+      const csv = await exportWorkoutRoutineCsvByDate({
+        localDate: selectedOrToday,
+        profileName: selectedProfile,
+      })
+
+      await copyTextToClipboard(csv)
+    } catch {
+      window.alert("Workout could not be copied.")
+    }
+  }
+
   const handlePointerCloseAutoFocus = (
     event: Event,
     trigger: HTMLButtonElement | null,
@@ -341,10 +385,18 @@ export function BottomMainBar() {
                   onSelect={() => void shareSpreadsheet()}
                 >
                   <Share2 className="size-5 text-cyan-300" />
-                  Share...
+                  Share
                 </DropdownMenuItem>
               </>
             )}
+            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuItem
+              className={bottomBarMenuItemClassName}
+              onSelect={() => void copyWorkout()}
+            >
+              <ClipboardCopy className="size-5 text-cyan-300" />
+              Copy Workout
+            </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
               className={bottomBarMenuItemClassName}
@@ -354,7 +406,7 @@ export function BottomMainBar() {
               }}
             >
               <ListPlus className="size-5 text-cyan-300" />
-              Add Exercises
+              Paste Workout
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem

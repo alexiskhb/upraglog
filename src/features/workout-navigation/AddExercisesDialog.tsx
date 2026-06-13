@@ -55,11 +55,13 @@ export function AddExercisesDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add Exercises</DialogTitle>
+          <DialogTitle>Paste Workout</DialogTitle>
         </DialogHeader>
         <Textarea
           className="h-[42dvh] min-h-36 resize-none overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 [field-sizing:fixed] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
-          placeholder="Use Share to send your history to an AI assistant, then paste its response here."
+          placeholder="Use Share to send your history with instructions to an AI assistant, then paste its response here.
+
+You can also Copy Workout from another day."
           value={text}
           onChange={(event) => setText(event.target.value)}
         />

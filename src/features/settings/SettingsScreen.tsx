@@ -506,7 +506,7 @@ export function SettingsScreen() {
             Download Spreadsheet
           </ActionButton>
           <ActionButton tone="secondary" onClick={shareSpreadsheet}>
-            Share...
+            Share
           </ActionButton>
         </div>
       </section>
