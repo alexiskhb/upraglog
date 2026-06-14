@@ -24,6 +24,11 @@ import {
 } from "@/features/backup/exportJson"
 import { exportTrainingLogCsv } from "@/features/backup/exportTrainingLogCsv"
 import {
+  backupToGoogleDrive,
+  preloadGoogleDriveBackup,
+  restoreFromGoogleDrive,
+} from "@/features/backup/googleDriveBackup"
+import {
   shareTrainingLogCsv,
   type ShareTrainingLogCsvResult,
 } from "@/features/backup/shareTrainingLogCsv"
@@ -69,6 +74,7 @@ export function SettingsScreen() {
   const [spreadsheetShareMessageDraft, setSpreadsheetShareMessageDraft] =
     useState("")
   const [message, setMessage] = useState<string | undefined>()
+  const [googleDriveBusy, setGoogleDriveBusy] = useState(false)
 
   const setSpreadsheetDrafts = (appSettings: AppSettings) => {
     setSpreadsheetMonthLimitDraft(
@@ -79,6 +85,8 @@ export function SettingsScreen() {
 
   useEffect(() => {
     let cancelled = false
+
+    preloadGoogleDriveBackup()
 
     getSettings().then((appSettings) => {
       if (!cancelled) {
@@ -273,6 +281,51 @@ export function SettingsScreen() {
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
+    }
+  }
+
+  const backupGoogleDrive = async () => {
+    setGoogleDriveBusy(true)
+    setMessage("Opening Google Drive...")
+
+    try {
+      setMessage(await backupToGoogleDrive())
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Google Drive backup failed.",
+      )
+    } finally {
+      setGoogleDriveBusy(false)
+    }
+  }
+
+  const restoreGoogleDrive = async () => {
+    if (
+      !window.confirm(
+        "Restore from Google Drive? This replaces the local training log.",
+      )
+    ) {
+      return
+    }
+
+    setGoogleDriveBusy(true)
+    setMessage("Opening Google Drive...")
+
+    try {
+      const restoreMessage = await restoreFromGoogleDrive()
+      const appSettings = await getSettings()
+
+      setSettings(appSettings)
+      setSpreadsheetDrafts(appSettings)
+      setProfileState(appSettings.profiles, appSettings.selectedProfile)
+      bumpRefresh()
+      setMessage(restoreMessage)
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Google Drive restore failed.",
+      )
+    } finally {
+      setGoogleDriveBusy(false)
     }
   }
 
@@ -567,13 +620,29 @@ export function SettingsScreen() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton tone="secondary" onClick={exportJson}>
-            Export to Local Storage
+            Export JSON
           </ActionButton>
           <ActionButton
             tone="neutral"
             onClick={() => fileInputRef.current?.click()}
           >
-            Import From Local Storage
+            Import JSON
+          </ActionButton>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <ActionButton
+            disabled={googleDriveBusy}
+            tone="secondary"
+            onClick={backupGoogleDrive}
+          >
+            Backup to Drive
+          </ActionButton>
+          <ActionButton
+            disabled={googleDriveBusy}
+            tone="neutral"
+            onClick={restoreGoogleDrive}
+          >
+            Restore From Drive
           </ActionButton>
         </div>
         <input

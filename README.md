@@ -16,6 +16,25 @@ npm run lint
 npm run build
 ```
 
+## Google Drive Backup
+
+Copy `.env.example` to `.env.local` and replace
+`VITE_GOOGLE_DRIVE_CLIENT_ID` with a Google OAuth 2.0 web client ID.
+If you download a `client_secret_*.json` file from Google Cloud, only copy the
+`client_id` value into `.env.local`; the browser app does not use the client
+secret.
+
+In Google Cloud Console, enable the Google Drive API, configure the OAuth
+consent screen, and add your app origins such as `http://localhost:5173` and
+your production origin to the web client. The app requests only the
+`https://www.googleapis.com/auth/drive.appdata` scope and stores
+`upraglog-backup.json` in Drive's hidden app data folder.
+
+For GitHub Pages, add a repository variable named
+`VITE_GOOGLE_DRIVE_CLIENT_ID` with the same client ID so the CI build embeds it.
+You can optionally add `VITE_GOOGLE_DRIVE_BACKUP_FILE_NAME` to override the
+default backup filename.
+
 ## GitHub Pages
 
 The workflow in `.github/workflows/deploy.yml` deploys `dist` to GitHub Pages when `main` is pushed.

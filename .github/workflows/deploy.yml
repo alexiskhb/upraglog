@@ -41,6 +41,8 @@ jobs:
       - name: Build
         env:
           VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
+          VITE_GOOGLE_DRIVE_BACKUP_FILE_NAME: ${{ vars.VITE_GOOGLE_DRIVE_BACKUP_FILE_NAME }}
+          VITE_GOOGLE_DRIVE_CLIENT_ID: ${{ vars.VITE_GOOGLE_DRIVE_CLIENT_ID }}
         run: |
           if [ -z "$VITE_BASE_PATH" ]; then
             repo_name="${GITHUB_REPOSITORY#*/}"

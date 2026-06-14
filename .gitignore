@@ -32,6 +32,11 @@ lerna-debug.log*
 !.env.example
 !.env.local.example
 
+# Google OAuth credential downloads
+client_secret_*.json
+client_secret*.json
+credentials*.json
+
 # Local editor files
 .vscode/*
 !.vscode/extensions.json
