@@ -141,11 +141,11 @@
     }
   .day-transition-next,
   .swipe-route-enter-next {
-    animation: route-slide-next 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: route-slide-next 180ms cubic-bezier(0.22, 1, 0.36, 1);
     }
   .day-transition-previous,
   .swipe-route-enter-previous {
-    animation: route-slide-previous 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: route-slide-previous 180ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 }
 
