@@ -257,21 +257,21 @@ export function BottomMainBar() {
       <nav className="fixed inset-x-0 bottom-0 z-[60] border-t border-white/10 bg-[#111418]/92 shadow-[0_-16px_36px_rgba(0,0,0,0.42)] backdrop-blur-md">
         <div className="grid h-16 w-full grid-cols-5 items-stretch">
         <IconButton
-          active={dayActive && !workoutNavOpen && !moreMenuOpen}
-          className={bottomBarButtonClassName}
-          title="Home"
-          onClick={goToDay}
-        >
-          <House className="size-6" />
-        </IconButton>
-
-        <IconButton
           active={calendarActive && !moreMenuOpen}
           className={bottomBarButtonClassName}
           title="Calendar"
           onClick={toggleCalendar}
         >
           <CalendarDays className="size-6" />
+        </IconButton>
+
+        <IconButton
+          active={dayActive && !workoutNavOpen && !moreMenuOpen}
+          className={bottomBarButtonClassName}
+          title="Home"
+          onClick={goToDay}
+        >
+          <House className="size-6" />
         </IconButton>
 
         <IconButton
