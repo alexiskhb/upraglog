@@ -16,6 +16,7 @@ import {
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
+import { useHorizontalSwipeNavigation } from "@/shared/ui/useHorizontalSwipeNavigation"
 import { createDefaultAppSettings } from "@/shared/model/settings"
 import { isWorkoutTimerActive } from "@/shared/model/workoutTimer"
 import { DateNavRow } from "./DateNavRow"
@@ -50,7 +51,6 @@ export function HomeScreen() {
     createDefaultAppSettings(),
   )
   const [workoutDates, setWorkoutDates] = useState<string[]>([])
-  const [touchStartX, setTouchStartX] = useState<number | undefined>()
   const [dayTransitionClass, setDayTransitionClass] = useState("")
   const today = todayString()
   const skipEmptyDays = settings.skipEmptyDaysOnDayNavigation
@@ -117,19 +117,10 @@ export function HomeScreen() {
     void navigate({ to: "/picker" })
   }
 
-  const handleTouchEnd = (clientX: number) => {
-    if (touchStartX === undefined) {
-      return
-    }
-
-    const delta = clientX - touchStartX
-
-    if (Math.abs(delta) > 60) {
-      navigateAdjacent(delta > 0 ? -1 : 1)
-    }
-
-    setTouchStartX(undefined)
-  }
+  const swipeNavigation = useHorizontalSwipeNavigation({
+    canNavigate: (direction) => Boolean(resolveAdjacentDate(direction)),
+    onNavigate: navigateAdjacent,
+  })
   const workoutActive = isWorkoutTimerActive({
     workout: detail.workout,
   })
@@ -138,8 +129,7 @@ export function HomeScreen() {
     <ScreenContainer
       className={`gap-3 ${dayTransitionClass}`}
       key={date}
-      onTouchStart={(event) => setTouchStartX(event.changedTouches[0].clientX)}
-      onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0].clientX)}
+      {...swipeNavigation}
     >
       <DateNavRow
         localDate={date || today}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import {
   closestCenter,
@@ -44,6 +44,7 @@ import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
 import { workoutTimerClassName } from "@/shared/ui/workoutTimerStyles"
+import { useHorizontalSwipeNavigation } from "@/shared/ui/useHorizontalSwipeNavigation"
 import { NumericStepper } from "./NumericStepper"
 import { SetRow } from "./SetRow"
 import { SetCommentDialog } from "./SetCommentDialog"
@@ -124,6 +125,12 @@ function isTrainingSwipeBlocked(target: EventTarget | null) {
   )
 }
 
+function getExerciseTransitionClass(direction: ExerciseDirection) {
+  return direction > 0
+    ? "swipe-route-enter-next"
+    : "swipe-route-enter-previous"
+}
+
 function WorkoutLapTimer({
   detail,
   nowMs,
@@ -181,6 +188,10 @@ export function TrainingScreen() {
   const [loadedInputKey, setLoadedInputKey] = useState<string | undefined>()
   const [selectedSetId, setSelectedSetId] = useState<string | undefined>()
   const [commentSetId, setCommentSetId] = useState<string | undefined>()
+  const [loadedWorkoutExerciseId, setLoadedWorkoutExerciseId] = useState<
+    string | undefined
+  >()
+  const [exerciseTransitionClass, setExerciseTransitionClass] = useState("")
   const [
     autoSortWorkoutExercisesByFirstFinishedSet,
     setAutoSortWorkoutExercisesByFirstFinishedSet,
@@ -191,15 +202,6 @@ export function TrainingScreen() {
   ] = useState(defaultAppSettings.autoFinishWorkoutTimerWhenAllSetsFinished)
   const [message] = useState<string | undefined>()
   const [timerNowMs, setTimerNowMs] = useState(() => Date.now())
-  const exerciseSwipeStartRef = useRef<
-    | {
-        x: number
-        y: number
-        pointerId: number
-        swiping: boolean
-      }
-    | undefined
-  >(undefined)
   const workoutTimerActive = Boolean(
     detail?.workout.startedAt && !detail.workout.endedAt,
   )
@@ -216,6 +218,7 @@ export function TrainingScreen() {
       }
 
       setDetail(nextDetail)
+      setLoadedWorkoutExerciseId(workoutExerciseId)
       setAutoSortWorkoutExercisesByFirstFinishedSet(
         appSettings.autoSortWorkoutExercisesByFirstFinishedSet,
       )
@@ -317,11 +320,21 @@ export function TrainingScreen() {
       return
     }
 
+    setExerciseTransitionClass(getExerciseTransitionClass(direction))
     void navigate({
       to: "/training/$workoutExerciseId",
       params: { workoutExerciseId: nextWorkoutExerciseId },
     })
   }
+
+  const exerciseSwipeNavigation = useHorizontalSwipeNavigation({
+    canNavigate: (direction) =>
+      Boolean(resolveAdjacentWorkoutExerciseId(direction)),
+    commitPx: horizontalSwipeCommitPx,
+    intentPx: horizontalSwipeIntentPx,
+    onNavigate: navigateAdjacentExercise,
+    shouldStart: (target) => !isTrainingSwipeBlocked(target),
+  })
 
   const saveSet = async () => {
     if (!detail) {
@@ -378,76 +391,12 @@ export function TrainingScreen() {
     bumpRefresh()
   }
 
-  const handlePointerDown = (event: PointerEvent<HTMLElement>) => {
-    if (
-      event.button !== 0 ||
-      event.pointerType === "mouse" ||
-      isTrainingSwipeBlocked(event.target)
-    ) {
-      return
-    }
-
-    exerciseSwipeStartRef.current = {
-      x: event.clientX,
-      y: event.clientY,
-      pointerId: event.pointerId,
-      swiping: false,
-    }
-  }
-
-  const handlePointerMove = (event: PointerEvent<HTMLElement>) => {
-    const swipeStart = exerciseSwipeStartRef.current
-
-    if (!swipeStart || swipeStart.pointerId !== event.pointerId) {
-      return
-    }
-
-    const deltaX = event.clientX - swipeStart.x
-    const deltaY = event.clientY - swipeStart.y
-
-    if (
-      !swipeStart.swiping &&
-      Math.abs(deltaY) > 10 &&
-      Math.abs(deltaY) > Math.abs(deltaX)
-    ) {
-      exerciseSwipeStartRef.current = undefined
-      return
-    }
-
-    if (
-      !swipeStart.swiping &&
-      (Math.abs(deltaX) < horizontalSwipeIntentPx ||
-        Math.abs(deltaX) < Math.abs(deltaY) * 1.35)
-    ) {
-      return
-    }
-
-    swipeStart.swiping = true
-    event.preventDefault()
-  }
-
-  const handlePointerEnd = (event: PointerEvent<HTMLElement>) => {
-    const swipeStart = exerciseSwipeStartRef.current
-    exerciseSwipeStartRef.current = undefined
-
-    if (!swipeStart || swipeStart.pointerId !== event.pointerId) {
-      return
-    }
-
-    const deltaX = event.clientX - swipeStart.x
-    const deltaY = event.clientY - swipeStart.y
-
-    if (
-      swipeStart.swiping &&
-      Math.abs(deltaX) >= horizontalSwipeCommitPx &&
-      Math.abs(deltaX) > Math.abs(deltaY) * 1.35
-    ) {
-      navigateAdjacentExercise(deltaX > 0 ? -1 : 1)
-    }
-  }
-
-  const handlePointerCancel = () => {
-    exerciseSwipeStartRef.current = undefined
+  if (loadedWorkoutExerciseId !== workoutExerciseId) {
+    return (
+      <ScreenContainer className="justify-center text-center text-sm text-zinc-400">
+        Loading exercise...
+      </ScreenContainer>
+    )
   }
 
   if (!detail) {
@@ -460,12 +409,9 @@ export function TrainingScreen() {
 
   return (
     <ScreenContainer
-      className="gap-4"
-      style={{ touchAction: "pan-y" }}
-      onPointerCancel={handlePointerCancel}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
+      className={`gap-4 ${exerciseTransitionClass}`}
+      key={detail.workoutExercise.id}
+      {...exerciseSwipeNavigation}
     >
       <div className="pt-3">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
