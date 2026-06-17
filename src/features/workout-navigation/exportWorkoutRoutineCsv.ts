@@ -11,7 +11,7 @@ type RoutineCsvCell = string | number | undefined
 type RoutineCsvRow = RoutineCsvCell[]
 
 const routineCsvHeaders = [
-  "Exercise ID",
+  "Exercise",
   "Weight",
   "Reps",
   "Distance",
