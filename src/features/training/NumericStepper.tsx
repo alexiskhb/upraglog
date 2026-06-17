@@ -7,6 +7,7 @@ type NumericStepperProps = {
   label: string
   value: number | null
   step: number
+  displayFractionDigits?: number
   min?: number
   unit?: string
   isDuration?: boolean
@@ -17,6 +18,7 @@ export function NumericStepper({
   label,
   value,
   step,
+  displayFractionDigits,
   min = 0,
   unit,
   isDuration = false,
@@ -24,15 +26,19 @@ export function NumericStepper({
 }: NumericStepperProps) {
   const [editing, setEditing] = useState(false)
   const [draftValue, setDraftValue] = useState("")
+  const formatNumber = (nextValue: number) =>
+    displayFractionDigits === undefined
+      ? nextValue.toString()
+      : nextValue.toFixed(displayFractionDigits)
   const displayValue =
     value === null
       ? ""
       : isDuration
         ? formatDuration(value)
-        : value.toString()
+        : formatNumber(value)
   const inputValue = editing ? draftValue : displayValue
 
-  const toDraftValue = () => (value === null ? "" : value.toString())
+  const toDraftValue = () => (value === null ? "" : formatNumber(value))
 
   const setValue = (nextValue: number) => {
     onChange(Math.max(min, Number(nextValue.toFixed(1))))

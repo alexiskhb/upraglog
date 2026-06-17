@@ -37,10 +37,13 @@ import {
   setFieldsForExerciseType,
 } from "@/shared/model/setFields"
 import { defaultAppSettings } from "@/shared/model/settings"
+import { formatDuration } from "@/shared/model/dates"
 import { getWorkoutProgress } from "@/shared/model/workoutProgress"
+import { getLatestSetFinishedAtAfterWorkoutStart } from "@/shared/model/workoutTimer"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
+import { workoutTimerClassName } from "@/shared/ui/workoutTimerStyles"
 import { NumericStepper } from "./NumericStepper"
 import { SetRow } from "./SetRow"
 import { SetCommentDialog } from "./SetCommentDialog"
@@ -70,6 +73,15 @@ type ExerciseDirection = -1 | 1
 
 const horizontalSwipeIntentPx = 18
 const horizontalSwipeCommitPx = 72
+
+function timestampMs(iso?: string) {
+  if (!iso) {
+    return undefined
+  }
+
+  const value = new Date(iso).getTime()
+  return Number.isFinite(value) ? value : undefined
+}
 
 function inputFromSet(set: SetEntry): InputState {
   return {
@@ -112,6 +124,50 @@ function isTrainingSwipeBlocked(target: EventTarget | null) {
   )
 }
 
+function WorkoutLapTimer({
+  detail,
+  nowMs,
+}: {
+  detail: TrainingDetail
+  nowMs: number
+}) {
+  if (!detail.workout.startedAt) {
+    return null
+  }
+
+  const active = Boolean(detail.workout.startedAt && !detail.workout.endedAt)
+  const latestFinishedAt = getLatestSetFinishedAtAfterWorkoutStart({
+    workout: detail.workout,
+    sets: detail.workoutSets,
+  })
+  const lapStartedMs =
+    timestampMs(latestFinishedAt) ?? timestampMs(detail.workout.startedAt)
+  const endedMs = timestampMs(detail.workout.endedAt)
+  const displayEndMs = active || endedMs === undefined ? nowMs : endedMs
+  const elapsedSeconds =
+    lapStartedMs === undefined
+      ? 0
+      : Math.max(0, Math.floor((displayEndMs - lapStartedMs) / 1000))
+
+  return (
+    <div className="mt-1 flex justify-end">
+      <div
+        aria-label={`Lap timer ${formatDuration(elapsedSeconds)}`}
+        className={workoutTimerClassName({
+          active,
+          className: active
+            ? "cursor-default hover:bg-transparent hover:text-cyan-300"
+            : "cursor-default hover:bg-transparent hover:text-teal-400",
+          size: "large",
+        })}
+        title="Lap timer"
+      >
+        {formatDuration(elapsedSeconds)}
+      </div>
+    </div>
+  )
+}
+
 export function TrainingScreen() {
   const { workoutExerciseId } = useParams({
     from: "/training/$workoutExerciseId",
@@ -134,6 +190,7 @@ export function TrainingScreen() {
     setAutoFinishWorkoutTimerWhenAllSetsFinished,
   ] = useState(defaultAppSettings.autoFinishWorkoutTimerWhenAllSetsFinished)
   const [message] = useState<string | undefined>()
+  const [timerNowMs, setTimerNowMs] = useState(() => Date.now())
   const exerciseSwipeStartRef = useRef<
     | {
         x: number
@@ -143,6 +200,9 @@ export function TrainingScreen() {
       }
     | undefined
   >(undefined)
+  const workoutTimerActive = Boolean(
+    detail?.workout.startedAt && !detail.workout.endedAt,
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -184,6 +244,24 @@ export function TrainingScreen() {
       cancelled = true
     }
   }, [loadedInputKey, workoutExerciseId, refreshVersion, setSelectedDate])
+
+  useEffect(() => {
+    if (!workoutTimerActive) {
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      setTimerNowMs(Date.now())
+    }, 0)
+    const interval = window.setInterval(() => {
+      setTimerNowMs(Date.now())
+    }, 1000)
+
+    return () => {
+      window.clearTimeout(timeout)
+      window.clearInterval(interval)
+    }
+  }, [detail?.workout.startedAt, workoutTimerActive])
 
   const fields = setFieldsForExerciseType(
     detail?.exercise.exerciseType ?? "strength",
@@ -405,6 +483,7 @@ export function TrainingScreen() {
           </button>
           <WorkoutActiveTimer
             className="justify-self-end"
+            nowMs={timerNowMs}
             size="large"
             workout={detail.workout}
           />
@@ -423,12 +502,14 @@ export function TrainingScreen() {
             style={{ width: `${workoutProgress.percentComplete}%` }}
           />
         </div>
+        <WorkoutLapTimer detail={detail} nowMs={timerNowMs} />
       </div>
 
       <div className="space-y-4 py-2">
         {fields.map((field) => (
           <NumericStepper
             isDuration={field.isDuration}
+            displayFractionDigits={field.key === "weight" ? 1 : undefined}
             key={field.key}
             label={field.label}
             step={field.step}
