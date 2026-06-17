@@ -54,6 +54,9 @@ function formatShareResultMessage(result: ShareTrainingLogCsvResult) {
   return "Sharing failed, so the CSV was downloaded."
 }
 
+const privacyPolicyPath = `${import.meta.env.BASE_URL}privacy.html`
+const termsOfServicePath = `${import.meta.env.BASE_URL}terms.html`
+
 export function SettingsScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
@@ -717,6 +720,20 @@ export function SettingsScreen() {
           <span className="font-mono text-xs tabular-nums text-zinc-500">
             {appVersion}
           </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 border-t border-white/10 pt-3 text-xs">
+          <a
+            className="text-cyan-200 underline decoration-cyan-200/35 underline-offset-4 hover:text-cyan-100"
+            href={privacyPolicyPath}
+          >
+            Privacy Policy
+          </a>
+          <a
+            className="text-cyan-200 underline decoration-cyan-200/35 underline-offset-4 hover:text-cyan-100"
+            href={termsOfServicePath}
+          >
+            Terms of Service
+          </a>
         </div>
       </section>
     </ScreenContainer>

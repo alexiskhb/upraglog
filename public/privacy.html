@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Privacy Policy for Upraglog, a local-first gym workout log with optional Google Drive backup."
+    />
+    <title>Upraglog Privacy Policy</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./legal.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="site-header">
+        <img src="./logo.svg" alt="" />
+        <div>
+          <h1 class="site-title">Privacy Policy</h1>
+          <p class="site-subtitle">Upraglog</p>
+        </div>
+      </header>
+
+      <nav class="nav" aria-label="App documents">
+        <a href="./">Open app</a>
+        <a href="./google-oauth-verification.html">OAuth App Information</a>
+        <a href="./terms.html">Terms of Service</a>
+      </nav>
+
+      <div class="content">
+        <section>
+          <h2>Overview</h2>
+          <p>
+            Upraglog is a local-first gym workout log. The app is designed to
+            keep workout data in the user's browser by default. Google Drive
+            backup is optional and is used only when the user starts a backup or
+            restore action.
+          </p>
+          <p class="muted">Last updated: 2026-06-17</p>
+        </section>
+
+        <section>
+          <h2>Information You Enter</h2>
+          <p>
+            Upraglog can store exercises, workout plans, workout logs, sets,
+            notes, profile names, preferences, and imported backup data. This
+            information is stored locally in the browser's IndexedDB database
+            unless the user chooses to export, share, back up, or restore it.
+          </p>
+        </section>
+
+        <section>
+          <h2>Google Drive Data</h2>
+          <p>
+            If a user chooses Google Drive backup or restore, Upraglog asks the
+            user to authorize this Google OAuth scope:
+          </p>
+          <p>
+            <code>https://www.googleapis.com/auth/drive.appdata</code>
+          </p>
+          <p>
+            Upraglog uses this scope only to create, find, read, and update an
+            app-owned backup file in the hidden Google Drive app data folder.
+            The default backup file name is
+            <code>upraglog-backup.json</code>. The app does not list, read,
+            change, or delete the user's normal Google Drive files.
+          </p>
+        </section>
+
+        <section>
+          <h2>How Information Is Used</h2>
+          <ul>
+            <li>To display and manage the user's workout log in the app.</li>
+            <li>To export or import backups requested by the user.</li>
+            <li>
+              To save or restore a user-initiated backup in Google Drive's app
+              data folder.
+            </li>
+          </ul>
+          <p>
+            Upraglog does not use Google user data for advertising, profiling,
+            or cross-context tracking.
+          </p>
+        </section>
+
+        <section>
+          <h2>Sharing And Transfer</h2>
+          <p>
+            Upraglog does not sell Google user data. The app does not transfer
+            Google user data to advertising platforms, analytics providers, or
+            data brokers. The app may export or share files only when the user
+            intentionally uses an export or share action provided by the
+            browser or operating system.
+          </p>
+          <p>
+            Upraglog's use and transfer of information received from Google APIs
+            will adhere to the
+            <a href="https://developers.google.com/terms/api-services-user-data-policy">
+              Google API Services User Data Policy
+            </a>,
+            including the Limited Use requirements.
+          </p>
+        </section>
+
+        <section>
+          <h2>Storage And Security</h2>
+          <p>
+            Local workout data is stored in the user's browser. Google Drive
+            backup data is stored in the user's Google Drive app data folder and
+            is protected by the user's Google account controls. OAuth access
+            tokens are used in the browser to complete the requested Drive
+            action and are not stored by Upraglog.
+          </p>
+        </section>
+
+        <section>
+          <h2>User Choices</h2>
+          <ul>
+            <li>Users can use Upraglog without Google Drive backup.</li>
+            <li>Users can export local backup files from the app settings.</li>
+            <li>
+              Users can revoke Upraglog's Google access from their Google
+              Account permissions.
+            </li>
+            <li>
+              Users can clear local app data through their browser storage
+              controls.
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Contact</h2>
+          <p>
+            For privacy questions, use the user support email shown for Upraglog
+            on the Google OAuth consent screen.
+          </p>
+        </section>
+      </div>
+
+      <footer class="footer">
+        <a href="./google-oauth-verification.html">OAuth App Information</a>
+      </footer>
+    </main>
+  </body>
+</html>

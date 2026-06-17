@@ -35,6 +35,21 @@ For GitHub Pages, add a repository variable named
 You can optionally add `VITE_GOOGLE_DRIVE_BACKUP_FILE_NAME` to override the
 default backup filename.
 
+### Google OAuth Verification
+
+The app includes public static pages for Google OAuth brand review:
+
+- `/google-oauth-verification.html`
+- `/privacy.html`
+- `/terms.html`
+
+Use `docs/google-oauth-verification.md` for the Google Cloud Console checklist,
+scope justification, production URLs, and verification video outline. To make
+the Drive backup available to all Google users, configure the OAuth consent
+screen as `External`, publish it to production, verify the production domain in
+Google Search Console, and declare only the
+`https://www.googleapis.com/auth/drive.appdata` scope.
+
 ## GitHub Pages
 
 The workflow in `.github/workflows/deploy.yml` deploys `dist` to GitHub Pages when `main` is pushed.
