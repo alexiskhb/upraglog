@@ -125,21 +125,21 @@ function WorkoutNavRow({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-44 rounded-md border-white/10 bg-[#1a1d22] text-zinc-100 shadow-xl"
+            className="w-56 rounded-md border-white/10 bg-[#1a1d22] p-2 text-base text-zinc-100 shadow-xl"
           >
             <DropdownMenuItem
-              className="gap-2 rounded-md focus:bg-cyan-400/15"
+              className="min-h-12 gap-3 rounded-md px-3 py-3 text-base focus:bg-cyan-400/15"
               onSelect={onReplace}
             >
-              <Repeat2 className="size-4 text-cyan-300" />
+              <Repeat2 className="size-5 text-cyan-300" />
               Replace
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-white/10" />
             <DropdownMenuItem
-              className="gap-2 text-red-300 focus:bg-red-500/10 focus:text-red-200"
+              className="min-h-12 gap-3 rounded-md px-3 py-3 text-base text-red-300 focus:bg-red-500/10 focus:text-red-200"
               onSelect={onDelete}
             >
-              <Trash2 className="size-4" />
+              <Trash2 className="size-5" />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

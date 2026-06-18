@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 import { ActionButton } from "@/shared/ui/ActionButton"
 
 type SetCommentDialogProps = {
@@ -57,7 +57,7 @@ function SetCommentForm({
 }) {
   const [comment, setComment] = useState(set.comment ?? "")
   const [templates, setTemplates] = useState<string[]>([])
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -79,9 +79,9 @@ function SetCommentForm({
   }
 
   const insertTemplate = (template: string) => {
-    const textarea = textareaRef.current
-    const selectionStart = textarea?.selectionStart ?? comment.length
-    const selectionEnd = textarea?.selectionEnd ?? comment.length
+    const input = inputRef.current
+    const selectionStart = input?.selectionStart ?? comment.length
+    const selectionEnd = input?.selectionEnd ?? comment.length
     const insertion =
       selectionStart === comment.length && comment && !comment.endsWith(" ")
         ? ` ${template}`
@@ -95,8 +95,8 @@ function SetCommentForm({
 
     setComment(nextComment)
     requestAnimationFrame(() => {
-      textarea?.focus()
-      textarea?.setSelectionRange(nextCursorPosition, nextCursorPosition)
+      input?.focus()
+      input?.setSelectionRange(nextCursorPosition, nextCursorPosition)
     })
   }
 
@@ -116,10 +116,10 @@ function SetCommentForm({
           ))}
         </div>
       )}
-      <Textarea
-        className="min-h-32 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+      <Input
+        className="h-11 rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
         placeholder="Rest, form notes, machine settings..."
-        ref={textareaRef}
+        ref={inputRef}
         value={comment}
         onChange={(event) => setComment(event.target.value)}
       />

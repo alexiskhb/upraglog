@@ -58,6 +58,7 @@ export function BottomMainBar() {
     select: (state) => state.location.href,
   })
   const selectedDate = useAppStore((state) => state.selectedDate)
+  const setSelectedDate = useAppStore((state) => state.setSelectedDate)
   const profiles =
     useAppStore((state) => state.profiles) ?? defaultAppSettings.profiles
   const selectedProfile =
@@ -137,6 +138,19 @@ export function BottomMainBar() {
     setReplaceWorkoutExerciseId(undefined)
     closeTaskUi()
     setMoreMenuOpen(false)
+    if (pathname.startsWith("/day")) {
+      const today = todayString()
+
+      if (selectedOrToday !== today) {
+        setSelectedDate(today)
+        void navigate({
+          to: "/day/$date",
+          params: { date: today },
+        })
+        return
+      }
+    }
+
     navigateToSelectedDay()
   }
 

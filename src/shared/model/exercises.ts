@@ -20,6 +20,7 @@ export const defaultExerciseCategories = [
   "Legs - Hip Hinge / Posterior Chain",
   "Legs - Quad Dominant",
   "Legs - Split Squat / Lunge",
+  "Mobility - Warm-Up / Rehab",
   "Shoulders - Front / Lateral Raise",
   "Shoulders - Overhead Press",
   "Shoulders - Rear Delts",

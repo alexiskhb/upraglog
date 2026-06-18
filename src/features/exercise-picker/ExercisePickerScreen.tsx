@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import Fuse from "fuse.js"
 import { useNavigate } from "@tanstack/react-router"
 import {
   ArrowDownAZ,
@@ -67,24 +66,115 @@ const exerciseSortLabels: Record<ExerciseSortOption, string> = {
 }
 
 function queryTokens(query: string) {
-  return query.toLowerCase().trim().split(/\s+/).filter(Boolean)
+  return [...new Set(searchTokens(query))]
+}
+
+function searchTokens(value: string) {
+  return (
+    value
+      .toLocaleLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .match(/[a-z0-9]+/g) ?? []
+  )
+}
+
+function candidateSearchTokens(value: string) {
+  const tokens = searchTokens(value)
+  const tokenSet = new Set(tokens)
+
+  for (let index = 0; index < tokens.length - 1; index += 1) {
+    tokenSet.add(`${tokens[index]}${tokens[index + 1]}`)
+  }
+
+  return [...tokenSet]
 }
 
 function categorySearchText(category: CategoryFilter) {
   return category === "favorites"
     ? "favorites"
-    : formatExerciseCategory(category).toLowerCase()
+    : formatExerciseCategory(category)
 }
 
 function exerciseSearchText(exercise: Exercise) {
-  return `${exercise.id} ${formatExerciseCategory(
-    exercise.category,
-  )}`.toLowerCase()
+  return `${exercise.id} ${formatExerciseCategory(exercise.category)}`
+}
+
+function fuzzyDistanceLimit(queryToken: string) {
+  if (queryToken.length < 4) {
+    return 0
+  }
+
+  return queryToken.length >= 8 ? 2 : 1
+}
+
+function isWithinEditDistance(
+  source: string,
+  target: string,
+  maxDistance: number,
+) {
+  if (Math.abs(source.length - target.length) > maxDistance) {
+    return false
+  }
+
+  let previousRow = Array.from({ length: target.length + 1 }, (_, index) => index)
+
+  for (let sourceIndex = 0; sourceIndex < source.length; sourceIndex += 1) {
+    const currentRow = [sourceIndex + 1]
+    let rowMinimum = currentRow[0]
+
+    for (let targetIndex = 0; targetIndex < target.length; targetIndex += 1) {
+      const substitutionCost =
+        source[sourceIndex] === target[targetIndex] ? 0 : 1
+      const distance = Math.min(
+        previousRow[targetIndex + 1] + 1,
+        currentRow[targetIndex] + 1,
+        previousRow[targetIndex] + substitutionCost,
+      )
+
+      currentRow.push(distance)
+      rowMinimum = Math.min(rowMinimum, distance)
+    }
+
+    if (rowMinimum > maxDistance) {
+      return false
+    }
+
+    previousRow = currentRow
+  }
+
+  return previousRow[target.length] <= maxDistance
+}
+
+function matchesCandidateToken(candidateToken: string, queryToken: string) {
+  if (candidateToken.startsWith(queryToken)) {
+    return true
+  }
+
+  const maxDistance = fuzzyDistanceLimit(queryToken)
+
+  if (maxDistance === 0 || candidateToken[0] !== queryToken[0]) {
+    return false
+  }
+
+  return (
+    isWithinEditDistance(
+      queryToken,
+      candidateToken.slice(0, queryToken.length),
+      maxDistance,
+    ) || isWithinEditDistance(queryToken, candidateToken, maxDistance)
+  )
 }
 
 function matchesSearchText(searchText: string, query: string) {
   const tokens = queryTokens(query)
-  return tokens.every((token) => searchText.includes(token))
+  const candidateTokens = candidateSearchTokens(searchText)
+
+  return tokens.every((queryToken) =>
+    candidateTokens.some((candidateToken) =>
+      matchesCandidateToken(candidateToken, queryToken),
+    ),
+  )
 }
 
 function matchesTokens(exercise: Exercise, query: string) {
@@ -239,23 +329,11 @@ export function ExercisePickerScreen() {
       return sortExercises(categoryFiltered, stats, sortOption)
     }
 
-    const fuse = new Fuse(categoryFiltered, {
-      keys: ["id", "category"],
-      threshold: 0.45,
-      ignoreLocation: true,
-      minMatchCharLength: 2,
-    })
-    const fuseResults = fuse.search(query).map((result) => result.item)
     const tokenResults = categoryFiltered.filter((exercise) =>
       matchesTokens(exercise, query),
     )
-    const unique = new Map<string, Exercise>()
 
-    for (const exercise of [...tokenResults, ...fuseResults]) {
-      unique.set(exercise.id, exercise)
-    }
-
-    return sortExercises([...unique.values()], stats, sortOption)
+    return sortExercises(tokenResults, stats, sortOption)
   }, [categoryFilter, exercises, query, sortOption, stats])
 
   const selectExercise = async (exercise: Exercise) => {
