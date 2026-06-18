@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState, type PointerEvent } from "react"
 import { useNavigate, useParams } from "@tanstack/react-router"
 import {
   closestCenter,
@@ -27,6 +27,7 @@ import {
   deleteSet,
   getWorkoutExerciseDetail,
   reorderSets,
+  startWorkoutTimer,
   updateSet,
   updateSetFinished,
 } from "@/db/repositories/workoutsRepo"
@@ -39,7 +40,10 @@ import {
 import { defaultAppSettings } from "@/shared/model/settings"
 import { formatDuration } from "@/shared/model/dates"
 import { getWorkoutProgress } from "@/shared/model/workoutProgress"
-import { getLatestSetFinishedAtAfterWorkoutStart } from "@/shared/model/workoutTimer"
+import {
+  getLatestSetFinishedAtAfterWorkoutStart,
+  isWorkoutTimerActive,
+} from "@/shared/model/workoutTimer"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
@@ -74,6 +78,19 @@ type ExerciseDirection = -1 | 1
 
 const horizontalSwipeIntentPx = 18
 const horizontalSwipeCommitPx = 72
+const nextActionDoubleTapMs = 360
+const nextActionMaxMovePx = 12
+const nextActionMaxDistancePx = 36
+
+type NextActionTap = {
+  time: number
+  x: number
+  y: number
+}
+
+type NextActionTapStart = NextActionTap & {
+  pointerId: number
+}
 
 function timestampMs(iso?: string) {
   if (!iso) {
@@ -120,6 +137,17 @@ function isTrainingSwipeBlocked(target: EventTarget | null) {
     Boolean(
       target.closest(
         "button,input,textarea,select,a,[role='button'],[data-training-swipe-block='true']",
+      ),
+    )
+  )
+}
+
+function isTrainingNextActionBlocked(target: EventTarget | null) {
+  return (
+    target instanceof Element &&
+    Boolean(
+      target.closest(
+        "button,input,textarea,select,a,[role='button'],[data-training-swipe-block='true'],[data-training-next-block='true']",
       ),
     )
   )
@@ -202,6 +230,11 @@ export function TrainingScreen() {
   ] = useState(defaultAppSettings.autoFinishWorkoutTimerWhenAllSetsFinished)
   const [message] = useState<string | undefined>()
   const [timerNowMs, setTimerNowMs] = useState(() => Date.now())
+  const nextActionTapStartRef = useRef<NextActionTapStart | undefined>(
+    undefined,
+  )
+  const previousNextActionTapRef = useRef<NextActionTap | undefined>(undefined)
+  const nextActionBusyRef = useRef(false)
   const workoutTimerActive = Boolean(
     detail?.workout.startedAt && !detail.workout.endedAt,
   )
@@ -327,6 +360,21 @@ export function TrainingScreen() {
     })
   }
 
+  const navigateToNextExercise = () => {
+    const nextWorkoutExerciseId = resolveAdjacentWorkoutExerciseId(1)
+
+    if (!nextWorkoutExerciseId) {
+      return false
+    }
+
+    setExerciseTransitionClass(getExerciseTransitionClass(1))
+    void navigate({
+      to: "/training/$workoutExerciseId",
+      params: { workoutExerciseId: nextWorkoutExerciseId },
+    })
+    return true
+  }
+
   const exerciseSwipeNavigation = useHorizontalSwipeNavigation({
     canNavigate: (direction) =>
       Boolean(resolveAdjacentWorkoutExerciseId(direction)),
@@ -368,6 +416,119 @@ export function TrainingScreen() {
       autoFinishWorkoutTimer: autoFinishWorkoutTimerWhenAllSetsFinished,
     })
     await refreshDetail()
+  }
+
+  const runNextAction = async () => {
+    if (!detail || nextActionBusyRef.current) {
+      return
+    }
+
+    nextActionBusyRef.current = true
+
+    try {
+      if (!isWorkoutTimerActive({ workout: detail.workout })) {
+        await startWorkoutTimer(
+          detail.workout.localDate,
+          detail.workout.profileName,
+        )
+        setTimerNowMs(Date.now())
+        await refreshDetail()
+        return
+      }
+
+      const nextUnfinishedSet = detail.sets.find((set) => !set.finishedAt)
+
+      if (!nextUnfinishedSet) {
+        navigateToNextExercise()
+        return
+      }
+
+      const exerciseWillBeFinished = detail.sets.every(
+        (set) => set.finishedAt || set.id === nextUnfinishedSet.id,
+      )
+
+      await updateSetFinished(nextUnfinishedSet.id, true, {
+        autoSortWorkoutExercises: autoSortWorkoutExercisesByFirstFinishedSet,
+        autoFinishWorkoutTimer: autoFinishWorkoutTimerWhenAllSetsFinished,
+      })
+
+      if (exerciseWillBeFinished) {
+        bumpRefresh()
+
+        if (navigateToNextExercise()) {
+          return
+        }
+      }
+
+      await refreshDetail()
+    } finally {
+      nextActionBusyRef.current = false
+    }
+  }
+
+  const handleNextActionPointerDown = (event: PointerEvent<HTMLElement>) => {
+    if (event.button !== 0 || isTrainingNextActionBlocked(event.target)) {
+      nextActionTapStartRef.current = undefined
+      previousNextActionTapRef.current = undefined
+      return
+    }
+
+    nextActionTapStartRef.current = {
+      pointerId: event.pointerId,
+      time: window.performance.now(),
+      x: event.clientX,
+      y: event.clientY,
+    }
+  }
+
+  const handleNextActionPointerUp = (event: PointerEvent<HTMLElement>) => {
+    const tapStart = nextActionTapStartRef.current
+    nextActionTapStartRef.current = undefined
+
+    if (
+      !tapStart ||
+      tapStart.pointerId !== event.pointerId ||
+      isTrainingNextActionBlocked(event.target)
+    ) {
+      return
+    }
+
+    const distanceMoved = Math.hypot(
+      event.clientX - tapStart.x,
+      event.clientY - tapStart.y,
+    )
+
+    if (distanceMoved > nextActionMaxMovePx) {
+      previousNextActionTapRef.current = undefined
+      return
+    }
+
+    const previousTap = previousNextActionTapRef.current
+    const currentTap = {
+      time: window.performance.now(),
+      x: event.clientX,
+      y: event.clientY,
+    }
+
+    if (
+      previousTap &&
+      currentTap.time - previousTap.time <= nextActionDoubleTapMs &&
+      Math.hypot(currentTap.x - previousTap.x, currentTap.y - previousTap.y) <=
+        nextActionMaxDistancePx
+    ) {
+      previousNextActionTapRef.current = undefined
+      event.preventDefault()
+      event.stopPropagation()
+      void runNextAction()
+      return
+    }
+
+    previousNextActionTapRef.current = currentTap
+  }
+
+  const handleNextActionPointerCancel = () => {
+    nextActionTapStartRef.current = undefined
+    previousNextActionTapRef.current = undefined
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -412,6 +573,18 @@ export function TrainingScreen() {
       className={`gap-4 ${exerciseTransitionClass}`}
       key={detail.workoutExercise.id}
       {...exerciseSwipeNavigation}
+      onPointerCancel={() => {
+        exerciseSwipeNavigation.onPointerCancel()
+        handleNextActionPointerCancel()
+      }}
+      onPointerDown={(event) => {
+        exerciseSwipeNavigation.onPointerDown(event)
+        handleNextActionPointerDown(event)
+      }}
+      onPointerUp={(event) => {
+        exerciseSwipeNavigation.onPointerUp(event)
+        handleNextActionPointerUp(event)
+      }}
     >
       <div className="pt-3">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
@@ -451,7 +624,7 @@ export function TrainingScreen() {
         <WorkoutLapTimer detail={detail} nowMs={timerNowMs} />
       </div>
 
-      <div className="space-y-4 py-2">
+      <div className="space-y-4 py-2" data-training-next-block="true">
         {fields.map((field) => (
           <NumericStepper
             isDuration={field.isDuration}
