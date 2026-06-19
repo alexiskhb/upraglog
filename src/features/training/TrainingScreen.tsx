@@ -40,10 +40,7 @@ import {
 import { defaultAppSettings } from "@/shared/model/settings"
 import { formatDuration } from "@/shared/model/dates"
 import { getWorkoutProgress } from "@/shared/model/workoutProgress"
-import {
-  getLatestSetFinishedAtAfterWorkoutStart,
-  isWorkoutTimerActive,
-} from "@/shared/model/workoutTimer"
+import { getLatestSetFinishedAtAfterWorkoutStart } from "@/shared/model/workoutTimer"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { WorkoutActiveTimer } from "@/shared/ui/WorkoutActiveTimer"
@@ -426,7 +423,7 @@ export function TrainingScreen() {
     nextActionBusyRef.current = true
 
     try {
-      if (!isWorkoutTimerActive({ workout: detail.workout })) {
+      if (!detail.workout.startedAt) {
         await startWorkoutTimer(
           detail.workout.localDate,
           detail.workout.profileName,
