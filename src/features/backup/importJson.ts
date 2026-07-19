@@ -3,8 +3,44 @@ import { appSettingsId } from "@/shared/model/settings"
 import type { BackupFile } from "./backupTypes"
 import { backupFileSchema } from "./backupValidation"
 
+export type RestoreDataSummary = {
+  exerciseCount: number
+  profileCount: number
+  setCount: number
+  workoutCount: number
+}
+
 export function parseBackupJson(text: string): BackupFile {
   return backupFileSchema.parse(JSON.parse(text))
+}
+
+export function getBackupRestoreDataSummary(
+  backup: BackupFile,
+): RestoreDataSummary {
+  return {
+    exerciseCount: backup.data.exercises.length,
+    profileCount: backup.data.settings.profiles.length,
+    setCount: backup.data.sets.length,
+    workoutCount: backup.data.workouts.length,
+  }
+}
+
+export async function getCurrentRestoreDataSummary(): Promise<RestoreDataSummary> {
+  const [exerciseCount, workoutCount, setCount, settings] = await Promise.all([
+    db.exercises.count(),
+    db.workouts.count(),
+    db.sets.count(),
+    db.settings.get(appSettingsId),
+  ])
+
+  return {
+    exerciseCount,
+    profileCount: Array.isArray(settings?.profiles)
+      ? settings.profiles.length
+      : 0,
+    setCount,
+    workoutCount,
+  }
 }
 
 export async function restoreBackup(backup: BackupFile) {

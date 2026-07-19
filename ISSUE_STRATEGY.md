@@ -276,7 +276,22 @@ URL: https://github.com/alexiskhb/upraglog/issues/5
 
 Original issue text: `Add a warning prompt when 'Import JSON' or 'Restore from Drive' will overwrite or erase existing workout history`
 
-Status: Unhandled
+Status: Handled
+
+Status note:
+
+- Added a pending restore confirmation flow in
+  `src/features/settings/SettingsScreen.tsx` using the existing
+  `AlertDialog` components.
+- JSON imports now parse the selected file first, reset the hidden input, and
+  wait for confirmation before calling `restoreBackup`.
+- Split Google Drive restore in `src/features/backup/googleDriveBackup.ts` so
+  Drive restore loads and parses the backup before Settings applies it.
+- Added current and incoming restore counts through
+  `src/features/backup/importJson.ts` so the warning can show workouts, sets,
+  exercises, and profiles before local data is replaced.
+- Verified with `npm run lint` and `npm run build`. No browser checks were run,
+  per `AGENTS.md`.
 
 Relevant files:
 

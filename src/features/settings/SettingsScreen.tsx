@@ -8,6 +8,16 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ScreenContainer } from "@/shared/ui/ScreenContainer"
 import { ActionButton } from "@/shared/ui/ActionButton"
 import { useAppStore } from "@/shared/store/appStore"
@@ -25,14 +35,21 @@ import {
 import { exportTrainingLogCsv } from "@/features/backup/exportTrainingLogCsv"
 import {
   backupToGoogleDrive,
+  loadBackupFromGoogleDrive,
   preloadGoogleDriveBackup,
-  restoreFromGoogleDrive,
 } from "@/features/backup/googleDriveBackup"
 import {
   shareTrainingLogCsv,
   type ShareTrainingLogCsvResult,
 } from "@/features/backup/shareTrainingLogCsv"
-import { parseBackupJson, restoreBackup } from "@/features/backup/importJson"
+import type { BackupFile } from "@/features/backup/backupTypes"
+import {
+  getBackupRestoreDataSummary,
+  getCurrentRestoreDataSummary,
+  parseBackupJson,
+  restoreBackup,
+  type RestoreDataSummary,
+} from "@/features/backup/importJson"
 
 function formatShareResultMessage(result: ShareTrainingLogCsvResult) {
   if (result.status === "shared") {
@@ -57,6 +74,34 @@ function formatShareResultMessage(result: ShareTrainingLogCsvResult) {
 const privacyPolicyPath = `${import.meta.env.BASE_URL}privacy.html`
 const termsOfServicePath = `${import.meta.env.BASE_URL}terms.html`
 
+type PendingRestoreSource = "drive" | "json"
+
+type PendingRestore = {
+  backup: BackupFile
+  currentSummary: RestoreDataSummary
+  fileName: string
+  importedSummary: RestoreDataSummary
+  source: PendingRestoreSource
+  successMessage: string
+}
+
+function formatCount(label: string, count: number) {
+  return `${count} ${label}${count === 1 ? "" : "s"}`
+}
+
+function formatRestoreDataSummary(summary: RestoreDataSummary) {
+  return [
+    formatCount("workout", summary.workoutCount),
+    formatCount("set", summary.setCount),
+    formatCount("exercise", summary.exerciseCount),
+    formatCount("profile", summary.profileCount),
+  ].join(", ")
+}
+
+function restoreSourceLabel(source: PendingRestoreSource) {
+  return source === "drive" ? "Google Drive backup" : "JSON backup"
+}
+
 export function SettingsScreen() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
@@ -78,6 +123,12 @@ export function SettingsScreen() {
     useState("")
   const [message, setMessage] = useState<string | undefined>()
   const [googleDriveBusy, setGoogleDriveBusy] = useState(false)
+  const [pendingRestore, setPendingRestore] = useState<
+    PendingRestore | undefined
+  >()
+  const [restoreBusy, setRestoreBusy] = useState(false)
+  const restoreControlsDisabled =
+    googleDriveBusy || restoreBusy || Boolean(pendingRestore)
 
   const setSpreadsheetDrafts = (appSettings: AppSettings) => {
     setSpreadsheetDayLimitDraft(
@@ -285,25 +336,96 @@ export function SettingsScreen() {
     }
   }
 
+  const resetImportFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const refreshSettingsAfterRestore = async () => {
+    const appSettings = await getSettings()
+
+    setSettings(appSettings)
+    setSpreadsheetDrafts(appSettings)
+    setProfileState(appSettings.profiles, appSettings.selectedProfile)
+    bumpRefresh()
+  }
+
+  const queuePendingRestore = async ({
+    backup,
+    fileName,
+    source,
+    successMessage,
+  }: {
+    backup: BackupFile
+    fileName: string
+    source: PendingRestoreSource
+    successMessage: string
+  }) => {
+    const currentSummary = await getCurrentRestoreDataSummary()
+
+    setPendingRestore({
+      backup,
+      currentSummary,
+      fileName,
+      importedSummary: getBackupRestoreDataSummary(backup),
+      source,
+      successMessage,
+    })
+  }
+
   const importJson = async (file: File) => {
     try {
       const text = await file.text()
       const backup = parseBackupJson(text)
-      await restoreBackup(backup)
-      const appSettings = await getSettings()
-      setSettings(appSettings)
-      setSpreadsheetDrafts(appSettings)
-      setProfileState(appSettings.profiles, appSettings.selectedProfile)
-      bumpRefresh()
-      setMessage("Backup imported.")
+      await queuePendingRestore({
+        backup,
+        fileName: file.name || "Selected JSON file",
+        source: "json",
+        successMessage: "Backup imported.",
+      })
+      setMessage("Review the restore warning.")
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Backup import failed.",
       )
     } finally {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
+      resetImportFileInput()
+    }
+  }
+
+  const clearPendingRestore = () => {
+    if (restoreBusy) {
+      return
+    }
+
+    setPendingRestore(undefined)
+    resetImportFileInput()
+  }
+
+  const confirmPendingRestore = async () => {
+    const restore = pendingRestore
+
+    if (!restore || restoreBusy) {
+      return
+    }
+
+    setRestoreBusy(true)
+    setMessage("Restoring backup...")
+
+    try {
+      await restoreBackup(restore.backup)
+      await refreshSettingsAfterRestore()
+      setPendingRestore(undefined)
+      setMessage(restore.successMessage)
+    } catch (error) {
+      setPendingRestore(undefined)
+      setMessage(
+        error instanceof Error ? error.message : "Backup restore failed.",
+      )
+    } finally {
+      setRestoreBusy(false)
+      resetImportFileInput()
     }
   }
 
@@ -323,26 +445,19 @@ export function SettingsScreen() {
   }
 
   const restoreGoogleDrive = async () => {
-    if (
-      !window.confirm(
-        "Restore from Google Drive? This replaces the local training log.",
-      )
-    ) {
-      return
-    }
-
     setGoogleDriveBusy(true)
     setMessage("Opening Google Drive...")
 
     try {
-      const restoreMessage = await restoreFromGoogleDrive()
-      const appSettings = await getSettings()
+      const loadedBackup = await loadBackupFromGoogleDrive()
 
-      setSettings(appSettings)
-      setSpreadsheetDrafts(appSettings)
-      setProfileState(appSettings.profiles, appSettings.selectedProfile)
-      bumpRefresh()
-      setMessage(restoreMessage)
+      await queuePendingRestore({
+        backup: loadedBackup.backup,
+        fileName: loadedBackup.fileName,
+        source: "drive",
+        successMessage: `Google Drive backup restored from ${loadedBackup.fileName}.`,
+      })
+      setMessage("Review the restore warning.")
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Google Drive restore failed.",
@@ -646,6 +761,7 @@ export function SettingsScreen() {
             Export JSON
           </ActionButton>
           <ActionButton
+            disabled={restoreControlsDisabled}
             tone="neutral"
             onClick={() => fileInputRef.current?.click()}
           >
@@ -654,14 +770,14 @@ export function SettingsScreen() {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <ActionButton
-            disabled={googleDriveBusy}
+            disabled={googleDriveBusy || restoreBusy}
             tone="secondary"
             onClick={backupGoogleDrive}
           >
             Backup to Drive
           </ActionButton>
           <ActionButton
-            disabled={googleDriveBusy}
+            disabled={restoreControlsDisabled}
             tone="neutral"
             onClick={restoreGoogleDrive}
           >
@@ -671,6 +787,7 @@ export function SettingsScreen() {
         <input
           accept="application/json"
           className="hidden"
+          disabled={restoreControlsDisabled}
           ref={fileInputRef}
           type="file"
           onChange={(event) => {
@@ -756,6 +873,67 @@ export function SettingsScreen() {
           </a>
         </div>
       </section>
+
+      {pendingRestore && (
+        <AlertDialog
+          open={Boolean(pendingRestore)}
+          onOpenChange={(open) => {
+            if (!open) {
+              clearPendingRestore()
+            }
+          }}
+        >
+          <AlertDialogContent className="rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Restore backup?</AlertDialogTitle>
+              <AlertDialogDescription
+                asChild
+                className="space-y-3 text-left text-zinc-400"
+              >
+                <div>
+                  <p>
+                    Restoring {restoreSourceLabel(pendingRestore.source)} from{" "}
+                    <span className="font-medium text-zinc-200">
+                      {pendingRestore.fileName}
+                    </span>{" "}
+                    will replace local exercises, profiles, workouts, sets, and
+                    settings.
+                  </p>
+                  <div className="rounded-md border border-white/10 bg-[var(--app-surface)] p-3 text-xs">
+                    <div>
+                      Current:{" "}
+                      {formatRestoreDataSummary(pendingRestore.currentSummary)}
+                    </div>
+                    <div className="mt-1">
+                      Incoming:{" "}
+                      {formatRestoreDataSummary(pendingRestore.importedSummary)}
+                    </div>
+                  </div>
+                  <p>Cancel leaves the local training log unchanged.</p>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="border-white/10 bg-[var(--app-surface)]">
+              <AlertDialogCancel
+                className="rounded-md border-white/10 bg-white/10 text-zinc-100 hover:bg-white/15"
+                disabled={restoreBusy}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="rounded-md bg-red-500/20 text-red-100 ring-1 ring-red-400/25 hover:bg-red-500/30"
+                disabled={restoreBusy}
+                onClick={(event) => {
+                  event.preventDefault()
+                  void confirmPendingRestore()
+                }}
+              >
+                {restoreBusy ? "Restoring..." : "Restore"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </ScreenContainer>
   )
 }

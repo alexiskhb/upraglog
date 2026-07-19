@@ -1,5 +1,6 @@
 import { exportBackupJson } from "./exportJson"
-import { parseBackupJson, restoreBackup } from "./importJson"
+import { parseBackupJson } from "./importJson"
+import type { BackupFile } from "./backupTypes"
 
 const googleIdentityScriptSrc = "https://accounts.google.com/gsi/client"
 const driveApiBaseUrl = "https://www.googleapis.com/drive/v3"
@@ -46,6 +47,12 @@ type DriveFileMetadata = {
 
 type DriveFileList = {
   files?: DriveFileMetadata[]
+}
+
+export type GoogleDriveBackupLoadResult = {
+  backup: BackupFile
+  fileName: string
+  modifiedTime?: string
 }
 
 declare global {
@@ -360,7 +367,7 @@ export async function backupToGoogleDrive() {
   return `Google Drive backup saved at ${timestamp}.`
 }
 
-export async function restoreFromGoogleDrive() {
+export async function loadBackupFromGoogleDrive(): Promise<GoogleDriveBackupLoadResult> {
   const accessToken = await requestDriveAccessToken()
   const file = await findGoogleDriveBackupFile(accessToken)
 
@@ -371,7 +378,9 @@ export async function restoreFromGoogleDrive() {
   const backupJson = await downloadGoogleDriveBackup(accessToken, file)
   const backup = parseBackupJson(backupJson)
 
-  await restoreBackup(backup)
-
-  return `Google Drive backup restored from ${file.name}.`
+  return {
+    backup,
+    fileName: file.name,
+    modifiedTime: file.modifiedTime,
+  }
 }
