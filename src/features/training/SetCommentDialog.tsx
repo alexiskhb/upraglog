@@ -26,8 +26,8 @@ export function SetCommentDialog({
 }: SetCommentDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl">
-        <DialogHeader>
+      <DialogContent className="top-4 flex max-h-[calc(100dvh-2rem)] translate-y-0 flex-col gap-3 overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:top-[42%] sm:-translate-y-1/2">
+        <DialogHeader className="shrink-0 pr-8">
           <DialogTitle>Set Comment</DialogTitle>
         </DialogHeader>
         {set && (
@@ -101,9 +101,9 @@ function SetCommentForm({
   }
 
   return (
-    <>
+    <div className="flex min-w-0 flex-col gap-3">
       {templates.length > 0 && (
-        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        <div className="-mx-1 flex min-w-0 gap-2 overflow-x-auto px-1 pb-1">
           {templates.map((template) => (
             <button
               className="h-10 shrink-0 cursor-pointer rounded-md border border-white/10 bg-white/5 px-3 text-sm text-zinc-200 transition hover:border-cyan-300/50 hover:bg-white/10"
@@ -131,6 +131,6 @@ function SetCommentForm({
           Clear
         </ActionButton>
       </div>
-    </>
+    </div>
   )
 }

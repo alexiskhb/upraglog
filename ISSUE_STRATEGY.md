@@ -397,7 +397,19 @@ URL: https://github.com/alexiskhb/upraglog/issues/7
 
 Original issue text: `Shift "Set Comment" popup position upward`
 
-Status: Unhandled
+Status: Handled
+
+Status note:
+
+- Updated `src/features/training/SetCommentDialog.tsx` so the Set Comment
+  dialog opens near the top of small viewports and slightly above center on
+  larger screens.
+- Added a dynamic viewport height bound and dialog-level vertical scrolling so
+  the input, close button, and Save/Clear actions stay reachable with long
+  template lists or constrained viewport height.
+- Kept template chips horizontally scrollable without widening the dialog.
+- Verified with `npm run lint` and `npm run build`. No browser checks were run,
+  per `AGENTS.md`.
 
 Relevant files:
 
