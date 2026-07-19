@@ -91,6 +91,7 @@ const settingsSchema = z.object({
   profiles: z.array(z.string()).optional(),
   selectedProfile: z.string().optional(),
   exportAllProfiles: z.boolean().optional(),
+  spreadsheetExportDayLimit: z.number().nullable().optional(),
   spreadsheetExportMonthLimit: z.number().nullable().optional(),
   spreadsheetShareMessage: z.string().optional(),
   spreadsheetShareIncludeMessage: z.boolean().optional(),

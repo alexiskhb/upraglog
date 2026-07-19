@@ -4,7 +4,7 @@ import { exportTrainingLogCsv } from "./exportTrainingLogCsv"
 import { buildTrainingLogShareInstructions } from "./shareTrainingLogMessage"
 
 type ShareTrainingLogCsvOptions = {
-  monthLimit?: number | null
+  dayLimit?: number | null
   shareMessage?: string
   includeMessage?: boolean
   includeAiInstructions?: boolean
@@ -53,10 +53,10 @@ export async function shareTrainingLogCsv(
   options: ShareTrainingLogCsvOptions = {},
 ): Promise<ShareTrainingLogCsvResult> {
   const settings = await getSettings()
-  const monthLimit =
-    "monthLimit" in options
-      ? options.monthLimit
-      : settings.spreadsheetExportMonthLimit
+  const dayLimit =
+    "dayLimit" in options
+      ? options.dayLimit
+      : settings.spreadsheetExportDayLimit
   const includeMessage =
     options.includeMessage ?? settings.spreadsheetShareIncludeMessage
   const includeAiInstructions =
@@ -66,7 +66,7 @@ export async function shareTrainingLogCsv(
     options.attachMessageAsFile ??
     settings.spreadsheetShareAttachMessageAsFile
   const shareMessage = options.shareMessage ?? settings.spreadsheetShareMessage
-  const { filename, text } = await exportTrainingLogCsv({ monthLimit })
+  const { filename, text } = await exportTrainingLogCsv({ dayLimit })
   const file = new File([text], filename, { type: "text/csv" })
   const shareTextParts = [
     includeMessage ? shareMessage.trim() : "",

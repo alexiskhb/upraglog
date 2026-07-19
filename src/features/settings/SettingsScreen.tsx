@@ -72,7 +72,7 @@ export function SettingsScreen() {
   )
   const [newProfileName, setNewProfileName] = useState("")
   const [newSetCommentTemplate, setNewSetCommentTemplate] = useState("")
-  const [spreadsheetMonthLimitDraft, setSpreadsheetMonthLimitDraft] =
+  const [spreadsheetDayLimitDraft, setSpreadsheetDayLimitDraft] =
     useState("")
   const [spreadsheetShareMessageDraft, setSpreadsheetShareMessageDraft] =
     useState("")
@@ -80,8 +80,8 @@ export function SettingsScreen() {
   const [googleDriveBusy, setGoogleDriveBusy] = useState(false)
 
   const setSpreadsheetDrafts = (appSettings: AppSettings) => {
-    setSpreadsheetMonthLimitDraft(
-      appSettings.spreadsheetExportMonthLimit?.toString() ?? "",
+    setSpreadsheetDayLimitDraft(
+      appSettings.spreadsheetExportDayLimit?.toString() ?? "",
     )
     setSpreadsheetShareMessageDraft(appSettings.spreadsheetShareMessage)
   }
@@ -210,43 +210,43 @@ export function SettingsScreen() {
   }
 
   const exportSpreadsheet = async () => {
-    const monthLimit = await saveSpreadsheetMonthLimit()
+    const dayLimit = await saveSpreadsheetDayLimit()
 
-    if (monthLimit === undefined) {
+    if (dayLimit === undefined) {
       return
     }
 
     const { filename, text } = await exportTrainingLogCsv({
-      monthLimit,
+      dayLimit,
     })
 
     downloadTextFile(filename, text, "text/csv;charset=utf-8")
     setMessage("Spreadsheet CSV exported.")
   }
 
-  const saveSpreadsheetMonthLimit = async () => {
-    if (settings.spreadsheetExportMonthLimit === null) {
+  const saveSpreadsheetDayLimit = async () => {
+    if (settings.spreadsheetExportDayLimit === null) {
       return null
     }
 
-    const monthLimit = Number(spreadsheetMonthLimitDraft)
+    const dayLimit = Number(spreadsheetDayLimitDraft)
 
-    if (!Number.isFinite(monthLimit) || monthLimit < 1) {
-      setSpreadsheetMonthLimitDraft(
-        settings.spreadsheetExportMonthLimit?.toString() ?? "",
+    if (!Number.isFinite(dayLimit) || dayLimit < 1) {
+      setSpreadsheetDayLimitDraft(
+        settings.spreadsheetExportDayLimit?.toString() ?? "",
       )
-      setMessage("Enter a month count greater than 0.")
+      setMessage("Enter a day count greater than 0.")
       return undefined
     }
 
-    const normalizedMonthLimit = Math.floor(monthLimit)
+    const normalizedDayLimit = Math.floor(dayLimit)
 
-    setSpreadsheetMonthLimitDraft(normalizedMonthLimit.toString())
-    if (normalizedMonthLimit !== settings.spreadsheetExportMonthLimit) {
-      await saveSettings({ spreadsheetExportMonthLimit: normalizedMonthLimit })
+    setSpreadsheetDayLimitDraft(normalizedDayLimit.toString())
+    if (normalizedDayLimit !== settings.spreadsheetExportDayLimit) {
+      await saveSettings({ spreadsheetExportDayLimit: normalizedDayLimit })
     }
 
-    return normalizedMonthLimit
+    return normalizedDayLimit
   }
 
   const saveSpreadsheetShareMessage = async () => {
@@ -260,15 +260,15 @@ export function SettingsScreen() {
 
   const shareSpreadsheet = async () => {
     try {
-      const monthLimit = await saveSpreadsheetMonthLimit()
+      const dayLimit = await saveSpreadsheetDayLimit()
 
-      if (monthLimit === undefined) {
+      if (dayLimit === undefined) {
         return
       }
 
       const shareMessage = await saveSpreadsheetShareMessage()
       const result = await shareTrainingLogCsv({
-        monthLimit,
+        dayLimit,
         shareMessage,
         includeMessage: settings.spreadsheetShareIncludeMessage,
         includeAiInstructions: settings.spreadsheetShareIncludeAiInstructions,
@@ -486,31 +486,31 @@ export function SettingsScreen() {
             </Label>
           </span>
           <Switch
-            checked={settings.spreadsheetExportMonthLimit === null}
+            checked={settings.spreadsheetExportDayLimit === null}
             className="data-checked:bg-cyan-500"
             onCheckedChange={(exportAllHistory) => {
-              const monthLimit = exportAllHistory ? null : 3
+              const dayLimit = exportAllHistory ? null : 90
 
-              setSpreadsheetMonthLimitDraft(monthLimit?.toString() ?? "")
-              void saveSettings({ spreadsheetExportMonthLimit: monthLimit })
+              setSpreadsheetDayLimitDraft(dayLimit?.toString() ?? "")
+              void saveSettings({ spreadsheetExportDayLimit: dayLimit })
             }}
           />
         </label>
         <div className="space-y-2">
           <Label className="text-xs uppercase tracking-normal text-zinc-400">
-            Last Months
+            Last Days
           </Label>
           <Input
             className="h-11 rounded-md border-white/10 bg-[var(--app-surface)] text-zinc-100 placeholder:text-zinc-600 focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
-            disabled={settings.spreadsheetExportMonthLimit === null}
+            disabled={settings.spreadsheetExportDayLimit === null}
             inputMode="numeric"
             min="1"
             placeholder="All"
             type="number"
-            value={spreadsheetMonthLimitDraft}
-            onBlur={() => void saveSpreadsheetMonthLimit()}
+            value={spreadsheetDayLimitDraft}
+            onBlur={() => void saveSpreadsheetDayLimit()}
             onChange={(event) =>
-              setSpreadsheetMonthLimitDraft(event.target.value)
+              setSpreadsheetDayLimitDraft(event.target.value)
             }
             onKeyDown={(event) => {
               if (event.key === "Enter") {

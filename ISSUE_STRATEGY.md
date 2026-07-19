@@ -141,7 +141,21 @@ URL: https://github.com/alexiskhb/upraglog/issues/3
 
 Original issue text: `Change 'LAST MONTHS' spreadsheet export option to be set in days`
 
-Status: Unhandled
+Status: Handled
+
+Status note:
+
+- Replaced the persisted spreadsheet range setting with
+  `spreadsheetExportDayLimit` across settings state, backup export/import
+  validation, CSV export, and share export.
+- Preserved old settings and backup compatibility by normalizing legacy
+  `spreadsheetExportMonthLimit` values to days using `monthLimit * 30`.
+- Updated the Settings UI from "Last Months" to "Last Days"; disabling "Export
+  All History" now defaults to `90` days.
+- Made the CSV range inclusive, so a day limit of `1` exports only workouts on
+  the current local day.
+- Verified with `npm run lint` and `npm run build`. No browser checks were run,
+  per `AGENTS.md`.
 
 Relevant files:
 

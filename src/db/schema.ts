@@ -71,7 +71,7 @@ export type AppSettings = {
   profiles: string[]
   selectedProfile: string
   exportAllProfiles: boolean
-  spreadsheetExportMonthLimit: number | null
+  spreadsheetExportDayLimit: number | null
   spreadsheetShareMessage: string
   spreadsheetShareIncludeMessage: boolean
   spreadsheetShareIncludeAiInstructions: boolean
@@ -87,6 +87,7 @@ export type StoredAppSettings = AppSettings & {
   updatedAt: string
   keepScreenOnDuringTraining?: boolean
   skipEmptyDaysOnSwipe?: boolean
+  spreadsheetExportMonthLimit?: number | null
   unitSystem?: "metric" | "imperial"
 }
 

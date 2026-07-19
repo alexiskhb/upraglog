@@ -1,4 +1,4 @@
-import { subMonths } from "date-fns"
+import { subDays } from "date-fns"
 import { db } from "@/db/db"
 import { getSettings } from "@/db/repositories/settingsRepo"
 import type {
@@ -38,7 +38,7 @@ const csvHeaders = [
 type TrainingLogRow = Array<string | number | undefined>
 
 type ExportTrainingLogCsvOptions = {
-  monthLimit?: number | null
+  dayLimit?: number | null
 }
 
 function csvEscape(value: string | number | undefined) {
@@ -110,12 +110,14 @@ function formatSetFinished(set?: SetEntry) {
   return set.finishedAt ? "Yes" : "No"
 }
 
-function getExportStartDate(monthLimit?: number | null) {
-  if (!monthLimit || monthLimit < 1) {
+function getExportStartDate(dayLimit?: number | null) {
+  if (!dayLimit || !Number.isFinite(dayLimit) || dayLimit < 1) {
     return undefined
   }
 
-  return toLocalDateString(subMonths(new Date(), Math.floor(monthLimit)))
+  const inclusiveDayCount = Math.floor(dayLimit)
+
+  return toLocalDateString(subDays(new Date(), inclusiveDayCount - 1))
 }
 
 function byWorkoutExportOrder(a: Workout, b: Workout) {
@@ -183,7 +185,7 @@ export async function exportTrainingLogCsv(
   const setsByWorkoutExerciseId = new Map<string, SetEntry[]>()
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
   const rows: TrainingLogRow[] = []
-  const exportStartDate = getExportStartDate(options.monthLimit)
+  const exportStartDate = getExportStartDate(options.dayLimit)
 
   for (const workoutExercise of workoutExercises) {
     const current =

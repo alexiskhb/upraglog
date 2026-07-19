@@ -18,7 +18,7 @@ export const defaultAppSettings: AppSettings = {
   profiles: [...defaultProfileNames],
   selectedProfile: defaultProfileName,
   exportAllProfiles: true,
-  spreadsheetExportMonthLimit: null,
+  spreadsheetExportDayLimit: null,
   spreadsheetShareMessage: defaultSpreadsheetShareMessage,
   spreadsheetShareIncludeMessage: true,
   spreadsheetShareIncludeAiInstructions: true,
@@ -47,16 +47,36 @@ export function createDefaultStoredAppSettings(
   }
 }
 
-function normalizeSpreadsheetMonthLimit(monthLimit?: number | null) {
-  if (monthLimit === null) {
+function normalizePositiveIntegerLimit(limit?: number | null) {
+  if (limit === null) {
     return null
   }
 
-  if (!monthLimit || !Number.isFinite(monthLimit) || monthLimit < 1) {
+  if (!limit || !Number.isFinite(limit) || limit < 1) {
     return null
   }
 
-  return Math.floor(monthLimit)
+  return Math.floor(limit)
+}
+
+function monthLimitToDayLimit(monthLimit?: number | null) {
+  const normalizedMonthLimit = normalizePositiveIntegerLimit(monthLimit)
+
+  return normalizedMonthLimit === null ? null : normalizedMonthLimit * 30
+}
+
+function resolveSpreadsheetExportDayLimit(
+  settings?: Partial<StoredAppSettings>,
+) {
+  if (settings?.spreadsheetExportDayLimit !== undefined) {
+    return settings.spreadsheetExportDayLimit
+  }
+
+  if (settings?.spreadsheetExportMonthLimit !== undefined) {
+    return monthLimitToDayLimit(settings.spreadsheetExportMonthLimit)
+  }
+
+  return defaultAppSettings.spreadsheetExportDayLimit
 }
 
 export function normalizeSettings(
@@ -66,10 +86,7 @@ export function normalizeSettings(
     settings?.profiles,
     settings?.selectedProfile,
   )
-  const spreadsheetExportMonthLimit =
-    settings?.spreadsheetExportMonthLimit === undefined
-      ? defaultAppSettings.spreadsheetExportMonthLimit
-      : settings.spreadsheetExportMonthLimit
+  const spreadsheetExportDayLimit = resolveSpreadsheetExportDayLimit(settings)
 
   return {
     keepScreenOn:
@@ -84,8 +101,8 @@ export function normalizeSettings(
     selectedProfile: resolvedProfiles.selectedProfile,
     exportAllProfiles:
       settings?.exportAllProfiles ?? defaultAppSettings.exportAllProfiles,
-    spreadsheetExportMonthLimit: normalizeSpreadsheetMonthLimit(
-      spreadsheetExportMonthLimit,
+    spreadsheetExportDayLimit: normalizePositiveIntegerLimit(
+      spreadsheetExportDayLimit,
     ),
     spreadsheetShareMessage:
       settings?.spreadsheetShareMessage?.trim() ||
