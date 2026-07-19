@@ -210,8 +210,14 @@ export function SettingsScreen() {
   }
 
   const exportSpreadsheet = async () => {
+    const monthLimit = await saveSpreadsheetMonthLimit()
+
+    if (monthLimit === undefined) {
+      return
+    }
+
     const { filename, text } = await exportTrainingLogCsv({
-      monthLimit: settings.spreadsheetExportMonthLimit,
+      monthLimit,
     })
 
     downloadTextFile(filename, text, "text/csv;charset=utf-8")
@@ -219,6 +225,10 @@ export function SettingsScreen() {
   }
 
   const saveSpreadsheetMonthLimit = async () => {
+    if (settings.spreadsheetExportMonthLimit === null) {
+      return null
+    }
+
     const monthLimit = Number(spreadsheetMonthLimitDraft)
 
     if (!Number.isFinite(monthLimit) || monthLimit < 1) {
@@ -226,13 +236,17 @@ export function SettingsScreen() {
         settings.spreadsheetExportMonthLimit?.toString() ?? "",
       )
       setMessage("Enter a month count greater than 0.")
-      return
+      return undefined
     }
 
     const normalizedMonthLimit = Math.floor(monthLimit)
 
     setSpreadsheetMonthLimitDraft(normalizedMonthLimit.toString())
-    await saveSettings({ spreadsheetExportMonthLimit: normalizedMonthLimit })
+    if (normalizedMonthLimit !== settings.spreadsheetExportMonthLimit) {
+      await saveSettings({ spreadsheetExportMonthLimit: normalizedMonthLimit })
+    }
+
+    return normalizedMonthLimit
   }
 
   const saveSpreadsheetShareMessage = async () => {
@@ -246,9 +260,15 @@ export function SettingsScreen() {
 
   const shareSpreadsheet = async () => {
     try {
+      const monthLimit = await saveSpreadsheetMonthLimit()
+
+      if (monthLimit === undefined) {
+        return
+      }
+
       const shareMessage = await saveSpreadsheetShareMessage()
       const result = await shareTrainingLogCsv({
-        monthLimit: settings.spreadsheetExportMonthLimit,
+        monthLimit,
         shareMessage,
         includeMessage: settings.spreadsheetShareIncludeMessage,
         includeAiInstructions: settings.spreadsheetShareIncludeAiInstructions,

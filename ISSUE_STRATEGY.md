@@ -1,3 +1,10 @@
+# GitHub Issue Fix Strategy
+
+Fetched from `https://github.com/alexiskhb/upraglog/issues` using
+`.env.local::GITHUB_TOKEN`. GitHub issue bodies were empty when checked on
+2026-07-19, so `Original issue text` records the exact issue title returned by
+GitHub.
+
 ## Workflow
 
 - Treat issues marked `Status: Unhandled` as available for implementation.
@@ -9,9 +16,11 @@
 - After a handled issue has been responded to and closed on GitHub, change it to
   `Status: Closed`.
 
-## Issue #1: Paste workout list overflows the screen
+## Issue #1: When the 'Paste workout' list is large, the window overflows the screen boundaries
 
 URL: https://github.com/alexiskhb/upraglog/issues/1
+
+Original issue text: `When the 'Paste workout' list is large, the window overflows the screen boundaries`
 
 Status: Unhandled
 
@@ -50,11 +59,29 @@ Acceptance checks:
   Add button must remain reachable.
 - Recheck desktop width to ensure the dialog still reads as a compact modal.
 
-## Issue #2: Text inputs do not register immediately before button clicks
+## Issue #2: Across the application, text inputs do not register immediately; user must tap outside the text area to apply changes before clicking buttons
 
 URL: https://github.com/alexiskhb/upraglog/issues/2
 
-Status: Unhandled
+Original issue text: `Across the application, text inputs do not register immediately; user must tap outside the text area to apply changes before clicking buttons`
+
+Status: Handled
+
+Status note:
+
+- Updated `src/components/ui/input.tsx` and `src/components/ui/textarea.tsx`
+  so native `input` events also drive React `onChange` handlers immediately,
+  with a de-dupe fallback for normal React `change` events.
+- Updated `src/features/training/NumericStepper.tsx`, which uses a bare
+  `<input>`, to commit drafts from native `input` events as well as change
+  events.
+- Updated `src/features/settings/SettingsScreen.tsx` so spreadsheet export and
+  share actions await the current "Last Months" draft before reading the export
+  range.
+- Kept blur autosave, but action buttons now use the committed draft value
+  directly and stop cleanly when the draft is invalid.
+- Verified with `npm run lint` and `npm run build`. No browser checks were run,
+  per `AGENTS.md`.
 
 Relevant files:
 
@@ -97,9 +124,11 @@ Acceptance checks:
 - Repeat on mobile Safari or a mobile viewport where tapping a button dismisses
   the keyboard.
 
-## Issue #3: Change "Last Months" spreadsheet export option to days
+## Issue #3: Change 'LAST MONTHS' spreadsheet export option to be set in days
 
 URL: https://github.com/alexiskhb/upraglog/issues/3
+
+Original issue text: `Change 'LAST MONTHS' spreadsheet export option to be set in days`
 
 Status: Unhandled
 
@@ -146,9 +175,11 @@ Acceptance checks:
 - CSV export should include workouts on or after today minus the configured
   number of days.
 
-## Issue #4: Allow the same exercise multiple times in one workout
+## Issue #4: Allow users to add the same exercise multiple times within a single workout
 
 URL: https://github.com/alexiskhb/upraglog/issues/4
+
+Original issue text: `Allow users to add the same exercise multiple times within a single workout`
 
 Status: Unhandled
 
@@ -200,9 +231,11 @@ Acceptance checks:
 - Export CSV and JSON, then restore JSON, and confirm duplicate instances are
   preserved.
 
-## Issue #5: Warn before Import JSON or Restore from Drive overwrites history
+## Issue #5: Add a warning prompt when 'Import JSON' or 'Restore from Drive' will overwrite or erase existing workout history
 
 URL: https://github.com/alexiskhb/upraglog/issues/5
+
+Original issue text: `Add a warning prompt when 'Import JSON' or 'Restore from Drive' will overwrite or erase existing workout history`
 
 Status: Unhandled
 
@@ -246,9 +279,11 @@ Acceptance checks:
 - Restore From Drive shows an equivalent warning after the Drive file is found
   and before local tables are cleared.
 
-## Issue #6: Auto-advance after checking the last set of the current exercise
+## Issue #6: Automatically advance to the next exercise when the last set of the current exercise is checked
 
 URL: https://github.com/alexiskhb/upraglog/issues/6
+
+Original issue text: `Automatically advance to the next exercise when the last set of the current exercise is checked`
 
 Status: Unhandled
 
@@ -292,6 +327,8 @@ Acceptance checks:
 ## Issue #7: Shift "Set Comment" popup position upward
 
 URL: https://github.com/alexiskhb/upraglog/issues/7
+
+Original issue text: `Shift "Set Comment" popup position upward`
 
 Status: Unhandled
 

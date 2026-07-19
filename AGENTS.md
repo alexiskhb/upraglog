@@ -90,3 +90,5 @@ When asked to work on issues, select an open, unhandled issue from `ISSUE_STRATE
 If `ISSUE_STRATEGY.md` contains no unhandled issues, fetch open issues from `https://github.com/alexiskhb/upraglog/issues` that are not already documented in the file. Use the GitHub token from `.env.local` under `GITHUB_TOKEN`, then add a proposed implementation strategy for each newly discovered issue to `ISSUE_STRATEGY.md`.
 
 When asked to respond to issues, review the open issues at `https://github.com/alexiskhb/upraglog/issues` and identify those that are already marked as handled in `ISSUE_STRATEGY.md`. Post an appropriate response to each matching issue and close it when the implemented work fully resolves it.
+
+Write a concise commit message to use when finished working on an issue.

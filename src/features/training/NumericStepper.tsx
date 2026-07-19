@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Minus, Plus } from "lucide-react"
 import { IconButton } from "@/shared/ui/IconButton"
 import { formatDuration } from "@/shared/model/dates"
@@ -26,6 +26,7 @@ export function NumericStepper({
 }: NumericStepperProps) {
   const [editing, setEditing] = useState(false)
   const [draftValue, setDraftValue] = useState("")
+  const inputDispatchedValueRef = useRef<string | undefined>(undefined)
   const formatNumber = (nextValue: number) =>
     displayFractionDigits === undefined
       ? nextValue.toString()
@@ -85,6 +86,19 @@ export function NumericStepper({
     setEditing(false)
   }
 
+  const commitInputFromInputEvent = (rawValue: string) => {
+    inputDispatchedValueRef.current = rawValue
+    commitInput(rawValue)
+  }
+
+  const commitInputFromChangeEvent = (rawValue: string) => {
+    if (inputDispatchedValueRef.current === rawValue) {
+      return
+    }
+
+    commitInput(rawValue)
+  }
+
   return (
     <div className="space-y-2">
       <div className="text-xs font-semibold uppercase tracking-normal text-zinc-400">
@@ -106,7 +120,8 @@ export function NumericStepper({
           inputMode={isDuration ? "numeric" : "decimal"}
           value={inputValue}
           onBlur={finishEditing}
-          onChange={(event) => commitInput(event.target.value)}
+          onChange={(event) => commitInputFromChangeEvent(event.target.value)}
+          onInput={(event) => commitInputFromInputEvent(event.currentTarget.value)}
           onFocus={(event) => {
             const nextDraftValue = toDraftValue()
             setDraftValue(nextDraftValue)
