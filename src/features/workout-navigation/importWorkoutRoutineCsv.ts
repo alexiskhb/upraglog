@@ -2,8 +2,8 @@ import { db } from "@/db/db"
 import type { Exercise, SetEntryInput, SetFieldKey } from "@/db/schema"
 import { updateExerciseSetDefaults } from "@/db/repositories/exercisesRepo"
 import {
-  addExerciseToDate,
   addSetToWorkoutExercise,
+  addWorkoutExerciseInstanceToDate,
 } from "@/db/repositories/workoutsRepo"
 import { filterSetInputForExerciseType } from "@/shared/model/setFields"
 
@@ -229,25 +229,39 @@ export async function importWorkoutRoutineCsvToDate({
       ]),
     )
 
+    let currentExerciseId: string | undefined
+    let currentWorkoutExerciseId: string | undefined
+
     for (const routineRow of routineRows) {
       const exercise = exercisesById.get(routineRow.exerciseId)
 
       if (!exercise) {
+        currentExerciseId = undefined
+        currentWorkoutExerciseId = undefined
         continue
       }
 
-      const workoutExercise = await addExerciseToDate(
-        localDate,
-        profileName,
-        exercise.id,
-      )
+      if (exercise.id !== currentExerciseId || !currentWorkoutExerciseId) {
+        const workoutExercise = await addWorkoutExerciseInstanceToDate(
+          localDate,
+          profileName,
+          exercise.id,
+        )
+
+        currentExerciseId = exercise.id
+        currentWorkoutExerciseId = workoutExercise.id
+      }
+
       const setInput = filterSetInputForExerciseType(
         exercise.exerciseType,
         routineRow.setInput,
       )
 
       if (hasSetValues(setInput)) {
-        const set = await addSetToWorkoutExercise(workoutExercise.id, setInput)
+        const set = await addSetToWorkoutExercise(
+          currentWorkoutExerciseId,
+          setInput,
+        )
 
         if (set) {
           await updateExerciseSetDefaults(exercise.id, setInput)

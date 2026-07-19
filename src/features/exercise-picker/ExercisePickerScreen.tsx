@@ -21,7 +21,7 @@ import {
   toggleExerciseFavorite,
 } from "@/db/repositories/exercisesRepo"
 import {
-  addExerciseToDate,
+  addWorkoutExerciseInstanceToDate,
   replaceWorkoutExercise,
 } from "@/db/repositories/workoutsRepo"
 import {
@@ -348,7 +348,7 @@ export function ExercisePickerScreen() {
       return
     }
 
-    const workoutExercise = await addExerciseToDate(
+    const workoutExercise = await addWorkoutExerciseInstanceToDate(
       selectedDate,
       selectedProfile,
       exercise.id,

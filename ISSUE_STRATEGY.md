@@ -206,7 +206,21 @@ URL: https://github.com/alexiskhb/upraglog/issues/4
 
 Original issue text: `Allow users to add the same exercise multiple times within a single workout`
 
-Status: Unhandled
+Status: Handled
+
+Status note:
+
+- Updated `src/db/repositories/workoutsRepo.ts` so adding an exercise creates a
+  fresh `WorkoutExercise` instance instead of returning an existing row with the
+  same catalog `exerciseId`.
+- Updated `src/features/exercise-picker/ExercisePickerScreen.tsx` to use the
+  explicit fresh-instance helper, allowing the same exercise to be selected
+  multiple times for one workout.
+- Updated `src/features/workout-navigation/importWorkoutRoutineCsv.ts` so
+  adjacent pasted routine rows for the same exercise still share one imported
+  workout-exercise instance and become multiple sets.
+- Verified with `npm run lint` and `npm run build`. No browser checks were run,
+  per `AGENTS.md`.
 
 Relevant files:
 

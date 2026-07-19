@@ -258,25 +258,12 @@ export async function getWorkoutExerciseDetail(workoutExerciseId: string) {
   }
 }
 
-export async function addExerciseToDate(
+export async function addWorkoutExerciseInstanceToDate(
   localDate: string,
   profileName: string | undefined,
   exerciseId: string,
 ) {
   const workout = await getOrCreateWorkout(localDate, profileName)
-  const existing = await db.workoutExercises
-    .where("workoutId")
-    .equals(workout.id)
-    .and((row) => row.exerciseId === exerciseId)
-    .first()
-
-  if (existing) {
-    await db.workouts.update(workout.id, {
-      updatedAt: new Date().toISOString(),
-    })
-    return existing
-  }
-
   const workoutExercises = await db.workoutExercises
     .where("workoutId")
     .equals(workout.id)
