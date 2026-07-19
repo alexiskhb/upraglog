@@ -339,7 +339,20 @@ URL: https://github.com/alexiskhb/upraglog/issues/6
 
 Original issue text: `Automatically advance to the next exercise when the last set of the current exercise is checked`
 
-Status: Unhandled
+Status: Handled
+
+Status note:
+
+- Updated `src/features/training/TrainingScreen.tsx` so manually checking the
+  final unfinished set advances to the next workout exercise using the
+  pre-update exercise order.
+- Kept checkbox completion scoped to sets from the current detail snapshot, so
+  unchecking, re-checking an already finished set, and stale row events do not
+  auto-advance.
+- Preserved the existing double-tap next behavior and auto-sort compatibility by
+  sharing the same adjacent-exercise navigation helper.
+- Verified with `npm run lint` and `npm run build`. No browser checks were run,
+  per `AGENTS.md`.
 
 Relevant files:
 

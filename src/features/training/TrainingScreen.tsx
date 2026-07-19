@@ -156,6 +156,21 @@ function getExerciseTransitionClass(direction: ExerciseDirection) {
     : "swipe-route-enter-previous"
 }
 
+function getAdjacentWorkoutExerciseId(
+  detail: TrainingDetail,
+  direction: ExerciseDirection,
+) {
+  const currentIndex = detail.workoutExerciseIds.indexOf(
+    detail.workoutExercise.id,
+  )
+
+  if (currentIndex < 0) {
+    return undefined
+  }
+
+  return detail.workoutExerciseIds[currentIndex + direction]
+}
+
 function WorkoutLapTimer({
   detail,
   nowMs,
@@ -232,6 +247,8 @@ export function TrainingScreen() {
   )
   const previousNextActionTapRef = useRef<NextActionTap | undefined>(undefined)
   const nextActionBusyRef = useRef(false)
+  const latestDetailRef = useRef<TrainingDetail | undefined>(undefined)
+  const latestWorkoutExerciseIdRef = useRef(workoutExerciseId)
   const workoutTimerActive = Boolean(
     detail?.workout.startedAt && !detail.workout.endedAt,
   )
@@ -277,6 +294,11 @@ export function TrainingScreen() {
       cancelled = true
     }
   }, [loadedInputKey, workoutExerciseId, refreshVersion, setSelectedDate])
+
+  useEffect(() => {
+    latestDetailRef.current = detail
+    latestWorkoutExerciseIdRef.current = workoutExerciseId
+  }, [detail, workoutExerciseId])
 
   useEffect(() => {
     if (!workoutTimerActive) {
@@ -327,20 +349,27 @@ export function TrainingScreen() {
     setSelectedSetId(undefined)
   }
 
+  const detailSnapshotIsCurrent = (sourceDetail: TrainingDetail) =>
+    latestDetailRef.current === sourceDetail &&
+    latestWorkoutExerciseIdRef.current === sourceDetail.workoutExercise.id
+
   const resolveAdjacentWorkoutExerciseId = (direction: ExerciseDirection) => {
     if (!detail) {
       return undefined
     }
 
-    const currentIndex = detail.workoutExerciseIds.indexOf(
-      detail.workoutExercise.id,
-    )
+    return getAdjacentWorkoutExerciseId(detail, direction)
+  }
 
-    if (currentIndex < 0) {
-      return undefined
-    }
-
-    return detail.workoutExerciseIds[currentIndex + direction]
+  const navigateToWorkoutExercise = (
+    nextWorkoutExerciseId: string,
+    direction: ExerciseDirection,
+  ) => {
+    setExerciseTransitionClass(getExerciseTransitionClass(direction))
+    void navigate({
+      to: "/training/$workoutExerciseId",
+      params: { workoutExerciseId: nextWorkoutExerciseId },
+    })
   }
 
   const navigateAdjacentExercise = (direction: ExerciseDirection) => {
@@ -350,25 +379,21 @@ export function TrainingScreen() {
       return
     }
 
-    setExerciseTransitionClass(getExerciseTransitionClass(direction))
-    void navigate({
-      to: "/training/$workoutExerciseId",
-      params: { workoutExerciseId: nextWorkoutExerciseId },
-    })
+    navigateToWorkoutExercise(nextWorkoutExerciseId, direction)
   }
 
-  const navigateToNextExercise = () => {
-    const nextWorkoutExerciseId = resolveAdjacentWorkoutExerciseId(1)
+  const navigateToNextExercise = (sourceDetail = detail) => {
+    if (!sourceDetail) {
+      return false
+    }
+
+    const nextWorkoutExerciseId = getAdjacentWorkoutExerciseId(sourceDetail, 1)
 
     if (!nextWorkoutExerciseId) {
       return false
     }
 
-    setExerciseTransitionClass(getExerciseTransitionClass(1))
-    void navigate({
-      to: "/training/$workoutExerciseId",
-      params: { workoutExerciseId: nextWorkoutExerciseId },
-    })
+    navigateToWorkoutExercise(nextWorkoutExerciseId, 1)
     return true
   }
 
@@ -408,10 +433,35 @@ export function TrainingScreen() {
   }
 
   const updateSetFinishedRow = async (setId: string, finished: boolean) => {
+    if (!detail) {
+      return
+    }
+
+    const sourceDetail = detail
+    const sourceSet = sourceDetail.sets.find((set) => set.id === setId)
+    const shouldConsiderAutoAdvance =
+      finished &&
+      sourceSet !== undefined &&
+      detailSnapshotIsCurrent(sourceDetail) &&
+      sourceSet.workoutExerciseId === sourceDetail.workoutExercise.id &&
+      !sourceSet.finishedAt
+    const exerciseWillBeFinished =
+      shouldConsiderAutoAdvance &&
+      sourceDetail.sets.every((set) => set.finishedAt || set.id === setId)
+
     await updateSetFinished(setId, finished, {
       autoSortWorkoutExercises: autoSortWorkoutExercisesByFirstFinishedSet,
       autoFinishWorkoutTimer: autoFinishWorkoutTimerWhenAllSetsFinished,
     })
+
+    if (exerciseWillBeFinished && detailSnapshotIsCurrent(sourceDetail)) {
+      bumpRefresh()
+
+      if (navigateToNextExercise(sourceDetail)) {
+        return
+      }
+    }
+
     await refreshDetail()
   }
 
