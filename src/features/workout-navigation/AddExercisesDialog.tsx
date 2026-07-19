@@ -53,12 +53,12 @@ export function AddExercisesDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="top-4 max-h-[calc(100dvh-2rem)] translate-y-0 overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:top-1/2 sm:max-w-lg sm:-translate-y-1/2">
-        <DialogHeader>
+      <DialogContent className="top-4 flex max-h-[calc(100dvh-2rem)] translate-y-0 flex-col gap-3 overflow-hidden rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:top-1/2 sm:max-w-lg sm:-translate-y-1/2">
+        <DialogHeader className="shrink-0">
           <DialogTitle>Paste Workout</DialogTitle>
         </DialogHeader>
         <Textarea
-          className="min-h-0 resize-none overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 [field-sizing:fixed] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+          className="h-[min(50dvh,24rem)] min-h-32 max-h-full flex-1 resize-none overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 [field-sizing:fixed] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
           placeholder="Use Share to send your history with instructions to an AI assistant, then paste its response here.
 
 You can also Copy Workout from another day."
@@ -66,7 +66,7 @@ You can also Copy Workout from another day."
           value={text}
           onChange={(event) => setText(event.target.value)}
         />
-        <div className="sticky bottom-0 z-10 flex shrink-0 gap-2 bg-[var(--app-surface-raised)] pt-1">
+        <div className="flex shrink-0 gap-2 bg-[var(--app-surface-raised)] pt-1">
           <ActionButton disabled={adding} tone="save" onClick={addExercises}>
             Add
           </ActionButton>

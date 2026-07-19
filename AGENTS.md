@@ -85,7 +85,7 @@ Guidance for LLMs and automated coding agents working in this repository.
 
 ## Issues
 
-When asked to work on issues, select an open, unhandled issue from `ISSUE_STRATEGY.md` and implement the fix. After completing the work, update the corresponding entry in `ISSUE_STRATEGY.md` with a brief status note describing what was done and any remaining work.
+When asked to work on issues, select an open, unhandled issue from `ISSUE_STRATEGY.md` and implement the fix. After completing the work, update the corresponding entry in `ISSUE_STRATEGY.md` with a brief status note describing what was done and any remaining work. Use fix strategies listed there as suggestions, not hard requirements.
 
 If `ISSUE_STRATEGY.md` contains no unhandled issues, fetch open issues from `https://github.com/alexiskhb/upraglog/issues` that are not already documented in the file. Use the GitHub token from `.env.local` under `GITHUB_TOKEN`, then add a proposed implementation strategy for each newly discovered issue to `ISSUE_STRATEGY.md`.
 

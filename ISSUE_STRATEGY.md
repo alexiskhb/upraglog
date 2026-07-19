@@ -22,7 +22,18 @@ URL: https://github.com/alexiskhb/upraglog/issues/1
 
 Original issue text: `When the 'Paste workout' list is large, the window overflows the screen boundaries`
 
-Status: Unhandled
+Status: Handled
+
+Status note:
+
+- Updated `src/features/workout-navigation/AddExercisesDialog.tsx` so the Paste
+  Workout dialog is a bounded flex column inside `calc(100dvh - 2rem)`.
+- Kept the dialog shell from scrolling and made the paste textarea the bounded,
+  scrollable region with fixed field sizing.
+- Kept the Add button outside the textarea scroll area so it remains reachable
+  when pasted workout text is large.
+- Verified with `npm run lint` and `npm run build`. No browser checks were run,
+  per `AGENTS.md`.
 
 Relevant files:
 
