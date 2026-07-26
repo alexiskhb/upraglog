@@ -39,6 +39,7 @@ type TrainingLogRow = Array<string | number | undefined>
 
 type ExportTrainingLogCsvOptions = {
   dayLimit?: number | null
+  onlyLatestWorkoutDay?: boolean
 }
 
 function csvEscape(value: string | number | undefined) {
@@ -128,6 +129,24 @@ function byWorkoutExportOrder(a: Workout, b: Workout) {
   )
 }
 
+function getLatestWorkoutLocalDate(workouts: Workout[]) {
+  return workouts.reduce<string | undefined>(
+    (latestLocalDate, workout) =>
+      latestLocalDate === undefined || workout.localDate > latestLocalDate
+        ? workout.localDate
+        : latestLocalDate,
+    undefined,
+  )
+}
+
+function formatTrainingLogFilename(localDate?: string) {
+  const timestamp = formatDateTimeForFilename(new Date())
+
+  return localDate
+    ? `upraglog-training-log-${localDate}-${timestamp}.csv`
+    : `upraglog-training-log-${timestamp}.csv`
+}
+
 function byOrder<T extends { order: number }>(a: T, b: T) {
   return a.order - b.order
 }
@@ -186,6 +205,18 @@ export async function exportTrainingLogCsv(
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]))
   const rows: TrainingLogRow[] = []
   const exportStartDate = getExportStartDate(options.dayLimit)
+  const exportWorkouts = workouts
+    .filter((workout) => {
+      if (!exportProfiles.has(getWorkoutProfileName(workout))) {
+        return false
+      }
+
+      return !exportStartDate || workout.localDate >= exportStartDate
+    })
+    .sort(byWorkoutExportOrder)
+  const latestWorkoutLocalDate = options.onlyLatestWorkoutDay
+    ? getLatestWorkoutLocalDate(exportWorkouts)
+    : undefined
 
   for (const workoutExercise of workoutExercises) {
     const current =
@@ -200,12 +231,11 @@ export async function exportTrainingLogCsv(
     setsByWorkoutExerciseId.set(set.workoutExerciseId, current)
   }
 
-  for (const workout of workouts.sort(byWorkoutExportOrder)) {
-    if (!exportProfiles.has(getWorkoutProfileName(workout))) {
-      continue
-    }
-
-    if (exportStartDate && workout.localDate < exportStartDate) {
+  for (const workout of exportWorkouts) {
+    if (
+      options.onlyLatestWorkoutDay &&
+      workout.localDate !== latestWorkoutLocalDate
+    ) {
       continue
     }
 
@@ -257,7 +287,8 @@ export async function exportTrainingLogCsv(
   }
 
   return {
-    filename: `upraglog-training-log-${formatDateTimeForFilename(new Date())}.csv`,
+    filename: formatTrainingLogFilename(latestWorkoutLocalDate),
+    localDate: latestWorkoutLocalDate,
     text: `\uFEFF${toCsv(rows)}`,
   }
 }

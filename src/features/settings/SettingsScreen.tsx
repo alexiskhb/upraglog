@@ -275,6 +275,20 @@ export function SettingsScreen() {
     setMessage("Spreadsheet CSV exported.")
   }
 
+  const exportLatestWorkoutDaySpreadsheet = async () => {
+    const { filename, localDate, text } = await exportTrainingLogCsv({
+      onlyLatestWorkoutDay: true,
+    })
+
+    if (!localDate) {
+      setMessage("No workout day to export.")
+      return
+    }
+
+    downloadTextFile(filename, text, "text/csv;charset=utf-8")
+    setMessage(`Last workout day CSV exported (${localDate}).`)
+  }
+
   const saveSpreadsheetDayLimit = async () => {
     if (settings.spreadsheetExportDayLimit === null) {
       return null
@@ -692,11 +706,21 @@ export function SettingsScreen() {
             />
           </label>
         </details>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <ActionButton
+            tone="secondary"
+            onClick={exportLatestWorkoutDaySpreadsheet}
+          >
+            Download<br />Last Workout
+          </ActionButton>
           <ActionButton tone="secondary" onClick={exportSpreadsheet}>
             Download Spreadsheet
           </ActionButton>
-          <ActionButton tone="secondary" onClick={shareSpreadsheet}>
+          <ActionButton
+            className="col-span-2 sm:col-span-1"
+            tone="secondary"
+            onClick={shareSpreadsheet}
+          >
             Share
           </ActionButton>
         </div>
