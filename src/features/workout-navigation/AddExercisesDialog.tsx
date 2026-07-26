@@ -53,12 +53,12 @@ export function AddExercisesDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="top-4 flex max-h-[calc(100dvh-2rem)] translate-y-0 flex-col gap-3 overflow-hidden rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:top-1/2 sm:max-w-lg sm:-translate-y-1/2">
+      <DialogContent className="top-[calc((100dvh-4rem)/2)] flex max-h-[calc(100dvh-6rem)] -translate-y-1/2 flex-col gap-3 overflow-hidden rounded-md border-white/10 bg-[var(--app-surface-raised)] text-zinc-100 shadow-2xl sm:max-w-lg">
         <DialogHeader className="shrink-0">
           <DialogTitle>Paste Workout</DialogTitle>
         </DialogHeader>
         <Textarea
-          className="h-[min(50dvh,24rem)] min-h-32 max-h-full flex-1 resize-none overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 [field-sizing:fixed] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
+          className="h-[min(50dvh,24rem)] min-h-20 max-h-full flex-1 resize-none overflow-y-auto rounded-md border-white/10 bg-[var(--app-surface-muted)] text-base text-zinc-100 [field-sizing:fixed] focus-visible:border-cyan-300/60 focus-visible:ring-cyan-400/25"
           placeholder="Use Share to send your history with instructions to an AI assistant, then paste its response here.
 
 You can also Copy Workout from another day."
