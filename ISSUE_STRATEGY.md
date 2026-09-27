@@ -441,6 +441,60 @@ Acceptance checks:
   action should remain visible or reachable by scrolling.
 - Template chips should scroll horizontally without widening the dialog.
 
+## Issue #8: The list of sets on the Exercise screen is not scrollable when there are multiple sets
+
+URL: https://github.com/alexiskhb/upraglog/issues/8
+
+Original issue text: `The list of sets on the Exercise screen is not scrollable when there are multiple sets`
+
+Fetched on 2026-09-27; the issue body was empty.
+
+Status: Handled
+
+Status note:
+
+- Changed set value buttons to `touch-action: pan-y` so touches on the main
+  row area can scroll the document vertically through long set lists.
+- Replaced the training screen's pointer sensor with mouse and touch sensors,
+  preserving the 350 ms long-press delay, 8 px movement tolerance, and keyboard
+  reordering. Touch movement before activation can scroll without starting a
+  reorder.
+- Verified with `npm run lint`, `npm run build`, and `git diff --check`.
+  No browser checks were run, per `AGENTS.md`; touch scrolling and gesture
+  interactions still need manual device verification.
+
+Relevant files:
+
+- `src/features/training/SetRow.tsx`
+- `src/features/training/TrainingScreen.tsx`
+- `src/shared/ui/SwipeToDelete.tsx`
+- `src/shared/ui/ScreenContainer.tsx`
+
+Likely cause:
+
+- The main button on every set row uses `touch-action: none`, blocking native
+  vertical scrolling when a touch starts over the set values.
+- The screen already supports document scrolling and reserves bottom padding
+  for the fixed navigation bar; the row gesture restriction blocks that scroll.
+
+Fix strategy:
+
+- Allow vertical touch panning over set values.
+- Replace the training screen's pointer drag sensor with separate mouse and
+  touch sensors, retaining the long-press delay and keyboard sensor. The touch
+  sensor leaves scrolling available until the long press activates a drag.
+- Preserve row selection, swipe-to-delete, comments, and completion controls.
+
+Acceptance checks:
+
+- With many sets, swipe vertically from the set values to reach the final row
+  at mobile widths, including 320px.
+- Long-press a row to reorder it; quick vertical movement should scroll.
+- Check mouse and keyboard reordering, row selection, comments, completion,
+  and horizontal swipe-to-delete.
+- Run lint and build. Browser checks are prohibited by `AGENTS.md`, so manual
+  device verification remains a follow-up.
+
 ## Suggested implementation order
 
 1. Fix #2 first because it affects user trust across settings/actions.

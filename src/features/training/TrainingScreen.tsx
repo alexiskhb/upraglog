@@ -5,7 +5,8 @@ import {
   DndContext,
   type DragEndEvent,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
@@ -328,7 +329,13 @@ export function TrainingScreen() {
   const commentSet = detail?.sets.find((set) => set.id === commentSetId)
   const workoutProgress = getWorkoutProgress(detail?.workoutSets ?? [])
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        delay: 350,
+        tolerance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
       activationConstraint: {
         delay: 350,
         tolerance: 8,

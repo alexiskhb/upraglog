@@ -67,7 +67,7 @@ export function SetRow({
         </button>
         <button
           className="grid min-h-12 min-w-0 grid-cols-[2rem_minmax(0,1fr)_5.5rem] items-center gap-2 text-sm tabular-nums"
-          style={{ touchAction: "none" }}
+          style={{ touchAction: "pan-y" }}
           type="button"
           title="Long press to move set"
           onClick={onSelect}
