@@ -22,7 +22,7 @@ URL: https://github.com/alexiskhb/upraglog/issues/1
 
 Original issue text: `When the 'Paste workout' list is large, the window overflows the screen boundaries`
 
-Status: Handled
+Status: Closed
 
 Status note:
 
@@ -76,7 +76,7 @@ URL: https://github.com/alexiskhb/upraglog/issues/2
 
 Original issue text: `Across the application, text inputs do not register immediately; user must tap outside the text area to apply changes before clicking buttons`
 
-Status: Handled
+Status: Closed
 
 Status note:
 
@@ -141,7 +141,7 @@ URL: https://github.com/alexiskhb/upraglog/issues/3
 
 Original issue text: `Change 'LAST MONTHS' spreadsheet export option to be set in days`
 
-Status: Handled
+Status: Closed
 
 Status note:
 
@@ -206,7 +206,7 @@ URL: https://github.com/alexiskhb/upraglog/issues/4
 
 Original issue text: `Allow users to add the same exercise multiple times within a single workout`
 
-Status: Handled
+Status: Closed
 
 Status note:
 
@@ -276,7 +276,7 @@ URL: https://github.com/alexiskhb/upraglog/issues/5
 
 Original issue text: `Add a warning prompt when 'Import JSON' or 'Restore from Drive' will overwrite or erase existing workout history`
 
-Status: Handled
+Status: Closed
 
 Status note:
 
@@ -339,7 +339,7 @@ URL: https://github.com/alexiskhb/upraglog/issues/6
 
 Original issue text: `Automatically advance to the next exercise when the last set of the current exercise is checked`
 
-Status: Handled
+Status: Closed
 
 Status note:
 
@@ -397,7 +397,7 @@ URL: https://github.com/alexiskhb/upraglog/issues/7
 
 Original issue text: `Shift "Set Comment" popup position upward`
 
-Status: Handled
+Status: Closed
 
 Status note:
 
@@ -449,7 +449,7 @@ Original issue text: `The list of sets on the Exercise screen is not scrollable 
 
 Fetched on 2026-09-27; the issue body was empty.
 
-Status: Handled
+Status: Closed
 
 Status note:
 
