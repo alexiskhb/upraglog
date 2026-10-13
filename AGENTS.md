@@ -71,6 +71,7 @@ Guidance for LLMs and automated coding agents working in this repository.
 - Preserve user changes in the working tree. Do not reset, checkout, or revert
   unrelated work unless the user explicitly asks.
 - Prefer focused changes that follow existing feature and repository boundaries.
+- Bump the patch version in both `package.json` and `package-lock.json` for every user-facing change (including UI fixes); see README Versioning.
 - Use `rg` for searching.
 - Keep comments sparse and useful; avoid narrating obvious code.
 

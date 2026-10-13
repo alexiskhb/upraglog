@@ -16,6 +16,16 @@ npm run lint
 npm run build
 ```
 
+## Versioning
+
+**Reminder:** Bump the patch version for every user-facing change, including UI
+fixes, before committing. Update both `package.json` and `package-lock.json`
+together so `npm ci` stays consistent.
+
+The version shown in Settings is taken from `package.json` at build time
+(`vite.config.ts` injects it as `__APP_VERSION__`), so no separate version
+constant needs editing. Run `npm run lint` and `npm run build` when feasible.
+
 ## Google Drive Backup
 
 Copy `.env.example` to `.env.local` and replace
