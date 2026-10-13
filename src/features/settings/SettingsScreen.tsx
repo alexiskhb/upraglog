@@ -939,13 +939,13 @@ export function SettingsScreen() {
             </AlertDialogHeader>
             <AlertDialogFooter className="border-white/10 bg-[var(--app-surface)]">
               <AlertDialogCancel
-                className="rounded-md border-white/10 bg-white/10 text-zinc-100 hover:bg-white/15"
+                className="h-11 min-w-24 rounded-md border-white/10 bg-white/10 px-5 text-sm font-semibold text-zinc-100 hover:bg-white/15"
                 disabled={restoreBusy}
               >
                 Cancel
               </AlertDialogCancel>
               <AlertDialogAction
-                className="rounded-md bg-red-500/20 text-red-100 ring-1 ring-red-400/25 hover:bg-red-500/30"
+                className="h-11 min-w-24 rounded-md bg-red-500/20 px-5 text-sm font-semibold text-red-100 ring-1 ring-red-400/25 hover:bg-red-500/30"
                 disabled={restoreBusy}
                 onClick={(event) => {
                   event.preventDefault()
